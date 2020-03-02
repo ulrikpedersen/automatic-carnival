@@ -8,7 +8,7 @@ import time
 import pytest
 import enum
 
-from tango import AttrData, AttrWriteType, DevFailed, DevEncoded, \
+from tango import Attr, AttrData, AttrWriteType, DevFailed, DevEncoded, \
     DevEnum, DevState, GreenMode, READ_WRITE, SCALAR
 from tango.server import Device
 from tango.pyutil import parse_args
