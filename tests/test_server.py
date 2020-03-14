@@ -884,7 +884,7 @@ def test_dyn_attr_async_read(typed_values, server_green_mode):
 
         proxy._is_testattr_allowed = False
         for value in values:
-            with pytest.raises(DevFailed) as record:
+            with pytest.raises(DevFailed):
                 proxy.TestAttr = value
 
 @pytest.mark.parametrize("applicable_os, test_input, expected_output", DEVICE_SERVER_ARGUMENTS)
