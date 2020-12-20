@@ -8,7 +8,7 @@ import time
 import pytest
 import enum
 
-from tango import Attr, AttrData, AttrWriteType, DevFailed, DevEncoded, \
+from tango import AttrData, AttrWriteType, DevFailed, DevEncoded, \
     DevEnum, DevState, GreenMode, READ_WRITE, SCALAR
 from tango.server import Device
 from tango.pyutil import parse_args
@@ -410,6 +410,74 @@ def test_read_write_dynamic_attribute_enum(server_green_mode):
                 assert read_attr.name == label
             proxy.delete_dyn_attr()
             assert "dyn_attr" not in proxy.get_attribute_list()
+
+
+def test_read_write_dynamic_attribute_is_allowed_with_async(
+        typed_values, server_green_mode):
+    dtype, values, expected = typed_values
+
+    class TestDevice(Device):
+        green_mode = server_green_mode
+
+        def __init__(self, *args, **kwargs):
+            super(TestDevice, self).__init__(*args, **kwargs)
+            self._is_test_attr_allowed = True
+
+        def initialize_dynamic_attributes(self):
+            attr = attribute(
+                name="dyn_attr",
+                dtype=dtype,
+                max_dim_x=10,
+                access=AttrWriteType.READ_WRITE,
+                fget=self.read_attr,
+                fset=self.write_attr,
+                fisallowed=self.is_attr_allowed,
+            )
+            self.add_attribute(attr)
+
+        def read_attr(self, attr):
+            attr.set_value(self.attr_value)
+
+        def write_attr(self, attr):
+            self.attr_value = attr.get_write_value()
+
+        def is_attr_allowed(self, req_type):
+            return self._is_test_attr_allowed
+
+        @command(dtype_in=bool)
+        def make_allowed(self, yesno):
+            self._is_test_attr_allowed = yesno
+
+        if server_green_mode == GreenMode.Asyncio:
+            code = textwrap.dedent("""\
+                @asyncio.coroutine
+                def read_attr(self, attr):
+                    attr.set_value(self.attr_value)
+            
+                @asyncio.coroutine
+                def write_attr(self, attr):
+                    self.attr_value = attr.get_write_value()
+        
+                @asyncio.coroutine
+                def is_attr_allowed(self, req_type):
+                    {RETURN}(self._is_test_attr_allowed)
+            """).format(**globals())
+            exec(code)
+
+    with DeviceTestContext(TestDevice,
+                           timeout=600
+                           ) as proxy:
+        proxy.make_allowed(True)
+        for value in values:
+            proxy.dyn_attr = value
+            assert_close(proxy.dyn_attr, expected(value))
+
+        proxy.make_allowed(False)
+        for value in values:
+            with pytest.raises(DevFailed):
+                proxy.dyn_attr = value
+            with pytest.raises(DevFailed):
+                _ = proxy.dyn_attr
 
 
 # Test properties
