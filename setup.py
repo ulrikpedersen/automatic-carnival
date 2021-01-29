@@ -539,11 +539,18 @@ def setup_args():
     if PYTHON2:
         tests_require += [
             "futures",
+            "importlib_metadata < 3",
             "pyparsing < 3",
             "pytest < 5",
             "pytest-xdist < 2",
             "trollius",
             "zipp >= 0.5, < 2",
+        ]
+    elif PYTHON_VERSION < (3, 6):
+        tests_require += [
+            "importlib_metadata < 3",
+            "pytest < 6.2",
+            "pytest-xdist",
         ]
     else:
         tests_require += ["pytest", "pytest-xdist"]

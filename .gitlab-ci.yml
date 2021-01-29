@@ -1,0 +1,92 @@
+default:
+  interruptible: false
+  image: continuumio/miniconda3:4.9.2
+
+variables:
+  CACHE_FALLBACK_KEY: "$CI_DEFAULT_BRANCH"
+
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  untracked: false
+  paths:
+    - ./.eggs      # pytest eggs
+    - ./build      # Build environment
+    - ./envs
+    - ./cached_ext 
+  policy: pull-push
+
+.base_build:
+  stage: test
+  tags:
+    - gitlab-org
+  variables:
+    TANGO_DEPENDENCIES: 'cpptango==9.3.4 tango-test'
+    DEBIAN_FRONTEND: "noninteractive"
+  before_script:
+    - apt-get update -y
+    - apt-get -y install make pkg-config rsync
+    - conda init bash
+    - source ~/.bashrc
+    - conda activate ./envs/$PYTHON_VERSION || conda create --prefix ./envs/$PYTHON_VERSION --yes python=$PYTHON_VERSION
+    - conda activate ./envs/$PYTHON_VERSION
+    
+    # Install build dependencies
+    - conda install --yes -c main -c conda-forge boost gxx_linux-64 cppzmq numpy
+    - conda install --yes -c main -c conda-forge -c tango-controls $TANGO_DEPENDENCIES
+    # Use conda prefix as root for the dependencies
+    - export BOOST_ROOT=$CONDA_PREFIX TANGO_ROOT=$CONDA_PREFIX ZMQ_ROOT=$CONDA_PREFIX OMNI_ROOT=$CONDA_PREFIX
+    # Use custom boost python library name to work with newer naming scheme
+    - export BOOST_PYTHON_LIB=boost_python$BOOST_PYTHON
+    
+    # make sure old_ext exists
+    - mkdir -p cached_ext
+    # Touch the .so files if the extension hasn't changed
+    - diff -r cached_ext ext && find build -name _tango*.so -printf "touching %p\n" -exec touch {} + || true
+
+    - python setup.py build
+    
+    # The build directory has been updated, cached_ext needs to be synchronized too
+    - rsync -a --delete ext/ cached_ext/    
+
+
+test_py3.8:
+  extends: .base_build
+  variables:
+    PYTHON_VERSION: '3.8'
+    BOOST_PYTHON: '38'
+  script:
+    - python setup.py test
+    
+
+test_py3.7:
+  extends: .base_build
+  variables:
+    PYTHON_VERSION: '3.7'
+    BOOST_PYTHON: '37'
+  script:
+    - python setup.py test
+
+test_py3.6:
+  extends: .base_build
+  variables:
+    PYTHON_VERSION: '3.6'
+    BOOST_PYTHON: '36'
+  script:
+    - python setup.py test
+
+test_py3.5:
+  extends: .base_build
+  variables:
+    PYTHON_VERSION: '3.5'
+    BOOST_PYTHON: '35'
+  script:
+    - python setup.py test
+
+test_py2.7:
+  extends: .base_build
+  variables:
+    PYTHON_VERSION: '2.7'
+    BOOST_PYTHON: '27'
+  script:
+    - python setup.py test
