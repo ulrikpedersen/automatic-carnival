@@ -82,7 +82,7 @@ the latest SVN checkout:
 
 .. sourcecode:: console
 
-    $ git clone https://github.com/tango-cs/pytango.git
+    $ git clone https://gitlab.com/tango-controls/pytango.git
     $ cd pytango
     $ python setup.py build
     $ sudo python setup.py install

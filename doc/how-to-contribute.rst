@@ -98,7 +98,7 @@ Pick a version number
       - changes to ``9.3.4`` (the actual release)
       - changes to ``9.3.5.dev0`` (bump the patch version at the end of the release process)
 
-Create an issue in Github
+Create an issue in GitLat
   * This is to inform the community that a release is planned.
   * Use a checklist similar to the one below:
 
@@ -113,12 +113,12 @@ Create an issue in Github
     | - [ ] Make sure the documentation is updated for release (readthedocs)
     | - [ ] Upload the new version to PyPI
     | - [ ] Bump the version with "-dev" in the develop branch
-    | - [ ] Create and fill in the release description on GitHub
+    | - [ ] Create and fill in the release description on GitLab
     | - [ ] Build conda packages
     | - [ ] Advertise the release on the mailing list
     | - [ ] Close this issue
 
-  * A check list in this form on github can be ticked off as the work progresses.
+  * A check list in this form on GitLab can be ticked off as the work progresses.
 
 Make a branch from ``develop`` to prepare the release
   * Example branch name: ``prepare-v9.3.4``.
@@ -160,7 +160,7 @@ Make sure the documentation is updated
         https://readthedocs.org/dashboard/pytango/versions/
 
 Create an annotated tag for the release
-  * Note: Github's release page makes lightweight tags which we don't want
+  * Note: GitLab's release page makes lightweight tags which we don't want
   * Create tag:
       - ``$ git checkout stable``
       - ``$ git pull``
@@ -202,7 +202,7 @@ Bump the version with "-dev" in the develop branch
   * Create PR, merge to ``develop``.
 
 Create and fill in the release description on GitHub
-  * Go to the Tags page: https://github.com/tango-controls/pytango/tags
+  * Go to the Tags page: https://gitlab.com/tango-controls/pytango/-/tags
   * Find the tag created above and click "Create release".
   * Content must be the same as the details in the changelog.  List all the
     pull requests since the previous version.

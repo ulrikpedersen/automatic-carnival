@@ -58,7 +58,7 @@ and the Tango C++ library version that PyTango was compiled with::
 Report a bug
 ------------
 
-Bugs can be reported as issues in `PyTango Github <https://github.com/tango-controls/pytango/issues>`_.
+Bugs can be reported as issues in `PyTango GitHub <https://gitlab.com/tango-controls/pytango/issues>`_.
 
 It is also helpful if you can put in the issue description the PyTango information.
 It can be a dump of:
