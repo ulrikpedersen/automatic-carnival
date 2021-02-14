@@ -98,7 +98,7 @@ Pick a version number
       - changes to ``9.3.4`` (the actual release)
       - changes to ``9.3.5.dev0`` (bump the patch version at the end of the release process)
 
-Create an issue in GitLat
+Create an issue in GitLab
   * This is to inform the community that a release is planned.
   * Use a checklist similar to the one below:
 
