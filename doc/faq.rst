@@ -15,7 +15,7 @@ Please also check the `general tango how to <http://www.tango-controls.org/resou
 
 Bug reports are very valuable for the community.
 
-Please open a new issue on the GitLat issues_ page.
+Please open a new issue on the GitLab issues_ page.
 
 
 **How can I contribute to PyTango and the documentation?**
