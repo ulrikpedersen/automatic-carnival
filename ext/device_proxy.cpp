@@ -706,7 +706,12 @@ namespace PyDeviceProxy
         AutoPythonAllowThreads guard;
         dp = new Tango::DeviceProxy(name.c_str());
     }
-        return boost::shared_ptr<Tango::DeviceProxy>(dp);
+    return boost::shared_ptr<Tango::DeviceProxy>(dp,
+        [](Tango::DeviceProxy* proxy)
+        {
+            AutoPythonAllowThreads guard{};
+            delete proxy;
+        });
     }
 
     static boost::shared_ptr<Tango::DeviceProxy> makeDeviceProxy2(const std::string& name, bool b)
@@ -716,7 +721,12 @@ namespace PyDeviceProxy
         AutoPythonAllowThreads guard;
         dp = new Tango::DeviceProxy(name.c_str(), b);
     }
-    return boost::shared_ptr<Tango::DeviceProxy>(dp);
+    return boost::shared_ptr<Tango::DeviceProxy>(dp,
+        [](Tango::DeviceProxy* proxy)
+        {
+            AutoPythonAllowThreads guard{};
+            delete proxy;
+        });
     }
 };
 
