@@ -23,7 +23,6 @@ from time import sleep
 
 import psutil
 import pytest
-import six
 from functools import partial
 from tango import DeviceProxy, DevFailed, GreenMode
 from tango import DeviceInfo, AttributeInfo, AttributeInfoEx
@@ -498,7 +497,8 @@ def test_no_memory_leak_for_repr(green_mode_device_proxy, simple_device_fqdn):
 
     # clear strong reference and check if object can be garbage collected
     del proxy
-    assert_object_released_after_gc(weak_ref)
+    gc.collect()
+    assert weak_ref() is None
 
 
 def test_no_memory_leak_for_str(green_mode_device_proxy, simple_device_fqdn):
@@ -510,36 +510,5 @@ def test_no_memory_leak_for_str(green_mode_device_proxy, simple_device_fqdn):
 
     # clear strong reference and check if object can be garbage collected
     del proxy
-    assert_object_released_after_gc(weak_ref)
-
-
-def test_no_cyclic_ref_for_proxy(green_mode_device_proxy, simple_device_fqdn):
-    proxy = green_mode_device_proxy(simple_device_fqdn)
-    ping_device(proxy)
-    weak_ref = weakref.ref(proxy)
-
-    # clear strong reference and check if object is immediately released
-    del proxy
-    assert_object_released_without_gc(weak_ref)
-
-
-def assert_object_released_after_gc(weak_ref):
     gc.collect()
-    try:
-        assert weak_ref() is None
-    except AssertionError:
-        green_mode = weak_ref().get_green_mode()
-        if six.PY2 and green_mode != GreenMode.Synchronous:
-            pytest.xfail('Sometimes fails on Python 2 - unknown cause')
-        else:
-            raise
-
-
-def assert_object_released_without_gc(weak_ref):
-    try:
-        assert weak_ref() is None
-    except AssertionError:
-        if weak_ref().get_green_mode() == GreenMode.Asyncio:
-            pytest.xfail('Sometimes fails with a concurrent.Future ref cycle')
-        else:
-            raise
+    assert weak_ref() is None
