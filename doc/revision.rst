@@ -123,218 +123,218 @@ Version history
 | 9.3.3    | 9.3.3 release.                                                                                                                                                                      |
 |          |                                                                                                                                                                                     |
 |          | Features:                                                                                                                                                                           |
-|          |     - `Pull Request #378: Add string support for MultiDeviceTestContext devices_info class field <https://gitlab.com/tango-controls/pytango/~/merge_requests/378>`_                 |
-|          |     - `Pull Request #384: Add test context support for memorized attributes <https://gitlab.com/tango-controls/pytango/~/merge_requests/384>`_                                      |
-|          |     - `Pull Request #395: Fix Windows build and add CI test suite (#355, #368, #369) <https://gitlab.com/tango-controls/pytango/~/merge_requests/395>`_                             |
+|          |     - `Pull Request #378: Add string support for MultiDeviceTestContext devices_info class field <https://gitlab.com/tango-controls/pytango/-/merge_requests/378>`_                 |
+|          |     - `Pull Request #384: Add test context support for memorized attributes <https://gitlab.com/tango-controls/pytango/-/merge_requests/384>`_                                      |
+|          |     - `Pull Request #395: Fix Windows build and add CI test suite (#355, #368, #369) <https://gitlab.com/tango-controls/pytango/-/merge_requests/395>`_                             |
 |          |                                                                                                                                                                                     |
 |          | Changes:                                                                                                                                                                            |
-|          |     - `Pull Request #365: Preserve cause of exception when getting/setting attribute in DeviceProxy (#364) <https://gitlab.com/tango-controls/pytango/~/merge_requests/365>`_       |
-|          |     - `Pull Request #385: Improve mandatory + default device property error message (#380) <https://gitlab.com/tango-controls/pytango/~/merge_requests/385>`_                       |
-|          |     - `Pull Request #397: Add std namespace prefix in C++ code <https://gitlab.com/tango-controls/pytango/~/merge_requests/397>`_                                                   |
+|          |     - `Pull Request #365: Preserve cause of exception when getting/setting attribute in DeviceProxy (#364) <https://gitlab.com/tango-controls/pytango/-/merge_requests/365>`_       |
+|          |     - `Pull Request #385: Improve mandatory + default device property error message (#380) <https://gitlab.com/tango-controls/pytango/-/merge_requests/385>`_                       |
+|          |     - `Pull Request #397: Add std namespace prefix in C++ code <https://gitlab.com/tango-controls/pytango/-/merge_requests/397>`_                                                   |
 |          |                                                                                                                                                                                     |
 |          | Bug/doc fixes:                                                                                                                                                                      |
-|          |     - `Pull Request #360: Fix convert2array for Unicode to DevVarStringArray (Py3) (#361) <https://gitlab.com/tango-controls/pytango/~/merge_requests/360>`_                        |
-|          |     - `Pull Request #386: Fix DeviceProxy repr/str memory leak (#298) <https://gitlab.com/tango-controls/pytango/~/merge_requests/386>`_                                            |
-|          |     - `Pull Request #352: Fix sphinx v3 warning <https://gitlab.com/tango-controls/pytango/~/merge_requests/352>`_                                                                  |
-|          |     - `Pull Request #359: MultiDeviceTestContext example <https://gitlab.com/tango-controls/pytango/~/merge_requests/359>`_                                                         |
-|          |     - `Pull Request #363: Change old doc links from ESRF to RTD <https://gitlab.com/tango-controls/pytango/~/merge_requests/363>`_                                                  |
-|          |     - `Pull Request #370: Update CI to use cppTango 9.3.4rc6 <https://gitlab.com/tango-controls/pytango/~/merge_requests/370>`_                                                     |
-|          |     - `Pull Request #389: Update CI and dev Docker to cpptango 9.3.4 <https://gitlab.com/tango-controls/pytango/~/merge_requests/389>`_                                             |
-|          |     - `Pull Request #376: Update Windows CI and dev containers to boost 1.73.0 <https://gitlab.com/tango-controls/pytango/~/merge_requests/376>`_                                   |
-|          |     - `Pull Request #377: VScode remote development container support <https://gitlab.com/tango-controls/pytango/~/merge_requests/377>`_                                            |
-|          |     - `Pull Request #391: Add documentation about testing <https://gitlab.com/tango-controls/pytango/~/merge_requests/391>`_                                                        |
-|          |     - `Pull Request #393: Fix a typo in get_server_info documentation (#392) <https://gitlab.com/tango-controls/pytango/~/merge_requests/393>`_                                     |
+|          |     - `Pull Request #360: Fix convert2array for Unicode to DevVarStringArray (Py3) (#361) <https://gitlab.com/tango-controls/pytango/-/merge_requests/360>`_                        |
+|          |     - `Pull Request #386: Fix DeviceProxy repr/str memory leak (#298) <https://gitlab.com/tango-controls/pytango/-/merge_requests/386>`_                                            |
+|          |     - `Pull Request #352: Fix sphinx v3 warning <https://gitlab.com/tango-controls/pytango/-/merge_requests/352>`_                                                                  |
+|          |     - `Pull Request #359: MultiDeviceTestContext example <https://gitlab.com/tango-controls/pytango/-/merge_requests/359>`_                                                         |
+|          |     - `Pull Request #363: Change old doc links from ESRF to RTD <https://gitlab.com/tango-controls/pytango/-/merge_requests/363>`_                                                  |
+|          |     - `Pull Request #370: Update CI to use cppTango 9.3.4rc6 <https://gitlab.com/tango-controls/pytango/-/merge_requests/370>`_                                                     |
+|          |     - `Pull Request #389: Update CI and dev Docker to cpptango 9.3.4 <https://gitlab.com/tango-controls/pytango/-/merge_requests/389>`_                                             |
+|          |     - `Pull Request #376: Update Windows CI and dev containers to boost 1.73.0 <https://gitlab.com/tango-controls/pytango/-/merge_requests/376>`_                                   |
+|          |     - `Pull Request #377: VScode remote development container support <https://gitlab.com/tango-controls/pytango/-/merge_requests/377>`_                                            |
+|          |     - `Pull Request #391: Add documentation about testing <https://gitlab.com/tango-controls/pytango/-/merge_requests/391>`_                                                        |
+|          |     - `Pull Request #393: Fix a typo in get_server_info documentation (#392) <https://gitlab.com/tango-controls/pytango/-/merge_requests/393>`_                                     |
 |          |                                                                                                                                                                                     |
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | 9.3.2    | 9.3.2 release.                                                                                                                                                                      |
 |          |                                                                                                                                                                                     |
 |          | Features:                                                                                                                                                                           |
-|          |     - `Pull Request #314: Add MultiDeviceTestContext for testing more than one Device <https://gitlab.com/tango-controls/pytango/~/merge_requests/314>`_                            |
-|          |     - `Pull Request #317: Add get_device_attribute_list and missing pipe methods to Database interface (#313) <https://gitlab.com/tango-controls/pytango/~/merge_requests/317>`_    |
-|          |     - `Pull Request #327: Add EnsureOmniThread and is_omni_thread (#307, #292) <https://gitlab.com/tango-controls/pytango/~/merge_requests/327>`_                                   |
+|          |     - `Pull Request #314: Add MultiDeviceTestContext for testing more than one Device <https://gitlab.com/tango-controls/pytango/-/merge_requests/314>`_                            |
+|          |     - `Pull Request #317: Add get_device_attribute_list and missing pipe methods to Database interface (#313) <https://gitlab.com/tango-controls/pytango/-/merge_requests/317>`_    |
+|          |     - `Pull Request #327: Add EnsureOmniThread and is_omni_thread (#307, #292) <https://gitlab.com/tango-controls/pytango/-/merge_requests/327>`_                                   |
 |          |                                                                                                                                                                                     |
 |          | Changes:                                                                                                                                                                            |
-|          |     - `Pull Request #316: Reduce six requirement from 1.12 to 1.10 (#296) <https://gitlab.com/tango-controls/pytango/~/merge_requests/316>`_                                        |
-|          |     - `Pull Request #326: Add Docker development container  <https://gitlab.com/tango-controls/pytango/~/merge_requests/326>`_                                                      |
-|          |     - `Pull Request #330: Add enum34 to Python 2.7 docker images <https://gitlab.com/tango-controls/pytango/~/merge_requests/330>`_                                                 |
-|          |     - `Pull Request #329: Add test to verify get_device_properties called on init <https://gitlab.com/tango-controls/pytango/~/merge_requests/329>`_                                |
-|          |     - `Pull Request #341: Build DevFailed origin from format_exception (#340) <https://gitlab.com/tango-controls/pytango/~/merge_requests/341>`_                                    |
+|          |     - `Pull Request #316: Reduce six requirement from 1.12 to 1.10 (#296) <https://gitlab.com/tango-controls/pytango/-/merge_requests/316>`_                                        |
+|          |     - `Pull Request #326: Add Docker development container  <https://gitlab.com/tango-controls/pytango/-/merge_requests/326>`_                                                      |
+|          |     - `Pull Request #330: Add enum34 to Python 2.7 docker images <https://gitlab.com/tango-controls/pytango/-/merge_requests/330>`_                                                 |
+|          |     - `Pull Request #329: Add test to verify get_device_properties called on init <https://gitlab.com/tango-controls/pytango/-/merge_requests/329>`_                                |
+|          |     - `Pull Request #341: Build DevFailed origin from format_exception (#340) <https://gitlab.com/tango-controls/pytango/-/merge_requests/341>`_                                    |
 |          |                                                                                                                                                                                     |
 |          | Bug/doc fixes:                                                                                                                                                                      |
-|          |     - `Pull Request #301: Fix documentation error <https://gitlab.com/tango-controls/pytango/~/merge_requests/301>`_                                                                |
-|          |     - `Pull Request #334: Update green mode docs and asyncio example (#333) <https://gitlab.com/tango-controls/pytango/~/merge_requests/334>`_                                      |
-|          |     - `Pull Request #335: Generalise search for libboost_python on POSIX (#300, #310) <https://gitlab.com/tango-controls/pytango/~/merge_requests/335>`_                            |
-|          |     - `Pull Request #343: Extend the info on dependencies in README <https://gitlab.com/tango-controls/pytango/~/merge_requests/343>`_                                              |
-|          |     - `Pull Request #345: Fix power_supply client example PowerOn -> TurnOn <https://gitlab.com/tango-controls/pytango/~/merge_requests/345>`_                                      |
-|          |     - `Pull Request #347: Fix memory leak for DevEncoded attributes <https://gitlab.com/tango-controls/pytango/~/merge_requests/347>`_                                              |
-|          |     - `Pull Request #348: Fix dynamic enum attributes created without labels (#56) <https://gitlab.com/tango-controls/pytango/~/merge_requests/348>`_                               |
+|          |     - `Pull Request #301: Fix documentation error <https://gitlab.com/tango-controls/pytango/-/merge_requests/301>`_                                                                |
+|          |     - `Pull Request #334: Update green mode docs and asyncio example (#333) <https://gitlab.com/tango-controls/pytango/-/merge_requests/334>`_                                      |
+|          |     - `Pull Request #335: Generalise search for libboost_python on POSIX (#300, #310) <https://gitlab.com/tango-controls/pytango/-/merge_requests/335>`_                            |
+|          |     - `Pull Request #343: Extend the info on dependencies in README <https://gitlab.com/tango-controls/pytango/-/merge_requests/343>`_                                              |
+|          |     - `Pull Request #345: Fix power_supply client example PowerOn -> TurnOn <https://gitlab.com/tango-controls/pytango/-/merge_requests/345>`_                                      |
+|          |     - `Pull Request #347: Fix memory leak for DevEncoded attributes <https://gitlab.com/tango-controls/pytango/-/merge_requests/347>`_                                              |
+|          |     - `Pull Request #348: Fix dynamic enum attributes created without labels (#56) <https://gitlab.com/tango-controls/pytango/-/merge_requests/348>`_                               |
 |          |                                                                                                                                                                                     |
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | 9.3.1    | 9.3.1 release.                                                                                                                                                                      |
 |          |                                                                                                                                                                                     |
 |          | Changes:                                                                                                                                                                            |
-|          |     - `Pull Request #277: Windows builds using AppVeyor (#176) <https://gitlab.com/tango-controls/pytango/~/merge_requests/277>`_                                                   |
-|          |     - `Pull Request #290: Update docs: int types maps to DevLong64 (#282) <https://gitlab.com/tango-controls/pytango/~/merge_requests/290>`_                                        |
-|          |     - `Pull Request #293: Update exception types in proxy docstrings <https://gitlab.com/tango-controls/pytango/~/merge_requests/293>`_                                             |
+|          |     - `Pull Request #277: Windows builds using AppVeyor (#176) <https://gitlab.com/tango-controls/pytango/-/merge_requests/277>`_                                                   |
+|          |     - `Pull Request #290: Update docs: int types maps to DevLong64 (#282) <https://gitlab.com/tango-controls/pytango/-/merge_requests/290>`_                                        |
+|          |     - `Pull Request #293: Update exception types in proxy docstrings <https://gitlab.com/tango-controls/pytango/-/merge_requests/293>`_                                             |
 |          |                                                                                                                                                                                     |
 |          | Bug fixes:                                                                                                                                                                          |
-|          |     - `Pull Request #270: Add six >= 1.12 requirement (#269) <https://gitlab.com/tango-controls/pytango/~/merge_requests/270>`_                                                     |
-|          |     - `Pull Request #273: DeviceAttribute.is_empty not working correctly with latest cpp tango version (#271) <https://gitlab.com/tango-controls/pytango/~/merge_requests/273>`_    |
-|          |     - `Pull Request #274: Add unit tests for spectrum attributes, including empty (#271) <https://gitlab.com/tango-controls/pytango/~/merge_requests/274>`_                         |
-|          |     - `Pull Request #281: Fix DevEncoded commands on Python 3 (#280) <https://gitlab.com/tango-controls/pytango/~/merge_requests/281>`_                                             |
-|          |     - `Pull Request #288: Make sure we only convert to string python unicode/str/bytes objects (#285) <https://gitlab.com/tango-controls/pytango/~/merge_requests/288>`_            |
-|          |     - `Pull Request #289: Fix compilation warnings and conda build (#286) <https://gitlab.com/tango-controls/pytango/~/merge_requests/289>`_                                        |
+|          |     - `Pull Request #270: Add six >= 1.12 requirement (#269) <https://gitlab.com/tango-controls/pytango/-/merge_requests/270>`_                                                     |
+|          |     - `Pull Request #273: DeviceAttribute.is_empty not working correctly with latest cpp tango version (#271) <https://gitlab.com/tango-controls/pytango/-/merge_requests/273>`_    |
+|          |     - `Pull Request #274: Add unit tests for spectrum attributes, including empty (#271) <https://gitlab.com/tango-controls/pytango/-/merge_requests/274>`_                         |
+|          |     - `Pull Request #281: Fix DevEncoded commands on Python 3 (#280) <https://gitlab.com/tango-controls/pytango/-/merge_requests/281>`_                                             |
+|          |     - `Pull Request #288: Make sure we only convert to string python unicode/str/bytes objects (#285) <https://gitlab.com/tango-controls/pytango/-/merge_requests/288>`_            |
+|          |     - `Pull Request #289: Fix compilation warnings and conda build (#286) <https://gitlab.com/tango-controls/pytango/-/merge_requests/289>`_                                        |
 |          |                                                                                                                                                                                     |
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | 9.3.0    | 9.3.0 release.                                                                                                                                                                      |
 |          |                                                                                                                                                                                     |
 |          | Changes:                                                                                                                                                                            |
-|          |     - `Pull Request #242: Improve Python version check for enum34 install <https://gitlab.com/tango-controls/pytango/~/merge_requests/242>`_                                        |
-|          |     - `Pull Request #250: Develop 9.3.0 <https://gitlab.com/tango-controls/pytango/~/merge_requests/250>`_                                                                          |
-|          |     - `Pull Request #258: Change Travis CI builds to xenial <https://gitlab.com/tango-controls/pytango/~/merge_requests/258>`_                                                      |
+|          |     - `Pull Request #242: Improve Python version check for enum34 install <https://gitlab.com/tango-controls/pytango/-/merge_requests/242>`_                                        |
+|          |     - `Pull Request #250: Develop 9.3.0 <https://gitlab.com/tango-controls/pytango/-/merge_requests/250>`_                                                                          |
+|          |     - `Pull Request #258: Change Travis CI builds to xenial <https://gitlab.com/tango-controls/pytango/-/merge_requests/258>`_                                                      |
 |          |                                                                                                                                                                                     |
 |          | Bug fixes:                                                                                                                                                                          |
-|          |     - `Pull Request #245: Change for collections abstract base class <https://gitlab.com/tango-controls/pytango/~/merge_requests/245>`_                                             |
-|          |     - `Pull Request #247: Use IP address instead of hostname (fix #246) <https://gitlab.com/tango-controls/pytango/~/merge_requests/247>`_                                          |
-|          |     - `Pull Request #252: Fix wrong link to tango dependency (#235) <https://gitlab.com/tango-controls/pytango/~/merge_requests/252>`_                                              |
-|          |     - `Pull Request #254: Fix mapping of AttrWriteType WT_UNKNOWN <https://gitlab.com/tango-controls/pytango/~/merge_requests/254>`_                                                |
-|          |     - `Pull Request #257: Fix some docs and docstrings <https://gitlab.com/tango-controls/pytango/~/merge_requests/257>`_                                                           |
-|          |     - `Pull Request #260: add ApiUtil.cleanup() <https://gitlab.com/tango-controls/pytango/~/merge_requests/260>`_                                                                  |
-|          |     - `Pull Request #262: Fix compile error under Linux <https://gitlab.com/tango-controls/pytango/~/merge_requests/262>`_                                                          |
-|          |     - `Pull Request #263: Fix #251: Python 2 vs Python 3: DevString with bytes <https://gitlab.com/tango-controls/pytango/~/merge_requests/263>`_                                   |
+|          |     - `Pull Request #245: Change for collections abstract base class <https://gitlab.com/tango-controls/pytango/-/merge_requests/245>`_                                             |
+|          |     - `Pull Request #247: Use IP address instead of hostname (fix #246) <https://gitlab.com/tango-controls/pytango/-/merge_requests/247>`_                                          |
+|          |     - `Pull Request #252: Fix wrong link to tango dependency (#235) <https://gitlab.com/tango-controls/pytango/-/merge_requests/252>`_                                              |
+|          |     - `Pull Request #254: Fix mapping of AttrWriteType WT_UNKNOWN <https://gitlab.com/tango-controls/pytango/-/merge_requests/254>`_                                                |
+|          |     - `Pull Request #257: Fix some docs and docstrings <https://gitlab.com/tango-controls/pytango/-/merge_requests/257>`_                                                           |
+|          |     - `Pull Request #260: add ApiUtil.cleanup() <https://gitlab.com/tango-controls/pytango/-/merge_requests/260>`_                                                                  |
+|          |     - `Pull Request #262: Fix compile error under Linux <https://gitlab.com/tango-controls/pytango/-/merge_requests/262>`_                                                          |
+|          |     - `Pull Request #263: Fix #251: Python 2 vs Python 3: DevString with bytes <https://gitlab.com/tango-controls/pytango/-/merge_requests/263>`_                                   |
 |          |                                                                                                                                                                                     |
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | 9.2.5    | 9.2.5 release.                                                                                                                                                                      |
 |          |                                                                                                                                                                                     |
 |          | Changes:                                                                                                                                                                            |
-|          |     - `Pull Request #212: Skip databaseds backends in PyTango compatibility module  <https://gitlab.com/tango-controls/pytango/~/merge_requests/212>`_                              |
-|          |     - `Pull Request #221: DevEnum attributes can now be directly assigned labels <https://gitlab.com/tango-controls/pytango/~/merge_requests/221>`_                                 |
-|          |     - `Pull Request #236: Cleanup db_access module  <https://gitlab.com/tango-controls/pytango/~/merge_requests/236>`_                                                              |
-|          |     - `Pull Request #237: Add info about how to release a new version  <https://gitlab.com/tango-controls/pytango/~/merge_requests/237>`_                                           |
+|          |     - `Pull Request #212: Skip databaseds backends in PyTango compatibility module  <https://gitlab.com/tango-controls/pytango/-/merge_requests/212>`_                              |
+|          |     - `Pull Request #221: DevEnum attributes can now be directly assigned labels <https://gitlab.com/tango-controls/pytango/-/merge_requests/221>`_                                 |
+|          |     - `Pull Request #236: Cleanup db_access module  <https://gitlab.com/tango-controls/pytango/-/merge_requests/236>`_                                                              |
+|          |     - `Pull Request #237: Add info about how to release a new version  <https://gitlab.com/tango-controls/pytango/-/merge_requests/237>`_                                           |
 |          |                                                                                                                                                                                     |
 |          | Bug fixes:                                                                                                                                                                          |
-|          |     - `Pull Request #209 (issue #207): Fix documentation warnings  <https://gitlab.com/tango-controls/pytango/~/merge_requests/209>`_                                               |
-|          |     - `Pull Request #211: Yet another fix to the gevent threadpool error wrapping  <https://gitlab.com/tango-controls/pytango/~/merge_requests/211>`_                               |
-|          |     - `Pull Request #214 (issue #213): DevEncoded attribute should produce a bytes object in python 3  <https://gitlab.com/tango-controls/pytango/~/merge_requests/214>`_           |
-|          |     - `Pull Request #219: Fixing icons in documentation  <https://gitlab.com/tango-controls/pytango/~/merge_requests/219>`_                                                         |
-|          |     - `Pull Request #220: Fix 'DevFailed' object does not support indexing <https://gitlab.com/tango-controls/pytango/~/merge_requests/220>`_                                       |
-|          |     - `Pull Request #225 (issue #215): Fix exception propagation in python 3  <https://gitlab.com/tango-controls/pytango/~/merge_requests/225>`_                                    |
-|          |     - `Pull Request #226 (issue #216): Add missing converter from python bytes to char*  <https://gitlab.com/tango-controls/pytango/~/merge_requests/226>`_                         |
-|          |     - `Pull Request #227: Gevent issue #1260 should be fixed by now  <https://gitlab.com/tango-controls/pytango/~/merge_requests/227>`_                                             |
-|          |     - `Pull Request #232: use special case-insensitive weak values dictionary for Tango nodes <https://gitlab.com/tango-controls/pytango/~/merge_requests/232>`_                    |
+|          |     - `Pull Request #209 (issue #207): Fix documentation warnings  <https://gitlab.com/tango-controls/pytango/-/merge_requests/209>`_                                               |
+|          |     - `Pull Request #211: Yet another fix to the gevent threadpool error wrapping  <https://gitlab.com/tango-controls/pytango/-/merge_requests/211>`_                               |
+|          |     - `Pull Request #214 (issue #213): DevEncoded attribute should produce a bytes object in python 3  <https://gitlab.com/tango-controls/pytango/-/merge_requests/214>`_           |
+|          |     - `Pull Request #219: Fixing icons in documentation  <https://gitlab.com/tango-controls/pytango/-/merge_requests/219>`_                                                         |
+|          |     - `Pull Request #220: Fix 'DevFailed' object does not support indexing <https://gitlab.com/tango-controls/pytango/-/merge_requests/220>`_                                       |
+|          |     - `Pull Request #225 (issue #215): Fix exception propagation in python 3  <https://gitlab.com/tango-controls/pytango/-/merge_requests/225>`_                                    |
+|          |     - `Pull Request #226 (issue #216): Add missing converter from python bytes to char*  <https://gitlab.com/tango-controls/pytango/-/merge_requests/226>`_                         |
+|          |     - `Pull Request #227: Gevent issue #1260 should be fixed by now  <https://gitlab.com/tango-controls/pytango/-/merge_requests/227>`_                                             |
+|          |     - `Pull Request #232: use special case-insensitive weak values dictionary for Tango nodes <https://gitlab.com/tango-controls/pytango/-/merge_requests/232>`_                    |
 |          |                                                                                                                                                                                     |
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | 9.2.4    | 9.2.4 release.                                                                                                                                                                      |
 |          |                                                                                                                                                                                     |
 |          | Changes:                                                                                                                                                                            |
-|          |     - `Pull Request #194 (issue #188): Easier access to DevEnum attribute using python enum <https://gitlab.com/tango-controls/pytango/~/merge_requests/194>`_                      |
-|          |     - `Pull Request #199 (issue #195): Support python enum as dtype argument for attributes <https://gitlab.com/tango-controls/pytango/~/merge_requests/199>`_                      |
-|          |     - `Pull Request #205 (issue #202): Python 3.7 compatibility <https://gitlab.com/tango-controls/pytango/~/merge_requests/205>`_                                                  |
+|          |     - `Pull Request #194 (issue #188): Easier access to DevEnum attribute using python enum <https://gitlab.com/tango-controls/pytango/-/merge_requests/194>`_                      |
+|          |     - `Pull Request #199 (issue #195): Support python enum as dtype argument for attributes <https://gitlab.com/tango-controls/pytango/-/merge_requests/199>`_                      |
+|          |     - `Pull Request #205 (issue #202): Python 3.7 compatibility <https://gitlab.com/tango-controls/pytango/-/merge_requests/205>`_                                                  |
 |          |                                                                                                                                                                                     |
 |          | Bug fixes:                                                                                                                                                                          |
-|          |     - `Pull Request #193 (issue #192): Fix a gevent green mode memory leak introduced in v9.2.3 <https://gitlab.com/tango-controls/pytango/~/merge_requests/193>`_                  |
+|          |     - `Pull Request #193 (issue #192): Fix a gevent green mode memory leak introduced in v9.2.3 <https://gitlab.com/tango-controls/pytango/-/merge_requests/193>`_                  |
 |          |                                                                                                                                                                                     |
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | 9.2.3    | 9.2.3 release.                                                                                                                                                                      |
 |          |                                                                                                                                                                                     |
 |          | Changes:                                                                                                                                                                            |
-|          |     - `Pull Request #169: Use tango-controls theme for the documentation <https://gitlab.com/tango-controls/pytango/~/merge_requests/169>`_                                         |
-|          |     - `Pull Request #170 (issue #171): Use a private gevent ThreadPool <https://gitlab.com/tango-controls/pytango/~/merge_requests/170>`_                                           |
-|          |     - `Pull Request #180: Use same default encoding for python2 and python3 (utf-8) <https://gitlab.com/tango-controls/pytango/~/merge_requests/180>`_                              |
+|          |     - `Pull Request #169: Use tango-controls theme for the documentation <https://gitlab.com/tango-controls/pytango/-/merge_requests/169>`_                                         |
+|          |     - `Pull Request #170 (issue #171): Use a private gevent ThreadPool <https://gitlab.com/tango-controls/pytango/-/merge_requests/170>`_                                           |
+|          |     - `Pull Request #180: Use same default encoding for python2 and python3 (utf-8) <https://gitlab.com/tango-controls/pytango/-/merge_requests/180>`_                              |
 |          |                                                                                                                                                                                     |
 |          | Bug fixes:                                                                                                                                                                          |
-|          |     - `Pull Request #178 (issue #177): Make CmdDoneEvent.argout writable <https://gitlab.com/tango-controls/pytango/~/merge_requests/178>`_                                         |
-|          |     - `Pull Request #178: Add GIL control for ApiUtil.get_asynch_replies <https://gitlab.com/tango-controls/pytango/~/merge_requests/178>`_                                         |
-|          |     - `Pull Request #187 (issue #186): Fix and extend client green mode <https://gitlab.com/tango-controls/pytango/~/merge_requests/187>`_                                          |
+|          |     - `Pull Request #178 (issue #177): Make CmdDoneEvent.argout writable <https://gitlab.com/tango-controls/pytango/-/merge_requests/178>`_                                         |
+|          |     - `Pull Request #178: Add GIL control for ApiUtil.get_asynch_replies <https://gitlab.com/tango-controls/pytango/-/merge_requests/178>`_                                         |
+|          |     - `Pull Request #187 (issue #186): Fix and extend client green mode <https://gitlab.com/tango-controls/pytango/-/merge_requests/187>`_                                          |
 |          |                                                                                                                                                                                     |
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | 9.2.2    | 9.2.2 release.                                                                                                                                                                      |
 |          |                                                                                                                                                                                     |
 |          | Features:                                                                                                                                                                           |
-|          |     - `Pull Request #104: Pipe Events <https://gitlab.com/tango-controls/pytango/~/merge_requests/104>`_                                                                            |
-|          |     - `Pull Request #106: Implement pipe write (client and server, issue #9) <https://gitlab.com/tango-controls/pytango/~/merge_requests/106>`_                                     |
-|          |     - `Pull Request #122: Dynamic commands <https://gitlab.com/tango-controls/pytango/~/merge_requests/122>`_                                                                       |
-|          |     - `Pull Request #124: Add forward attribute <https://gitlab.com/tango-controls/pytango/~/merge_requests/124>`_                                                                  |
-|          |     - `Pull Request #129: Implement mandatory property (issue #30) <https://gitlab.com/tango-controls/pytango/~/merge_requests/129>`_                                               |
+|          |     - `Pull Request #104: Pipe Events <https://gitlab.com/tango-controls/pytango/-/merge_requests/104>`_                                                                            |
+|          |     - `Pull Request #106: Implement pipe write (client and server, issue #9) <https://gitlab.com/tango-controls/pytango/-/merge_requests/106>`_                                     |
+|          |     - `Pull Request #122: Dynamic commands <https://gitlab.com/tango-controls/pytango/-/merge_requests/122>`_                                                                       |
+|          |     - `Pull Request #124: Add forward attribute <https://gitlab.com/tango-controls/pytango/-/merge_requests/124>`_                                                                  |
+|          |     - `Pull Request #129: Implement mandatory property (issue #30) <https://gitlab.com/tango-controls/pytango/-/merge_requests/129>`_                                               |
 |          |                                                                                                                                                                                     |
 |          | Changes:                                                                                                                                                                            |
-|          |     - `Pull Request #109: Device Interface Change Events <https://gitlab.com/tango-controls/pytango/~/merge_requests/109>`_                                                         |
-|          |     - `Pull Request #113: Adding asyncio green mode documentation and a how-to on contributing <https://gitlab.com/tango-controls/pytango/~/merge_requests/113>`_                   |
-|          |     - `Pull Request #114: Added PEP8-ified files in tango module. <https://gitlab.com/tango-controls/pytango/~/merge_requests/114>`_                                                |
-|          |     - `Pull Request #115: Commands polling tests (client and server) <https://gitlab.com/tango-controls/pytango/~/merge_requests/115>`_                                             |
-|          |     - `Pull Request #116: Attribute polling tests (client and server) <https://gitlab.com/tango-controls/pytango/~/merge_requests/116>`_                                            |
-|          |     - `Pull Request #117: Use official tango-controls conda channel <https://gitlab.com/tango-controls/pytango/~/merge_requests/117>`_                                              |
-|          |     - `Pull Request #125: Forward attribute example <https://gitlab.com/tango-controls/pytango/~/merge_requests/125>`_                                                              |
-|          |     - `Pull Request #134: Linting pytango (with pylint + flake8) <https://gitlab.com/tango-controls/pytango/~/merge_requests/134>`_                                                 |
-|          |     - `Pull Request #137: Codacy badge in README and code quality policy in How to Contribute <https://gitlab.com/tango-controls/pytango/~/merge_requests/137>`_                    |
-|          |     - `Pull Request #143: Added missing PipeEventData & DevIntrChangeEventData <https://gitlab.com/tango-controls/pytango/~/merge_requests/143>`_                                   |
+|          |     - `Pull Request #109: Device Interface Change Events <https://gitlab.com/tango-controls/pytango/-/merge_requests/109>`_                                                         |
+|          |     - `Pull Request #113: Adding asyncio green mode documentation and a how-to on contributing <https://gitlab.com/tango-controls/pytango/-/merge_requests/113>`_                   |
+|          |     - `Pull Request #114: Added PEP8-ified files in tango module. <https://gitlab.com/tango-controls/pytango/-/merge_requests/114>`_                                                |
+|          |     - `Pull Request #115: Commands polling tests (client and server) <https://gitlab.com/tango-controls/pytango/-/merge_requests/115>`_                                             |
+|          |     - `Pull Request #116: Attribute polling tests (client and server) <https://gitlab.com/tango-controls/pytango/-/merge_requests/116>`_                                            |
+|          |     - `Pull Request #117: Use official tango-controls conda channel <https://gitlab.com/tango-controls/pytango/-/merge_requests/117>`_                                              |
+|          |     - `Pull Request #125: Forward attribute example <https://gitlab.com/tango-controls/pytango/-/merge_requests/125>`_                                                              |
+|          |     - `Pull Request #134: Linting pytango (with pylint + flake8) <https://gitlab.com/tango-controls/pytango/-/merge_requests/134>`_                                                 |
+|          |     - `Pull Request #137: Codacy badge in README and code quality policy in How to Contribute <https://gitlab.com/tango-controls/pytango/-/merge_requests/137>`_                    |
+|          |     - `Pull Request #143: Added missing PipeEventData & DevIntrChangeEventData <https://gitlab.com/tango-controls/pytango/-/merge_requests/143>`_                                   |
 |          |                                                                                                                                                                                     |
 |          | Bug fixes:                                                                                                                                                                          |
-|          |     - `Pull Request #85 (issue #84): Fix Gevent ThreadPool exceptions <https://gitlab.com/tango-controls/pytango/~/merge_requests/85>`_                                             |
-|          |     - `Pull Request #94 (issue #93): Fix issues in setup file (GCC-7 build) <https://gitlab.com/tango-controls/pytango/~/merge_requests/94>`_                                       |
-|          |     - `Pull Request #96: Filter badges from the long description <https://gitlab.com/tango-controls/pytango/~/merge_requests/96>`_                                                  |
-|          |     - `Pull Request #97: Fix/linker options <https://gitlab.com/tango-controls/pytango/~/merge_requests/97>`_                                                                       |
-|          |     - `Pull Request #98: Refactor green mode for client and server APIs <https://gitlab.com/tango-controls/pytango/~/merge_requests/98>`_                                           |
-|          |     - `Pull Request #101 (issue #100) check for None and return null string <https://gitlab.com/tango-controls/pytango/~/merge_requests/101>`_                                      |
-|          |     - `Pull Request #102: Update server tests <https://gitlab.com/tango-controls/pytango/~/merge_requests/102>`_                                                                    |
-|          |     - `Pull Request #103: Cache build objects to optimize travis builds <https://gitlab.com/tango-controls/pytango/~/merge_requests/103>`_                                          |
-|          |     - `Pull Request #112 (issue #111): Use _DeviceClass as tango device class constructor <https://gitlab.com/tango-controls/pytango/~/merge_requests/112>`_                        |
-|          |     - `Pull Request #128 (issue #127): Set default worker in server.py <https://gitlab.com/tango-controls/pytango/~/merge_requests/128>`_                                           |
-|          |     - `Pull Request #135: Better exception handling in server.run and test context (issue #131) <https://gitlab.com/tango-controls/pytango/~/merge_requests/135>`_                  |
-|          |     - `Pull Request #142 (issue #142): Added missing PipeEventData & DevIntrChangeEventData <https://gitlab.com/tango-controls/pytango/~/merge_requests/143>`_                      |
-|          |     - `Pull Request #148 (issue #144): Expose utils helpers <https://gitlab.com/tango-controls/pytango/~/merge_requests/148>`_                                                      |
-|          |     - `Pull Request #149: Fix return value of proxy.subscribe_event <https://gitlab.com/tango-controls/pytango/~/merge_requests/149>`_                                              |
-|          |     - `Pull Request #158 (issue #155): Fix timestamp and casing in utils.EventCallback <https://gitlab.com/tango-controls/pytango/~/merge_requests/158>`_                           |
+|          |     - `Pull Request #85 (issue #84): Fix Gevent ThreadPool exceptions <https://gitlab.com/tango-controls/pytango/-/merge_requests/85>`_                                             |
+|          |     - `Pull Request #94 (issue #93): Fix issues in setup file (GCC-7 build) <https://gitlab.com/tango-controls/pytango/-/merge_requests/94>`_                                       |
+|          |     - `Pull Request #96: Filter badges from the long description <https://gitlab.com/tango-controls/pytango/-/merge_requests/96>`_                                                  |
+|          |     - `Pull Request #97: Fix/linker options <https://gitlab.com/tango-controls/pytango/-/merge_requests/97>`_                                                                       |
+|          |     - `Pull Request #98: Refactor green mode for client and server APIs <https://gitlab.com/tango-controls/pytango/-/merge_requests/98>`_                                           |
+|          |     - `Pull Request #101 (issue #100) check for None and return null string <https://gitlab.com/tango-controls/pytango/-/merge_requests/101>`_                                      |
+|          |     - `Pull Request #102: Update server tests <https://gitlab.com/tango-controls/pytango/-/merge_requests/102>`_                                                                    |
+|          |     - `Pull Request #103: Cache build objects to optimize travis builds <https://gitlab.com/tango-controls/pytango/-/merge_requests/103>`_                                          |
+|          |     - `Pull Request #112 (issue #111): Use _DeviceClass as tango device class constructor <https://gitlab.com/tango-controls/pytango/-/merge_requests/112>`_                        |
+|          |     - `Pull Request #128 (issue #127): Set default worker in server.py <https://gitlab.com/tango-controls/pytango/-/merge_requests/128>`_                                           |
+|          |     - `Pull Request #135: Better exception handling in server.run and test context (issue #131) <https://gitlab.com/tango-controls/pytango/-/merge_requests/135>`_                  |
+|          |     - `Pull Request #142 (issue #142): Added missing PipeEventData & DevIntrChangeEventData <https://gitlab.com/tango-controls/pytango/-/merge_requests/143>`_                      |
+|          |     - `Pull Request #148 (issue #144): Expose utils helpers <https://gitlab.com/tango-controls/pytango/-/merge_requests/148>`_                                                      |
+|          |     - `Pull Request #149: Fix return value of proxy.subscribe_event <https://gitlab.com/tango-controls/pytango/-/merge_requests/149>`_                                              |
+|          |     - `Pull Request #158 (issue #155): Fix timestamp and casing in utils.EventCallback <https://gitlab.com/tango-controls/pytango/-/merge_requests/158>`_                           |
 |          |                                                                                                                                                                                     |
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | 9.2.1    | 9.2.1 release.                                                                                                                                                                      |
 |          |                                                                                                                                                                                     |
 |          | Features:                                                                                                                                                                           |
-|          |     - `Pull Requests #70: Add test_context and test_utils modules, used for pytango unit-testing <https://gitlab.com/tango-controls/pytango/~/issues/70>`_                          |
+|          |     - `Pull Requests #70: Add test_context and test_utils modules, used for pytango unit-testing <https://gitlab.com/tango-controls/pytango/-/issues/70>`_                          |
 |          |                                                                                                                                                                                     |
 |          | Changes:                                                                                                                                                                            |
-|          |     - `Issue #51: Refactor platform specific code in setup file <https://gitlab.com/tango-controls/pytango/~/issues/51>`_                                                           |
-|          |     - `Issue #67: Comply with PEP 440 for pre-releases <https://gitlab.com/tango-controls/pytango/~/issues/67>`_                                                                    |
-|          |     - `Pull Request #70: Add unit-testing for the server API <https://gitlab.com/tango-controls/pytango/~/issues/70>`_                                                              |
-|          |     - `Pull Request #70: Configure Travis CI for continuous integration <https://gitlab.com/tango-controls/pytango/~/issues/70>`_                                                   |
-|          |     - `Pull Request #76: Add unit-testing for the client API <https://gitlab.com/tango-controls/pytango/~/issues/76>`_                                                              |
-|          |     - `Pull Request #78: Update the python version classifiers <https://gitlab.com/tango-controls/pytango/~/issues/78>`_                                                            |
-|          |     - `Pull Request #80: Move tango object server to its own module <https://gitlab.com/tango-controls/pytango/~/issues/80>`_                                                       |
-|          |     - `Pull Request #90: The metaclass definition for tango devices is no longer mandatory <https://gitlab.com/tango-controls/pytango/~/issues/90>`_                                |
+|          |     - `Issue #51: Refactor platform specific code in setup file <https://gitlab.com/tango-controls/pytango/-/issues/51>`_                                                           |
+|          |     - `Issue #67: Comply with PEP 440 for pre-releases <https://gitlab.com/tango-controls/pytango/-/issues/67>`_                                                                    |
+|          |     - `Pull Request #70: Add unit-testing for the server API <https://gitlab.com/tango-controls/pytango/-/issues/70>`_                                                              |
+|          |     - `Pull Request #70: Configure Travis CI for continuous integration <https://gitlab.com/tango-controls/pytango/-/issues/70>`_                                                   |
+|          |     - `Pull Request #76: Add unit-testing for the client API <https://gitlab.com/tango-controls/pytango/-/issues/76>`_                                                              |
+|          |     - `Pull Request #78: Update the python version classifiers <https://gitlab.com/tango-controls/pytango/-/issues/78>`_                                                            |
+|          |     - `Pull Request #80: Move tango object server to its own module <https://gitlab.com/tango-controls/pytango/-/issues/80>`_                                                       |
+|          |     - `Pull Request #90: The metaclass definition for tango devices is no longer mandatory <https://gitlab.com/tango-controls/pytango/-/issues/90>`_                                |
 |          |                                                                                                                                                                                     |
 |          | Bug fixes:                                                                                                                                                                          |
-|          |     - `Issue #24: Fix dev_status dangling pointer bug <https://gitlab.com/tango-controls/pytango/~/issues/24>`_                                                                     |
-|          |     - `Issue #57: Fix dev_state/status to be gevent safe <https://gitlab.com/tango-controls/pytango/~/issues/57>`_                                                                  |
-|          |     - `Issue #58: Server gevent mode internal call hangs <https://gitlab.com/tango-controls/pytango/~/issues/58>`_                                                                  |
-|          |     - `Pull Request #62: Several fixes in tango.databaseds <https://gitlab.com/tango-controls/pytango/~/issues/62>`_                                                                |
-|          |     - `Pull Request #63: Follow up on issue #21 (Fix Group.get_device method) <https://gitlab.com/tango-controls/pytango/~/issues/63>`_                                             |
-|          |     - `Issue #64: Fix AttributeProxy.__dev_proxy to be initialized with python internals <https://gitlab.com/tango-controls/pytango/~/issues/64>`_                                  |
-|          |     - `Issue #74: Fix hanging with an asynchronous tango server fails to start <https://gitlab.com/tango-controls/pytango/~/issues/74>`_                                            |
-|          |     - `Pull Request #81: Fix DeviceImpl documentation <https://gitlab.com/tango-controls/pytango/~/issues/81>`_                                                                     |
-|          |     - `Issue #82: Fix attribute completion for device proxies with IPython >= 4 <https://gitlab.com/tango-controls/pytango/~/issues/82>`_                                           |
-|          |     - `Issue #84: Fix gevent threadpool exceptions <https://gitlab.com/tango-controls/pytango/~/issues/84>`_                                                                        |
+|          |     - `Issue #24: Fix dev_status dangling pointer bug <https://gitlab.com/tango-controls/pytango/-/issues/24>`_                                                                     |
+|          |     - `Issue #57: Fix dev_state/status to be gevent safe <https://gitlab.com/tango-controls/pytango/-/issues/57>`_                                                                  |
+|          |     - `Issue #58: Server gevent mode internal call hangs <https://gitlab.com/tango-controls/pytango/-/issues/58>`_                                                                  |
+|          |     - `Pull Request #62: Several fixes in tango.databaseds <https://gitlab.com/tango-controls/pytango/-/issues/62>`_                                                                |
+|          |     - `Pull Request #63: Follow up on issue #21 (Fix Group.get_device method) <https://gitlab.com/tango-controls/pytango/-/issues/63>`_                                             |
+|          |     - `Issue #64: Fix AttributeProxy.__dev_proxy to be initialized with python internals <https://gitlab.com/tango-controls/pytango/-/issues/64>`_                                  |
+|          |     - `Issue #74: Fix hanging with an asynchronous tango server fails to start <https://gitlab.com/tango-controls/pytango/-/issues/74>`_                                            |
+|          |     - `Pull Request #81: Fix DeviceImpl documentation <https://gitlab.com/tango-controls/pytango/-/issues/81>`_                                                                     |
+|          |     - `Issue #82: Fix attribute completion for device proxies with IPython >= 4 <https://gitlab.com/tango-controls/pytango/-/issues/82>`_                                           |
+|          |     - `Issue #84: Fix gevent threadpool exceptions <https://gitlab.com/tango-controls/pytango/-/issues/84>`_                                                                        |
 |          |                                                                                                                                                                                     |
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | 9.2.0    | 9.2.0 release.                                                                                                                                                                      |
 |          |                                                                                                                                                                                     |
 |          | Features:                                                                                                                                                                           |
 |          |                                                                                                                                                                                     |
-|          |     - `Issue #37: Add display_level and polling_period as optional arguments to command decorator <https://gitlab.com/tango-controls/pytango/~/issues/37>`_                         |
+|          |     - `Issue #37: Add display_level and polling_period as optional arguments to command decorator <https://gitlab.com/tango-controls/pytango/-/issues/37>`_                         |
 |          |                                                                                                                                                                                     |
 |          | Bug fixes:                                                                                                                                                                          |
 |          |                                                                                                                                                                                     |
 |          |     - Fix cache problem when using `DeviceProxy` through an `AttributeProxy`                                                                                                        |
 |          |     - Fix compilation on several platforms                                                                                                                                          |
-|          |     - `Issue #19: Defining new members in DeviceProxy has side effects <https://gitlab.com/tango-controls/pytango/~/issues/19>`_                                                    |
+|          |     - `Issue #19: Defining new members in DeviceProxy has side effects <https://gitlab.com/tango-controls/pytango/-/issues/19>`_                                                    |
 |          |     - Fixed bug in `beacon.add_device`                                                                                                                                              |
 |          |     - Fix for `get_device_list` if server_name is '*'                                                                                                                               |
 |          |     - Fix `get_device_attribute_property2` if `prop_attr` is not `None`                                                                                                             |
 |          |     - Accept `StdStringVector` in `put_device_property`                                                                                                                             |
 |          |     - Map 'int' to DevLong64 and 'uint' to DevULong64                                                                                                                               |
-|          |     - `Issue #22: Fix push_data_ready_event() deadlock <https://gitlab.com/tango-controls/pytango/~/issues/22>`_                                                                    |
-|          |     - `Issue #28: Fix compilation error for constants.cpp <https://gitlab.com/tango-controls/pytango/~/issues/28>`_                                                                 |
-|          |     - `Issue #21: Fix Group.get_device method <https://gitlab.com/tango-controls/pytango/~/issues/21>`_                                                                             |
-|          |     - `Issue #33: Fix internal server documentation <https://gitlab.com/tango-controls/pytango/~/issues/33>`_                                                                       |
+|          |     - `Issue #22: Fix push_data_ready_event() deadlock <https://gitlab.com/tango-controls/pytango/-/issues/22>`_                                                                    |
+|          |     - `Issue #28: Fix compilation error for constants.cpp <https://gitlab.com/tango-controls/pytango/-/issues/28>`_                                                                 |
+|          |     - `Issue #21: Fix Group.get_device method <https://gitlab.com/tango-controls/pytango/-/issues/21>`_                                                                             |
+|          |     - `Issue #33: Fix internal server documentation <https://gitlab.com/tango-controls/pytango/-/issues/33>`_                                                                       |
 |          |                                                                                                                                                                                     |
 |          | Changes:                                                                                                                                                                            |
 |          |     - Move ITango to another project                                                                                                                                                |
@@ -363,19 +363,19 @@ Version history
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | 8.1.9    | Features:                                                                                                                                                                           |
 |          |                                                                                                                                                                                     |
-|          |     - `PR #2: asyncio support for both client and server API <https://gitlab.com/tango-controls/pytango/~/merge_requests/2>`_                                                       |
-|          |     - `PR #6: Expose AutoTangoMonitor and AutoTangoAllowThreads <https://gitlab.com/tango-controls/pytango/~/merge_requests/6>`_                                                    |
+|          |     - `PR #2: asyncio support for both client and server API <https://gitlab.com/tango-controls/pytango/-/merge_requests/2>`_                                                       |
+|          |     - `PR #6: Expose AutoTangoMonitor and AutoTangoAllowThreads <https://gitlab.com/tango-controls/pytango/-/merge_requests/6>`_                                                    |
 |          |                                                                                                                                                                                     |
 |          | Bug fixes:                                                                                                                                                                          |
 |          |                                                                                                                                                                                     |
-|          |     - `PR #31: Get -l flags from pkg-config <https://gitlab.com/tango-controls/pytango/~/merge_requests/31>`_                                                                       |
-|          |     - `PR #15: Rename itango script to itango3 for python3 <https://gitlab.com/tango-controls/pytango/~/merge_requests/15>`_                                                        |
-|          |     - `PR #14: Avoid deprecation warning with IPython 4.x <https://gitlab.com/tango-controls/pytango/~/merge_requests/14>`_                                                         |
+|          |     - `PR #31: Get -l flags from pkg-config <https://gitlab.com/tango-controls/pytango/-/merge_requests/31>`_                                                                       |
+|          |     - `PR #15: Rename itango script to itango3 for python3 <https://gitlab.com/tango-controls/pytango/-/merge_requests/15>`_                                                        |
+|          |     - `PR #14: Avoid deprecation warning with IPython 4.x <https://gitlab.com/tango-controls/pytango/-/merge_requests/14>`_                                                         |
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | 8.1.8    | Features:                                                                                                                                                                           |
 |          |                                                                                                                                                                                     |
-|          |     - `PR #3: Add a run_server class method to Device <https://gitlab.com/tango-controls/pytango/~/merge_requests/3>`_                                                              |
-|          |     - `PR #4: Add device inheritance <https://gitlab.com/tango-controls/pytango/~/merge_requests/4>`_                                                                               |
+|          |     - `PR #3: Add a run_server class method to Device <https://gitlab.com/tango-controls/pytango/-/merge_requests/3>`_                                                              |
+|          |     - `PR #4: Add device inheritance <https://gitlab.com/tango-controls/pytango/-/merge_requests/4>`_                                                                               |
 |          |     - `110:  device property with auto update in database <https://sourceforge.net/p/tango-cs/feature-requests/110>`_                                                               |
 |          |                                                                                                                                                                                     |
 |          | Bug fixes:                                                                                                                                                                          |
@@ -677,3 +677,4 @@ Version history
 |          |     - Improved compilation chapter                                                                                                                                                  |
 |          |     - Improved migration information                                                                                                                                                |
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
