@@ -16,5 +16,5 @@ ITango is available since PyTango 7.1.2 and has been moved to a separate
 project since PyTango 9.2.0:
 
 * `package and instructions on PyPI <http://pypi.python.org/pypi/itango>`_
-* `sources on GitHub  <https://github.com/tango-cs/itango>`_
+* `sources on GitLab  <https://gitlab.com/tango-controls/itango>`_
 * `documentation on pythonhosted <http://pythonhosted.org/itango>`_

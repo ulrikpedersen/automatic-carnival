@@ -146,7 +146,7 @@ All contributions,  `PR and bug reports`_ are welcome, please see: `How to Contr
 
 .. _Tango: http://tango-controls.org
 .. _Tango C++ API: https://tango-controls.github.io/cppTango-docs/index.html
-.. _PyTango: http://github.com/tango-cs/pytango
+.. _PyTango: http://gitlab.com/tango-cs/pytango
 .. _PyPI: http://pypi.python.org/pypi/pytango
 
 .. _libtango: http://tango-controls.org/downloads
