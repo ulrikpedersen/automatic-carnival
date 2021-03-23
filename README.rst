@@ -156,7 +156,7 @@ All contributions,  `PR and bug reports`_ are welcome, please see: `How to Contr
 .. _setuptools: http://pypi.python.org/pypi/setuptools
 .. _sphinx: http://pypi.python.org/pypi/sphinx
 .. _futures: http://pypi.python.org/pypi/futures
-.. _gevent: http://pypi.python.org/pypi/gevents
+.. _gevent: http://pypi.python.org/pypi/gevent
 
 .. _ITango: http://pypi.python.org/pypi/itango
 .. _IPython: http://ipython.org
