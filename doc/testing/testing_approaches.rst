@@ -131,7 +131,7 @@ Figure 5.  A schematic diagram showing the agents involved when testing multiple
 
 Examples:
 
-* `MultiDeviceTestContext with fixtures <https://github.com/tango-controls/pytango/tree/develop/examples/multidevicetestcontext>`_
+* `MultiDeviceTestContext with fixtures <https://gitlab.com/tango-controls/pytango/-/tree/develop/examples/multidevicetestcontext>`_
 
 Issues
 ------

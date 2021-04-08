@@ -178,7 +178,7 @@ def __build_to_tango_type():
             CmdArgType.DevULong: numpy.uint32,
             CmdArgType.DevLong64: numpy.int64,
             CmdArgType.DevULong64: numpy.uint64,
-            CmdArgType.DevString: numpy.str,
+            CmdArgType.DevString: str,
             CmdArgType.DevDouble: numpy.float64,
             CmdArgType.DevFloat: numpy.float32,
         }

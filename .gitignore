@@ -55,3 +55,6 @@ doc/_build/
 
 # PyCharm projects files
 .idea
+
+# Visual Studio Code projects files
+.vscode
