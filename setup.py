@@ -45,15 +45,6 @@ try:
 except ImportError:
     numpy = None
 
-if numpy:
-    try:
-        from numpy.distutils.ccompiler import CCompiler_compile
-        import distutils.ccompiler
-        distutils.ccompiler.CCompiler.compile = CCompiler_compile
-        print("Using numpy-patched parallel compiler")
-    except ImportError:
-        pass
-
 # Platform constants
 POSIX = "posix" in os.name
 WINDOWS = "nt" in os.name
@@ -61,9 +52,20 @@ IS64 = 8 * struct.calcsize("P") == 64
 PYTHON_VERSION = sys.version_info
 PYTHON2 = (2,) <= PYTHON_VERSION < (3,)
 PYTHON3 = (3,) <= PYTHON_VERSION < (4,)
+PYTHON35 = (3, 5) <= PYTHON_VERSION < (3, 6)
 
 # Arguments
 TESTING = any(x in sys.argv for x in ["test", "pytest"])
+
+
+if numpy and not PYTHON35:
+    try:
+        from numpy.distutils.ccompiler import CCompiler_compile
+        import distutils.ccompiler
+        distutils.ccompiler.CCompiler.compile = CCompiler_compile
+        print("Using numpy-patched parallel compiler")
+    except ImportError:
+        pass
 
 
 def get_readme(name="README.rst"):
