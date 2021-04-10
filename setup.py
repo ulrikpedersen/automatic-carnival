@@ -45,6 +45,15 @@ try:
 except ImportError:
     numpy = None
 
+if numpy:
+    try:
+        from numpy.distutils.ccompiler import CCompiler_compile
+        import distutils.ccompiler
+        distutils.ccompiler.CCompiler.compile = CCompiler_compile
+        print("Using numpy-patched parallel compiler")
+    except ImportError:
+        pass
+
 # Platform constants
 POSIX = "posix" in os.name
 WINDOWS = "nt" in os.name
