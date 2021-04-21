@@ -498,6 +498,7 @@ def setup_args():
         macros.append(("DISABLE_PYTANGO_NUMPY", None))
     else:
         macros.append(("PYTANGO_NUMPY_VERSION", '"%s"' % numpy.__version__))
+        macros.append(("NPY_NO_DEPRECATED_API", "0"))
 
     if POSIX:
         directories = pkg_config(*sys_libs, **directories)
