@@ -352,7 +352,6 @@ class build_ext(dftbuild_ext):
             ext.extra_compile_args += ["-std=c++0x"]
             ext.define_macros += [("PYTANGO_HAS_UNIQUE_PTR", "1")]
         ext.extra_compile_args += [
-            "-Wno-unused-variable",
             "-Wno-deprecated-declarations",
             "-Wno-maybe-uninitialized",
         ]
