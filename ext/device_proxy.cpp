@@ -583,6 +583,8 @@ namespace PyDeviceProxy
             AutoPythonAllowThreads guard;
             return self.subscribe_event(event, cb, stateless);
         }
+
+        Tango::Except::throw_exception("PyDs_UnexpectedFailure", "Unexpected failure", "subscribe_event_global");
     }
 
     static int subscribe_event_attrib(
