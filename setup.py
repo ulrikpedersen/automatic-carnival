@@ -353,7 +353,6 @@ class build_ext(dftbuild_ext):
             ext.define_macros += [("PYTANGO_HAS_UNIQUE_PTR", "1")]
         ext.extra_compile_args += [
             "-Wno-deprecated-declarations",
-            "-Wno-maybe-uninitialized",
         ]
         dftbuild_ext.build_extension(self, ext)
 
