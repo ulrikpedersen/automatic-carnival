@@ -309,13 +309,13 @@ namespace PyDeviceProxy
         // the Tango C++ API doesnt't provide a way to do it
         bopy::ssize_t n = bopy::len(py_value);
         std::vector < std::string > elem_names;
-        for (size_t i = 0; i < n; ++i) {
+        for (bopy::ssize_t i = 0; i < n; ++i) {
             std::string s = bopy::extract < std::string > (py_value[i]["name"]);
             elem_names.push_back(bopy::extract<std::string>(py_value[i]["name"]));
         }
         obj.set_data_elt_names(elem_names);
 
-        for (size_t i = 0; i < n; ++i) {
+        for (bopy::ssize_t i = 0; i < n; ++i) {
             bopy::object item = py_value[i];
             std::string item_name = bopy::extract<std::string>(item["name"]);
             bopy::object py_item_data = item["value"];
@@ -583,6 +583,8 @@ namespace PyDeviceProxy
             AutoPythonAllowThreads guard;
             return self.subscribe_event(event, cb, stateless);
         }
+
+        Tango::Except::throw_exception("PyDs_UnexpectedFailure", "Unexpected failure", "subscribe_event_global");
     }
 
     static int subscribe_event_attrib(
