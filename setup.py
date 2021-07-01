@@ -549,6 +549,7 @@ def setup_args():
     if PYTHON2:
         tests_require += [
             "configparser < 5",
+            "contextlib2 < 21",
             "futures",
             "importlib_metadata < 3",
             "pyparsing < 3",
