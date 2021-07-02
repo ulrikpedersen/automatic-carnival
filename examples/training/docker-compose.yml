@@ -17,7 +17,7 @@ volumes:
 
 services:
   tangodb:
-    image: artefact.skao.int/ska-tango-images/tango-db:10.4.10
+    image: artefact.skao.int/ska-tango-images-tango-db:10.4.11
     # https://gitlab.com/ska-telescope/ska-tango-images/-/blob/master/docker/tango/tango-db/Dockerfile
     restart: unless-stopped
     network_mode: pytango-training-net
@@ -31,7 +31,7 @@ services:
       - tangodb:/var/lib/mysql
 
   databaseds:
-    image: artefact.skao.int/ska-tango-images/tango-databaseds:5.16.1
+    image: artefact.skao.int/ska-tango-images-tango-databaseds:5.16.1
     # https://gitlab.com/ska-telescope/ska-tango-images/-/blob/master/docker/tango/tango-databaseds/Dockerfile
     restart: unless-stopped
     depends_on:
@@ -56,7 +56,7 @@ services:
       - giop:tcp::10000
 
   tangotest:
-    image: artefact.skao.int/ska-tango-images/tango-test:3.0.2
+    image: artefact.skao.int/ska-tango-images-tango-test:3.0.2
     # https://gitlab.com/ska-telescope/ska-tango-images/-/blob/master/docker/tango/tango-test/Dockerfile
     restart: unless-stopped
     depends_on:
@@ -69,7 +69,7 @@ services:
       test
 
   cli:
-    image: artefact.skao.int/ska-tango-images/tango-itango:9.3.4
+    image: artefact.skao.int/ska-tango-images-tango-itango:9.3.4
     # https://gitlab.com/ska-telescope/ska-tango-images/-/blob/master/docker/tango/tango-itango/Dockerfile
     restart: unless-stopped
     depends_on:
