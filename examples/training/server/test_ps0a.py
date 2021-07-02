@@ -11,4 +11,4 @@ def test_calibrate():
     """Test device calibration and voltage reading."""
     with DeviceTestContext(PowerSupply, process=True) as proxy:
         proxy.calibrate()
-        assert proxy.voltage == 1.23
+        assert proxy.voltage == 1.5

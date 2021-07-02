@@ -16,7 +16,7 @@ class PowerSupply(Device):
 
     @attribute(
         dtype=float,
-        polling_period=1000,  # milliseconds
+        polling_period=3000,  # milliseconds
         rel_change=1e-3)
     def voltage(self):
         noise = -0.05 + 0.1 * random.random()
