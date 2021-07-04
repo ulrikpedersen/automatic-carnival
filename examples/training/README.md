@@ -5,7 +5,7 @@ It is useful to refer to during training exercises.
 
 ## Acknowledgments
 
-Portions of the source code is derived from work by multiple authors:
+Portions of the source code are derived from work by multiple authors:
 - https://github.com/vxgmichel
 - https://github.com/tiagocoutinho
 - https://github.com/ajoubertza
@@ -26,7 +26,7 @@ Container services:
 - **tangodb**: MariaDB database
 - **databaseds**:  Database Device Server, `sys/database/2`
 - **tangotest**:  TangoTest Device Server: `sys/tg_test/1`
-- **ipython**:  Python command line tools, with this folder as a volume mount in `/training`
+- **cli**:  Python command line tools, with this folder as a volume mount in `/training`
 
 ### Docker network
 The docker-compose file requires a Docker network to be created, since `host`
@@ -58,7 +58,7 @@ A few examples are shown below.
 
 ### Start an ipython session
 
-```commandline
+```shell
 docker-compose exec cli ipython3
 
 Python 3.7.3 (default, Jan 22 2021, 20:04:44) 
@@ -86,7 +86,7 @@ uname_result(system='Linux', node='86032deafb5a', release='4.19.121-linuxkit', v
 
 ### Start an itango session
 
-```commandline
+```shell
 docker-compose exec cli itango3
 
 ITango 9.3.3 -- An interactive Tango client.
@@ -112,7 +112,7 @@ Out[3]: -57.588745922974105
 ### Register and run a new device
 
 Start the device:
-```commandline
+```shell
 docker-compose exec cli bash
 
 tango@c5f6dc31dc6b:/training$ cd server/
@@ -124,7 +124,7 @@ Ready to accept request
 ```
 
 While that is running, connect a `DeviceProxy` to it from another ipython session:
-```commandline
+```shell
 docker-compose exec cli ipython3
 
 Python 3.7.3 (default, Jan 22 2021, 20:04:44) 
@@ -147,7 +147,7 @@ Out[4]: 1.23
 
 
 Ensure the gevent package is installed:
-```commandline
+```shell
 docker-compose exec cli pip install gevent
 
 Defaulting to user installation because normal site-packages is not writeable
@@ -156,7 +156,7 @@ Successfully installed gevent-21.1.2 greenlet-1.1.0 zope.event-4.5.0 zope.interf
 ```
 
 Start the power supply simulator:
-```commandline
+```shell
 docker-compose exec cli /training/server/ps-simulator.py
 
 INFO:root:starting simulator...
@@ -164,14 +164,14 @@ INFO:simulator.45000:simulator listenning on ('', 45000)!
 ```
 
 Start the power supply device:
-```commandline
+```shell
 docker-compose exec cli /training/server/ps1.py test
 
 Ready to accept request
 ```
 
 While that is running, connect to it from another ipython session:
-```commandline
+```shell
 docker-compose exec cli ipython3
 
 Python 3.7.3 (default, Jan 22 2021, 20:04:44) 
@@ -192,6 +192,6 @@ In [5]:
 
 ## Webinars
 
-More details of the webinars can found online.
+More details of the webinars can be found online.
 - 4th Tango Kernel webinar - PyTango:  
   https://www.tango-controls.org/community/news/2021/06/10/4th-tango-kernel-webinar-pytango/
