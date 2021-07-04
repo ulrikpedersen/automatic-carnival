@@ -552,6 +552,7 @@ def setup_args():
             "contextlib2 < 21",
             "futures",
             "importlib_metadata < 3",
+            "packaging < 21",
             "pyparsing < 3",
             "pytest < 5",
             "pytest-xdist < 2",
