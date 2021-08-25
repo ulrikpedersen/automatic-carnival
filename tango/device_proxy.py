@@ -407,7 +407,13 @@ def __DeviceProxy__setattr(self, name, value):
             return self.write_pipe(name, value)
 
         try:
-            return super(DeviceProxy, self).__setattr__(name, value)
+            if name in self.__dict__:
+                return super(DeviceProxy, self).__setattr__(name, value)
+            else:
+                raise AttributeError(
+                    "Tried to set non-existent attr {!r} to {!r}".format(
+                        name, value)
+                )
         except Exception as e:
             six.raise_from(e, cause)
     finally:
