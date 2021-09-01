@@ -16,7 +16,7 @@ RUN echo "source activate $(head -1 /tmp/environment.yml | cut -d' ' -f2)" > ~/.
 ENV PATH /opt/conda/envs/$(head -1 /tmp/environment.yml | cut -d' ' -f2)/bin:$PATH
 
 # additional requirements for building PyTango
-RUN DEBIAN_FRONTEND=noninteractive apt-get update \
+RUN DEBIAN_FRONTEND=noninteractive apt-get update --allow-releaseinfo-change-suite\
     && apt-get -y install --no-install-recommends pkg-config=0.29-6 \
     # and clean up
     && apt-get autoremove -y \

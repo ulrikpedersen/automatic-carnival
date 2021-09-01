@@ -350,6 +350,11 @@ def test_write_read_string_attribute(tango_test):
         assert result.value == ((expected_value,), (expected_value,))
 
 
+def test_set_non_existent_attribute_raises(tango_test):
+    with pytest.raises(AttributeError, match="some_invalid_name"):
+        tango_test.some_invalid_name = "123"
+
+
 def test_read_attribute_config(tango_test, attribute):
     tango_test.get_attribute_config(attribute)
 
@@ -481,7 +486,7 @@ def test_multiple_repr_calls_only_call_info_once(
 
     proxy.__class__.info_orig = proxy.info
     proxy.__class__.info = mock_info
-    proxy.info_call_count = 0
+    proxy.__dict__["info_call_count"] = 0
 
     repr(proxy)
     assert proxy.info_call_count == 1

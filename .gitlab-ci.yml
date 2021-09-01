@@ -32,7 +32,7 @@ cache:
     TANGO_DEPENDENCIES: 'cpptango==9.3.4 tango-test'
     DEBIAN_FRONTEND: "noninteractive"
   before_script:
-    - apt-get update -y
+    - apt-get update -y --allow-releaseinfo-change-suite
     - apt-get -y install make pkg-config rsync
     - conda init bash
     - source ~/.bashrc
