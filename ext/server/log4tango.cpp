@@ -18,6 +18,49 @@ using namespace boost::python;
 extern const char *param_must_be_seq;
 extern const char *non_string_seq;
 
+// cppTango Logger API has changed between 9.3 and 9.4 to support source code
+// location information (filename and line number). On PyTango side we always
+// require this information from the caller and pass it to cppTango if it has
+// the new signature.
+typedef void (log4tango::Logger::*StringOnlyLogSignature)(const std::string&);
+typedef void (log4tango::Logger::*StringAndLocationLogSignature)(const std::string&, int, const std::string&);
+
+typedef void (log4tango::Logger::*StringOnlyWithLevelLogSignature)(
+    log4tango::Level::Value, const std::string&);
+
+typedef void (log4tango::Logger::*StringAndLocationWithLevelLogSignature)(
+    const std::string&, int, log4tango::Level::Value, const std::string&);
+
+template <StringOnlyLogSignature ptr>
+static void call_logger(log4tango::Logger& logger,
+    const std::string & /*file*/, int /*line*/, const std::string& msg)
+{
+    return (logger.*ptr)(msg);
+}
+
+template <StringAndLocationLogSignature ptr>
+static void call_logger(log4tango::Logger& logger,
+    const std::string &file, int line, const std::string& msg)
+{
+    return (logger.*ptr)(file, line, msg);
+}
+
+template <StringOnlyWithLevelLogSignature ptr>
+static void call_logger(log4tango::Logger& logger,
+    const std::string & /*file*/, int /*line*/,
+    log4tango::Level::Value level, const std::string& msg)
+{
+    return (logger.*ptr)(level, msg);
+}
+
+template <StringAndLocationWithLevelLogSignature ptr>
+static void call_logger(log4tango::Logger& logger,
+    const std::string &file, int line,
+    log4tango::Level::Value level, const std::string& msg)
+{
+    return (logger.*ptr)(file, line, level, msg);
+}
+
 namespace PyLogging
 {
     void add_logging_target(object &obj)
@@ -92,27 +135,13 @@ void export_log4tango()
         .def("set_level", &log4tango::Logger::set_level)
         .def("get_level", &log4tango::Logger::get_level)
         .def("is_level_enabled", &log4tango::Logger::is_level_enabled)
-        .def("__log",
-            (void (log4tango::Logger::*)(log4tango::Level::Value, const std::string &))
-            &log4tango::Logger::log)
-        .def("__log_unconditionally",
-            (void (log4tango::Logger::*)(log4tango::Level::Value, const std::string &))
-            &log4tango::Logger::log_unconditionally)
-        .def("__debug",
-            (void (log4tango::Logger::*)(const std::string &))
-            &log4tango::Logger::debug)
-        .def("__info",
-            (void (log4tango::Logger::*)(const std::string &))
-            &log4tango::Logger::info)
-        .def("__warn",
-            (void (log4tango::Logger::*)(const std::string &))
-            &log4tango::Logger::warn)
-        .def("__error",
-            (void (log4tango::Logger::*)(const std::string &))
-            &log4tango::Logger::error)
-        .def("__fatal",
-            (void (log4tango::Logger::*)(const std::string &))
-            &log4tango::Logger::fatal)
+        .def("__log", &call_logger<&log4tango::Logger::log>)
+        .def("__log_unconditionally", &call_logger<&log4tango::Logger::log_unconditionally>)
+        .def("__debug", &call_logger<&log4tango::Logger::debug>)
+        .def("__info", &call_logger<&log4tango::Logger::info>)
+        .def("__warn", &call_logger<&log4tango::Logger::warn>)
+        .def("__error", &call_logger<&log4tango::Logger::error>)
+        .def("__fatal", &call_logger<&log4tango::Logger::fatal>)
         .def("is_debug_enabled", &log4tango::Logger::is_debug_enabled)
         .def("is_info_enabled", &log4tango::Logger::is_info_enabled)
         .def("is_warn_enabled", &log4tango::Logger::is_warn_enabled)

@@ -20,10 +20,43 @@
 #include "to_py.h"
 #include "server/pipe.h"
 
+#include <boost/utility/enable_if.hpp>
 
 extern const char *param_must_be_seq;
 
 using namespace boost::python;
+
+// cppTango since 9.4 version provides a way to stream in code location
+// information wrapped in a LoggerStream::SourceLocation struct. Below
+// template is used as a fallback if this struct is not defined. If it
+// is and has non-zero size, the specialization defined later is used.
+template<typename Stream, typename = void>
+struct LogToStreamImpl
+{
+    static void log(Stream& stream,
+        const std::string& /*file*/, int /*line*/, const std::string& msg)
+    {
+        stream << log4tango::LogInitiator::_begin_log << msg;
+    }
+};
+
+template<typename Stream>
+struct LogToStreamImpl<Stream,
+    typename boost::enable_if_c<(sizeof(typename Stream::SourceLocation) > 0)>::type>
+{
+    static void log(Stream& stream,
+        const std::string& file, int line, const std::string& msg)
+    {
+        typename Stream::SourceLocation location = {file.c_str(), line};
+        stream << log4tango::LogInitiator::_begin_log << location << msg;
+    }
+};
+
+static void log_to_stream(log4tango::LoggerStream& stream,
+    const std::string& file, int line, const std::string& msg)
+{
+    LogToStreamImpl<log4tango::LoggerStream>::log(stream, file, line, msg);
+}
 
 #define __AUX_DECL_CALL_DEVICE_METHOD \
     AutoPythonGIL __py_lock;
@@ -696,44 +729,44 @@ namespace PyDeviceImpl
         self.remove_command(name, free_it, clean_db);
     }
 
-    inline void debug(Tango::DeviceImpl &self, const std::string &msg)
+    inline void debug(Tango::DeviceImpl &self, const std::string& file, int line, const std::string &msg)
     {
         if (self.get_logger()->is_debug_enabled()) {
-	    self.get_logger()->debug_stream() 
-	      << log4tango::LogInitiator::_begin_log << msg;
-	}
+            log4tango::LoggerStream stream = self.get_logger()->debug_stream();
+            log_to_stream(stream, file, line, msg);
+        }
     }
 
-    inline void info(Tango::DeviceImpl &self, const std::string &msg)
+    inline void info(Tango::DeviceImpl &self, const std::string& file, int line, const std::string &msg)
     {
         if (self.get_logger()->is_info_enabled()) {
-	    self.get_logger()->info_stream() 
-	      << log4tango::LogInitiator::_begin_log << msg;
-	}
+            log4tango::LoggerStream stream = self.get_logger()->info_stream();
+            log_to_stream(stream, file, line, msg);
+        }
     }
 
-    inline void warn(Tango::DeviceImpl &self, const std::string &msg)
+    inline void warn(Tango::DeviceImpl &self, const std::string& file, int line, const std::string &msg)
     {
         if (self.get_logger()->is_warn_enabled()) {
-	    self.get_logger()->warn_stream() 
-	      << log4tango::LogInitiator::_begin_log << msg;
-	}
+            log4tango::LoggerStream stream = self.get_logger()->warn_stream();
+            log_to_stream(stream, file, line, msg);
+        }
     }
 
-    inline void error(Tango::DeviceImpl &self, const std::string &msg)
+    inline void error(Tango::DeviceImpl &self, const std::string& file, int line, const std::string &msg)
     {
         if (self.get_logger()->is_error_enabled()) {
-	    self.get_logger()->error_stream() 
-	      << log4tango::LogInitiator::_begin_log << msg;
-	}
+            log4tango::LoggerStream stream = self.get_logger()->error_stream();
+            log_to_stream(stream, file, line, msg);
+        }
     }
 
-    inline void fatal(Tango::DeviceImpl &self, const std::string &msg)
+    inline void fatal(Tango::DeviceImpl &self, const std::string& file, int line, const std::string &msg)
     {
         if (self.get_logger()->is_fatal_enabled()) {
-	    self.get_logger()->fatal_stream() 
-	      << log4tango::LogInitiator::_begin_log << msg;
-	}
+            log4tango::LoggerStream stream = self.get_logger()->fatal_stream();
+            log_to_stream(stream, file, line, msg);
+        }
     }
 
     PyObject* get_attribute_config(Tango::DeviceImpl &self, object &py_attr_name_seq)
