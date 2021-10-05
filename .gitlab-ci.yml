@@ -1,6 +1,7 @@
 ---
 stages:
   - build
+  - image
   - test
   - release
 
@@ -9,6 +10,7 @@ default:
   image: continuumio/miniconda3:4.9.2
 
 variables:
+  CPP_TANGO_VERSION: "9.3.4"
   CACHE_FALLBACK_KEY: "$CI_DEFAULT_BRANCH"
   TWINE_USERNAME: __token__
   TWINE_PASSWORD: secret
@@ -29,7 +31,7 @@ cache:
   tags:
     - gitlab-org
   variables:
-    TANGO_DEPENDENCIES: 'cpptango==9.3.4 tango-test'
+    TANGO_DEPENDENCIES: 'cpptango==${CPP_TANGO_VERSION} tango-test==3.2'
     DEBIAN_FRONTEND: "noninteractive"
   before_script:
     - apt-get update -y --allow-releaseinfo-change-suite
@@ -67,6 +69,40 @@ build-pypi-sdist-package:
     paths:
       - dist/
 
+.base_build_docker_image:
+  stage: image
+  image: docker:latest
+  services:
+    - docker:dind
+  only:
+    refs:
+      - tags
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - export COMMIT_TAG=$(echo $CI_COMMIT_TAG | sed --expression="s/v//g")
+    - export LOWER_PROJECT_NAMESPACE=$(echo ${CI_PROJECT_NAMESPACE} | tr '[:upper:]' '[:lower:]')
+    - cd .devcontainer # Minimize build context migrated to docker container
+    - docker build -t $CI_REGISTRY/${LOWER_PROJECT_NAMESPACE}/$CI_PROJECT_NAME/pytango-dev:py${PYTHON_VERSION}-tango${CPP_TANGO_VERSION}-pytango${COMMIT_TAG} --build-arg PYTHON_VERSION --build-arg CPP_TANGO_VERSION -f Dockerfile .
+    - docker push $CI_REGISTRY/${LOWER_PROJECT_NAMESPACE}/$CI_PROJECT_NAME/pytango-dev:py${PYTHON_VERSION}-tango${CPP_TANGO_VERSION}-pytango${COMMIT_TAG}
+
+build-docker-image-py27:
+  extends: .base_build_docker_image
+  variables:
+    PYTHON_VERSION: "2.7"
+
+build-docker-image-py37:
+  extends: .base_build_docker_image
+  variables:
+    PYTHON_VERSION: "3.7"
+
+build-docker-image-py38:
+  extends: .base_build_docker_image
+  variables:
+    PYTHON_VERSION: "3.8"
+
 test_py3.8:
   extends: .base_build
   variables:
@@ -74,7 +110,6 @@ test_py3.8:
     BOOST_PYTHON: '38'
   script:
     - python setup.py test
-
 
 test_py3.7:
   extends: .base_build
