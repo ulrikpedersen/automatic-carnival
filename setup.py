@@ -52,9 +52,20 @@ IS64 = 8 * struct.calcsize("P") == 64
 PYTHON_VERSION = sys.version_info
 PYTHON2 = (2,) <= PYTHON_VERSION < (3,)
 PYTHON3 = (3,) <= PYTHON_VERSION < (4,)
+PYTHON35 = (3, 5) <= PYTHON_VERSION < (3, 6)
 
 # Arguments
 TESTING = any(x in sys.argv for x in ["test", "pytest"])
+
+
+if numpy and not PYTHON35:
+    try:
+        from numpy.distutils.ccompiler import CCompiler_compile
+        import distutils.ccompiler
+        distutils.ccompiler.CCompiler.compile = CCompiler_compile
+        print("Using numpy-patched parallel compiler")
+    except ImportError:
+        pass
 
 
 def get_readme(name="README.rst"):
@@ -341,9 +352,7 @@ class build_ext(dftbuild_ext):
             ext.extra_compile_args += ["-std=c++0x"]
             ext.define_macros += [("PYTANGO_HAS_UNIQUE_PTR", "1")]
         ext.extra_compile_args += [
-            "-Wno-unused-variable",
             "-Wno-deprecated-declarations",
-            "-Wno-maybe-uninitialized",
         ]
         dftbuild_ext.build_extension(self, ext)
 
@@ -487,6 +496,7 @@ def setup_args():
         macros.append(("DISABLE_PYTANGO_NUMPY", None))
     else:
         macros.append(("PYTANGO_NUMPY_VERSION", '"%s"' % numpy.__version__))
+        macros.append(("NPY_NO_DEPRECATED_API", "0"))
 
     if POSIX:
         directories = pkg_config(*sys_libs, **directories)
@@ -539,8 +549,10 @@ def setup_args():
     if PYTHON2:
         tests_require += [
             "configparser < 5",
+            "contextlib2 < 21",
             "futures",
             "importlib_metadata < 3",
+            "packaging < 21",
             "pyparsing < 3",
             "pytest < 5",
             "pytest-xdist < 2",

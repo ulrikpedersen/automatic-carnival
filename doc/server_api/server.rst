@@ -1,4 +1,3 @@
-
 .. currentmodule:: tango.server
 
 .. _pytango-hlapi:
@@ -39,7 +38,7 @@ high level API::
         def read_time(self):
             return time.time()
 
-        @command(din_type=str, dout_type=str)
+        @command(dtype_in=str, dtype_out=str)
         def strftime(self, format):
             return time.strftime(format)
 

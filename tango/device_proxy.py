@@ -200,10 +200,14 @@ def __DeviceProxy__get_pipe_cache(self):
 
 def __DeviceProxy__init__(self, *args, **kwargs):
     __init_device_proxy_internals(self)
-    self._green_mode = kwargs.pop('green_mode', None)
-    self._executors[GreenMode.Futures] = kwargs.pop('executor', None)
-    self._executors[GreenMode.Gevent] = kwargs.pop('threadpool', None)
-    self._executors[GreenMode.Asyncio] = kwargs.pop('asyncio_executor', None)
+    bypass___setattr = self.__dict__
+    bypass___setattr['_green_mode'] = kwargs.pop('green_mode', None)
+    bypass___setattr['_executors'][GreenMode.Futures] = kwargs.pop(
+        'executor', None)
+    bypass___setattr['_executors'][GreenMode.Gevent] = kwargs.pop(
+        'threadpool', None)
+    bypass___setattr['_executors'][GreenMode.Asyncio] = kwargs.pop(
+        'asyncio_executor', None)
     return DeviceProxy.__init_orig__(self, *args, **kwargs)
 
 
@@ -304,101 +308,116 @@ def __set_attribute_value(self, name, value):
 
 def __DeviceProxy__getattr(self, name):
     cause = None
-    # trait_names is a feature of IPython. Hopefully they will solve
-    # ticket http://ipython.scipy.org/ipython/ipython/ticket/229 someday
-    # and the ugly trait_names could be removed.
-    if name.startswith("_") or name == 'trait_names':
+    try:
+        # trait_names is a feature of IPython. Hopefully they will solve
+        # ticket http://ipython.scipy.org/ipython/ipython/ticket/229 someday
+        # and the ugly trait_names could be removed.
+        if name.startswith("_") or name == 'trait_names':
+            six.raise_from(AttributeError(name), cause)
+
+        name_l = name.lower()
+
+        cmd_info = self.__get_cmd_cache().get(name_l)
+        if cmd_info:
+            return __get_command_func(self, cmd_info, name)
+
+        attr_info = self.__get_attr_cache().get(name_l)
+        if attr_info:
+            return __get_attribute_value(self, attr_info, name)
+
+        if name_l in self.__get_pipe_cache():
+            return self.read_pipe(name)
+
+        try:
+            self.__refresh_cmd_cache()
+        except Exception as e:
+            if cause is None:
+                cause = e
+
+        cmd_info = self.__get_cmd_cache().get(name_l)
+        if cmd_info:
+            return __get_command_func(self, cmd_info, name)
+
+        try:
+            self.__refresh_attr_cache()
+        except Exception as e:
+            if cause is None:
+                cause = e
+
+        attr_info = self.__get_attr_cache().get(name_l)
+        if attr_info:
+            return __get_attribute_value(self, attr_info, name)
+
+        try:
+            self.__refresh_pipe_cache()
+        except Exception as e:
+            if cause is None:
+                cause = e
+
+        if name_l in self.__get_pipe_cache():
+            return self.read_pipe(name)
+
         six.raise_from(AttributeError(name), cause)
-
-    name_l = name.lower()
-
-    cmd_info = self.__get_cmd_cache().get(name_l)
-    if cmd_info:
-        return __get_command_func(self, cmd_info, name)
-
-    attr_info = self.__get_attr_cache().get(name_l)
-    if attr_info:
-        return __get_attribute_value(self, attr_info, name)
-
-    if name_l in self.__get_pipe_cache():
-        return self.read_pipe(name)
-
-    try:
-        self.__refresh_cmd_cache()
-    except Exception as e:
-        if cause is None:
-            cause = e
-
-    cmd_info = self.__get_cmd_cache().get(name_l)
-    if cmd_info:
-        return __get_command_func(self, cmd_info, name)
-
-    try:
-        self.__refresh_attr_cache()
-    except Exception as e:
-        if cause is None:
-            cause = e
-
-    attr_info = self.__get_attr_cache().get(name_l)
-    if attr_info:
-        return __get_attribute_value(self, attr_info, name)
-
-    try:
-        self.__refresh_pipe_cache()
-    except Exception as e:
-        if cause is None:
-            cause = e
-
-    if name_l in self.__get_pipe_cache():
-        return self.read_pipe(name)
-
-    six.raise_from(AttributeError(name), cause)
+    finally:
+        del cause
 
 
 def __DeviceProxy__setattr(self, name, value):
     cause = None
-    name_l = name.lower()
-
-    if name_l in self.__get_cmd_cache():
-        six.raise_from(TypeError('Cannot set the value of a command'), cause)
-
-    if name_l in self.__get_attr_cache():
-        return __set_attribute_value(self, name, value)
-
-    if name_l in self.__get_pipe_cache():
-        return self.write_pipe(name, value)
-
     try:
-        self.__refresh_cmd_cache()
-    except Exception as e:
-        if cause is None:
-            cause = e
+        name_l = name.lower()
 
-    if name_l in self.__get_cmd_cache():
-        six.raise_from(TypeError('Cannot set the value of a command'), cause)
+        if name_l in self.__get_cmd_cache():
+            six.raise_from(
+                TypeError('Cannot set the value of a command'),
+                cause,
+            )
 
-    try:
-        self.__refresh_attr_cache()
-    except Exception as e:
-        if cause is None:
-            cause = e
+        if name_l in self.__get_attr_cache():
+            return __set_attribute_value(self, name, value)
 
-    if name_l in self.__get_attr_cache():
-        return __set_attribute_value(self, name, value)
+        if name_l in self.__get_pipe_cache():
+            return self.write_pipe(name, value)
 
-    try:
-        self.__refresh_pipe_cache()
-    except Exception as e:
-        if cause is None:
-            cause = e
+        try:
+            self.__refresh_cmd_cache()
+        except Exception as e:
+            if cause is None:
+                cause = e
 
-    if name_l in self.__get_pipe_cache():
-        return self.write_pipe(name, value)
+        if name_l in self.__get_cmd_cache():
+            six.raise_from(TypeError('Cannot set the value of a command'), cause)
 
-    try:
-        return super(DeviceProxy, self).__setattr__(name, value)
-    except Exception as e:
-        six.raise_from(e, cause)
+        try:
+            self.__refresh_attr_cache()
+        except Exception as e:
+            if cause is None:
+                cause = e
+
+        if name_l in self.__get_attr_cache():
+            return __set_attribute_value(self, name, value)
+
+        try:
+            self.__refresh_pipe_cache()
+        except Exception as e:
+            if cause is None:
+                cause = e
+
+        if name_l in self.__get_pipe_cache():
+            return self.write_pipe(name, value)
+
+        try:
+            if name in self.__dict__:
+                return super(DeviceProxy, self).__setattr__(name, value)
+            else:
+                raise AttributeError(
+                    "Tried to set non-existent attr {!r} to {!r}".format(
+                        name, value)
+                )
+        except Exception as e:
+            six.raise_from(e, cause)
+    finally:
+        del cause
 
 
 def __DeviceProxy__dir(self):
@@ -1432,7 +1451,7 @@ def __DeviceProxy___get_info_(self):
             info = self.info()
             info_without_cyclic_reference = __TangoInfo.from_copy(info)
             self.__dict__["_dev_info"] = info_without_cyclic_reference
-        except:
+        except Exception:
             return __TangoInfo.from_defaults()
     return self._dev_info
 

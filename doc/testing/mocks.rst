@@ -124,7 +124,7 @@ Using pytest and fixtures
 -------------------------
 
 The above mocking techniques can be achieved in a very succint way using pytest fixtures.
-Examples of this can be found in the `pytango/examples <https://github.com/tango-controls/pytango/tree/develop/examples/multidevicetestcontext>`_.  And more examples are
+Examples of this can be found in the `pytango/examples <https://gitlab.com/tango-controls/pytango/-/tree/develop/examples/multidevicetestcontext>`_.  And more examples are
 available in the last section of the *Unit testing Tango devices in Python* presentation
 from the `Tango 2020 November status update meeting <https://indico.esrf.fr/indico/event/49/other-view?view=standard>`_.
 

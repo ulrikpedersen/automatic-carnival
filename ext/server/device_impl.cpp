@@ -85,6 +85,7 @@ using namespace boost::python;
     AutoPythonAllowThreads python_guard_ptr; \
     Tango::AutoTangoMonitor tango_guard(&dev); \
     Tango::Attribute & attr = dev.get_device_attr()->get_attr_by_name(__att_name.c_str()); \
+    (void)attr; \
     python_guard_ptr.giveup();
 
 #define SAFE_PUSH_CHANGE_EVENT(dev, attr_name, data) \

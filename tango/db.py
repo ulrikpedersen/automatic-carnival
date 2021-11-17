@@ -101,7 +101,7 @@ def __Database__add_server(self, servname, dev_info, with_dserver=False):
                 dev_info1.name = 'my/own/device'
                 dev_info1._class = 'MyDevice'
                 dev_info1.server = 'MyServer/test'
-                db.add_server(dev_info1.server, dev_info, with_dserver=True)
+                db.add_server(dev_info1.server, dev_info1, with_dserver=True)
 
             Same example using *with_dserver=False*::
 
@@ -111,9 +111,9 @@ def __Database__add_server(self, servname, dev_info, with_dserver=False):
                 dev_info1.server = 'MyServer/test'
 
                 dev_info2 = DbDevInfo()
-                dev_info1.name = 'dserver/' + dev_info1.server
-                dev_info1._class = 'DServer
-                dev_info1.server = dev_info1.server
+                dev_info2.name = 'dserver/' + dev_info1.server
+                dev_info2._class = 'DServer
+                dev_info2.server = dev_info1.server
 
                 dev_info = dev_info1, dev_info2
                 db.add_server(dev_info1.server, dev_info)

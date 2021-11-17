@@ -146,7 +146,7 @@ All contributions,  `PR and bug reports`_ are welcome, please see: `How to Contr
 
 .. _Tango: http://tango-controls.org
 .. _Tango C++ API: https://tango-controls.github.io/cppTango-docs/index.html
-.. _PyTango: http://github.com/tango-cs/pytango
+.. _PyTango: http://gitlab.com/tango-cs/pytango
 .. _PyPI: http://pypi.python.org/pypi/pytango
 
 .. _libtango: http://tango-controls.org/downloads
@@ -156,7 +156,7 @@ All contributions,  `PR and bug reports`_ are welcome, please see: `How to Contr
 .. _setuptools: http://pypi.python.org/pypi/setuptools
 .. _sphinx: http://pypi.python.org/pypi/sphinx
 .. _futures: http://pypi.python.org/pypi/futures
-.. _gevent: http://pypi.python.org/pypi/gevents
+.. _gevent: http://pypi.python.org/pypi/gevent
 
 .. _ITango: http://pypi.python.org/pypi/itango
 .. _IPython: http://ipython.org

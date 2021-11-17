@@ -51,7 +51,7 @@ def __inc_param(obj, name):
 
 def __single_param(obj, param_name, f=repr, fmt='%s = %s'):
     param_value = getattr(obj, param_name)
-    if param_name is 'data_type':
+    if param_name == 'data_type':
         param_value = CmdArgType.values.get(param_value, param_value)
     return fmt % (param_name, f(param_value))
 
