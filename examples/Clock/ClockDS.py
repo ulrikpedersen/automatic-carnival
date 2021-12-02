@@ -67,7 +67,7 @@ class Clock(Device):
 
     @command(dtype_in=(int,), dtype_out=float)
     def mktime(self, tupl):
-        return time.mktime(tupl)
+        return time.mktime(tuple(tupl))
 
 
 if __name__ == "__main__":
