@@ -39,8 +39,7 @@ struct PyDatabase
     static inline boost::shared_ptr<Tango::Database>
     makeDatabase_host_port1(const std::string &host, int port)
     {
-        return boost::shared_ptr<Tango::Database>
-            (new Tango::Database(const_cast<std::string&>(host), port));
+        return makeSharedWithoutGIL<Tango::Database>(const_cast<std::string&>(host), port);
     }
 
     static inline boost::shared_ptr<Tango::Database>
@@ -52,15 +51,13 @@ struct PyDatabase
         {
             raise_(PyExc_TypeError, param_numb_or_str_numb);
         }
-        return boost::shared_ptr<Tango::Database>
-            (new Tango::Database(const_cast<std::string&>(host), port));
+        return makeSharedWithoutGIL<Tango::Database>(const_cast<std::string&>(host), port);
     }
 
     static inline boost::shared_ptr<Tango::Database>
     makeDatabase_file(const std::string &filename)
     {
-        return boost::shared_ptr<Tango::Database>
-            (new Tango::Database(const_cast<std::string&>(filename)));
+        return makeSharedWithoutGIL<Tango::Database>(const_cast<std::string&>(filename));
     }
 
     static inline boost::python::str

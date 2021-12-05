@@ -703,12 +703,12 @@ namespace PyDeviceProxy
 
     static boost::shared_ptr<Tango::DeviceProxy> makeDeviceProxy1(const std::string& name)
     {
-        return boost::shared_ptr<Tango::DeviceProxy>(new Tango::DeviceProxy(name.c_str()));
+        return makeSharedWithoutGIL<Tango::DeviceProxy>(name.c_str());
     }
 
     static boost::shared_ptr<Tango::DeviceProxy> makeDeviceProxy2(const std::string& name, bool b)
     {
-        return boost::shared_ptr<Tango::DeviceProxy>(new Tango::DeviceProxy(name.c_str(), b));
+        return makeSharedWithoutGIL<Tango::DeviceProxy>(name.c_str(), b);
     }
 };
 
