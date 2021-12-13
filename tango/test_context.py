@@ -287,6 +287,7 @@ class MultiDeviceTestContext(object):
         class_list = []
         device_list = []
         tangoclass_list = []
+        green_mode_list = []
         for device_info in devices_info:
             device_cls, device = _device_class_from_field(device_info["class"])
             tangoclass = device.__name__
@@ -302,18 +303,29 @@ class MultiDeviceTestContext(object):
                 class_list.append((device_cls, device, tangoclass))
             else:
                 device_list.append(device)
+            if hasattr(device, "green_mode"):
+                green_mode_list.append(device.green_mode)
 
         # Target and arguments
         if class_list and device_list:
             self.delete_db()
             raise ValueError("mixing HLAPI and classical API in devices_info "
                              "is not supported")
+        if green_mode_list:
+            if len(set(green_mode_list)) > 1:
+                self.delete_db()
+                raise ValueError("mixing device green_mode in devices_info "
+                                 "is not supported - found {}".format(green_mode_list))
+            else:
+                green_mode = green_mode_list[0]
+        else:
+            green_mode = None
         if class_list:
-            runserver = partial(run, class_list, cmd_args)
+            runserver = partial(run, class_list, cmd_args, green_mode=green_mode)
         elif len(device_list) == 1 and hasattr(device_list[0], "run_server"):
             runserver = partial(device.run_server, cmd_args)
         elif device_list:
-            runserver = partial(run, device_list, cmd_args)
+            runserver = partial(run, device_list, cmd_args, green_mode=green_mode)
         else:
             raise ValueError("Wrong format of devices_info")
 
