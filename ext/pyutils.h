@@ -212,6 +212,21 @@ public:
     }
 };
 
+// Creates a shared_ptr for a CppTango class with Python GIL released
+// during instance creation and destruction
+template <typename T, typename... Args>
+boost::shared_ptr<T> makeSharedWithoutGIL(Args&&... args)
+{
+    AutoPythonAllowThreads guard{};
+    return boost::shared_ptr<T>(new T(std::forward<Args>(args)...),
+        [](T* ptr)
+        {
+            AutoPythonAllowThreads guard{};
+            delete ptr;
+        });
+}
+
+
 /// The following class ensures usage in a non-omniORB thread will
 /// still get a dummy omniORB thread ID - cppTango requires threads to
 /// be identifiable in this way.  It should only be acquired once for the
