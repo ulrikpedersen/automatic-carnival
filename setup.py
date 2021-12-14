@@ -563,7 +563,8 @@ def setup_args():
         tests_require += [
             "importlib_metadata < 3",
             "pytest < 6.2",
-            "pytest-xdist",
+            "pytest-xdist < 2.5",
+            "pytest-forked < 1.4",
         ]
     else:
         tests_require += ["pytest", "pytest-xdist"]
