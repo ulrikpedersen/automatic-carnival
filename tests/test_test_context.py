@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import textwrap
+import sys
+
 import pytest
 
 import tango
@@ -15,16 +18,54 @@ from tango.test_utils import (
 )
 
 
+AT_LEAST_PY35 = sys.version_info >= (3, 5)
+
+
 class Device1(Device):
+
+    def init_device(self):
+        super(Device, self).init_device()
+        self.set_state(tango.DevState.ON)
+        self._attr1 = 100
+
     @attribute
     def attr1(self):
-        return 100
+        return self._attr1
 
 
 class Device2(Device):
+
+    def init_device(self):
+        super(Device, self).init_device()
+        self.set_state(tango.DevState.ON)
+        self._attr2 = 200
+
     @attribute
     def attr2(self):
-        return 200
+        return self._attr2
+
+
+class Device1Synchronous(Device1):
+    green_mode = tango.GreenMode.Synchronous
+
+
+class Device1Futures(Device1):
+    green_mode = tango.GreenMode.Futures
+
+
+if AT_LEAST_PY35:
+    code = textwrap.dedent("""
+        class Device1AsyncInit(Device1):
+            green_mode = tango.GreenMode.Asyncio
+
+            async def init_device(self):
+                await super().init_device()
+                self._attr1 = 150
+
+           """).format(**globals())
+    exec(code)
+else:
+    Device1AsyncInit = None
 
 
 def test_single_device(server_green_mode):
@@ -33,6 +74,12 @@ def test_single_device(server_green_mode):
 
     with DeviceTestContext(TestDevice) as proxy:
         assert proxy.attr1 == 100
+
+
+@pytest.mark.skipif(not AT_LEAST_PY35, reason="async/await only in Python 3.5+")
+def test_single_async_init_device():
+    with DeviceTestContext(Device1AsyncInit) as proxy:
+        assert proxy.attr1 == 150
 
 
 def test_single_device_old_api():
@@ -112,7 +159,29 @@ def test_multi_with_two_devices(server_green_mode):
     with MultiDeviceTestContext(devices_info) as context:
         proxy1 = context.get_device("test/device1/1")
         proxy2 = context.get_device("test/device2/1")
+        assert proxy1.State() == tango.DevState.ON
+        assert proxy2.State() == tango.DevState.ON
         assert proxy1.attr1 == 100
+        assert proxy2.attr2 == 200
+
+
+@pytest.mark.skipif(not AT_LEAST_PY35, reason="async/await only in Python 3.5+")
+def test_multi_with_async_devices_initialised():
+
+    class TestDevice2Async(Device2):
+        green_mode = tango.GreenMode.Asyncio
+
+    devices_info = (
+        {"class": Device1AsyncInit, "devices": [{"name": "test/device1/1"}]},
+        {"class": TestDevice2Async, "devices": [{"name": "test/device2/1"}]},
+    )
+
+    with MultiDeviceTestContext(devices_info) as context:
+        proxy1 = context.get_device("test/device1/1")
+        proxy2 = context.get_device("test/device2/1")
+        assert proxy1.State() == tango.DevState.ON
+        assert proxy2.State() == tango.DevState.ON
+        assert proxy1.attr1 == 150
         assert proxy2.attr2 == 200
 
 
@@ -208,6 +277,14 @@ def test_multi_with_two_devices_with_properties(server_green_mode):
                     "class": (ClassicAPISimpleDeviceClass, ClassicAPISimpleDeviceImpl),
                     "devices": [{"name": "test/device1/2"}],
                 },
+            ),
+            ValueError,
+        ],
+        # mixing green modes
+        [
+            (
+                {"class": Device1Synchronous, "devices": [{"name": "test/device1/1"}]},
+                {"class": Device1Futures, "devices": [{"name": "test/device1/2"}]},
             ),
             ValueError,
         ],
