@@ -556,6 +556,7 @@ def setup_args():
             "pyparsing < 3",
             "pytest < 5",
             "pytest-xdist < 2",
+            "pytest-forked < 1.4",
             "trollius",
             "zipp >= 0.5, < 2",
         ]
