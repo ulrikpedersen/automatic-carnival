@@ -1,6 +1,6 @@
 """Load tango-specific pytest fixtures."""
 
-from tango.test_utils import state, typed_values, server_green_mode
+from tango.test_utils import state, typed_values, scalar_typed_values, server_green_mode
 
 import pytest
 
@@ -8,7 +8,7 @@ import sys
 import os
 import json
 
-__all__ = ("state", "typed_values", "server_green_mode")
+__all__ = ("state", "typed_values", "scalar_typed_values", "server_green_mode")
 
 
 @pytest.hookimpl()
