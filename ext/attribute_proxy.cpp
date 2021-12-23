@@ -35,12 +35,16 @@ namespace PyAttributeProxy
 
     static boost::shared_ptr<Tango::AttributeProxy> makeAttributeProxy1(const std::string& name)
     {
-        return makeSharedWithoutGIL<Tango::AttributeProxy>(name.c_str());
+        AutoPythonAllowThreads guard;
+        return boost::shared_ptr<Tango::AttributeProxy>(new Tango::AttributeProxy(name.c_str()),
+                                                        DeleterWithoutGIL());
     }
 
     static boost::shared_ptr<Tango::AttributeProxy> makeAttributeProxy2(const Tango::DeviceProxy *dev, const std::string& name)
     {
-        return makeSharedWithoutGIL<Tango::AttributeProxy>(dev, name.c_str());
+        AutoPythonAllowThreads guard;
+        return boost::shared_ptr<Tango::AttributeProxy>(new Tango::AttributeProxy(dev, name.c_str()),
+                                                        DeleterWithoutGIL());
     }
 }
 

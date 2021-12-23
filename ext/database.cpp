@@ -39,7 +39,9 @@ struct PyDatabase
     static inline boost::shared_ptr<Tango::Database>
     makeDatabase_host_port1(const std::string &host, int port)
     {
-        return makeSharedWithoutGIL<Tango::Database>(const_cast<std::string&>(host), port);
+        AutoPythonAllowThreads guard;
+        return boost::shared_ptr<Tango::Database>(new Tango::Database(const_cast<std::string&>(host), port),
+                                                  DeleterWithoutGIL());
     }
 
     static inline boost::shared_ptr<Tango::Database>
@@ -51,13 +53,17 @@ struct PyDatabase
         {
             raise_(PyExc_TypeError, param_numb_or_str_numb);
         }
-        return makeSharedWithoutGIL<Tango::Database>(const_cast<std::string&>(host), port);
+        AutoPythonAllowThreads guard;
+        return boost::shared_ptr<Tango::Database>(new Tango::Database(const_cast<std::string&>(host), port),
+                                                  DeleterWithoutGIL());
     }
 
     static inline boost::shared_ptr<Tango::Database>
     makeDatabase_file(const std::string &filename)
     {
-        return makeSharedWithoutGIL<Tango::Database>(const_cast<std::string&>(filename));
+        AutoPythonAllowThreads guard;
+        return boost::shared_ptr<Tango::Database>(new Tango::Database(const_cast<std::string&>(filename)),
+                                                  DeleterWithoutGIL());
     }
 
     static inline boost::python::str
