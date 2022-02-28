@@ -22,7 +22,7 @@ def pytest_sessionfinish(session):
             for item in session.items:
                 f.write("\n")
                 f.write(
-                    "pytest -c ../pytest_empty_config.txt "
+                    "pytest -c pytest_empty_config.txt "
                 )  # this empty file is created by appveyor
                 f.write(item.nodeid)
 

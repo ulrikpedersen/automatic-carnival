@@ -157,10 +157,9 @@ test_script:
   - "%PYTHON_ROOT%/Scripts/pip.exe install \"gevent!=1.5a1\" pytest psutil \"six>=1.10\" \"numpy>=1.1\"" 
   - cmd: if %PYTHON_VER%==27 "%PYTHON_ROOT%/Scripts/pip.exe" install futures trollius "zipp>=0.5,<2" "pyparsing<3" "pytest<5"  
   - cmd: if %PYTHON_VER% LSS 34 "%PYTHON_ROOT%/Scripts/pip.exe" install enum34
-  - cmd: cd "C:\projects\pytango"
-  - cmd: nul > pytest_empty_config.txt
-  - "%PYTHON_ROOT%/Scripts/pytest.exe -c pytest_empty_config.txt --collect-only -q -q tests"
   - cmd: cd "C:\projects\pytango\tests"
+  - cmd: nul > pytest_empty_config.txt
+  - "%PYTHON_ROOT%/Scripts/pytest.exe -c pytest_empty_config.txt --collect-only -q -q"
   - cmd: path=%PYTHON_ROOT%\Scripts;%path%
   - cmd: nul > summary.json
   - cmd: run_tests_win.bat
