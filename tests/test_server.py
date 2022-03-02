@@ -2,6 +2,8 @@
 
 import sys
 import textwrap
+import threading
+import time
 import pytest
 import enum
 
@@ -9,10 +11,10 @@ from tango import AttrData, AttrWriteType, DevFailed, DevEncoded, \
     DevEnum, DevState, GreenMode, READ_WRITE, SCALAR
 from tango.server import Device
 from tango.server import command, attribute, device_property
-from tango.test_utils import DeviceTestContext, assert_close, \
-    GoodEnum, BadEnumNonZero, BadEnumSkipValues, BadEnumDuplicates
+from tango.test_utils import DeviceTestContext, MultiDeviceTestContext, \
+    GoodEnum, BadEnumNonZero, BadEnumSkipValues, BadEnumDuplicates, \
+    assert_close
 from tango.utils import get_enum_labels, EnumTypeError
-
 
 # Asyncio imports
 try:
@@ -29,7 +31,6 @@ RETURN = "return" if PY3 else "raise asyncio.Return"
 # Test state/status
 
 def test_empty_device(server_green_mode):
-
     class TestDevice(Device):
         green_mode = server_green_mode
 
@@ -53,7 +54,6 @@ def test_set_state(state, server_green_mode):
 
 
 def test_set_status(server_green_mode):
-
     status = '\n'.join((
         "This is a multiline status",
         "with special characters such as",
@@ -92,7 +92,6 @@ def test_identity_command(typed_values, server_green_mode):
 
 
 def test_polled_command(server_green_mode):
-
     dct = {'Polling1': 100,
            'Polling2': 100000,
            'Polling3': 500}
@@ -123,7 +122,6 @@ def test_polled_command(server_green_mode):
 
 
 def test_wrong_command_result(server_green_mode):
-
     class TestDevice(Device):
         green_mode = server_green_mode
 
@@ -146,7 +144,6 @@ def test_wrong_command_result(server_green_mode):
             proxy.cmd_int_err()
         with pytest.raises(DevFailed):
             proxy.cmd_str_list_err()
-
 
 
 # Test attributes
@@ -283,7 +280,6 @@ def test_attribute_is_memorized(scalar_typed_values, server_green_mode):
 
 
 def test_wrong_attribute_read(server_green_mode):
-
     class TestDevice(Device):
         green_mode = server_green_mode
 
@@ -461,10 +457,9 @@ def test_device_property_with_default_value(typed_values, server_green_mode):
                            properties={'prop_with_db_value': value}) as proxy:
         assert_close(proxy.get_prop_without_db_value(), expected(default))
         assert_close(proxy.get_prop_with_db_value(), expected(value))
-    
+
 
 def test_device_get_device_properties_when_init_device(server_green_mode):
-
     class TestDevice(Device):
         green_mode = server_green_mode
         _got_properties = False
@@ -482,7 +477,6 @@ def test_device_get_device_properties_when_init_device(server_green_mode):
 
 
 def test_device_get_attr_config(server_green_mode):
-
     class TestDevice(Device):
         green_mode = server_green_mode
 
@@ -502,7 +496,6 @@ def test_device_get_attr_config(server_green_mode):
 # Test inheritance
 
 def test_inheritance(server_green_mode):
-
     class A(Device):
         green_mode = server_green_mode
 
@@ -529,7 +522,6 @@ def test_inheritance(server_green_mode):
             return ")`'-.,_"
 
     class B(A):
-
         prop2 = device_property(dtype=str, default_value="goodbye2")
 
         @attribute
@@ -559,7 +551,6 @@ def test_inheritance(server_green_mode):
 
 
 def test_polled_attribute(server_green_mode):
-
     dct = {'PolledAttribute1': 100,
            'PolledAttribute2': 100000,
            'PolledAttribute3': 500}
@@ -622,6 +613,103 @@ def test_mandatory_device_property_without_db_value_fails(
     assert 'Device property prop is mandatory' in str(context.value)
 
 
+def test_logging(server_green_mode):
+    log_received = threading.Event()
+
+    class LogSourceDevice(Device):
+        green_mode = server_green_mode
+
+        @command
+        def log_fatal_message(self):
+            self.fatal_stream("test fatal")
+
+        @command
+        def log_error_message(self):
+            self.error_stream("test error")
+
+        @command
+        def log_warn_message(self):
+            self.warn_stream("test warn")
+
+        @command
+        def log_info_message(self):
+            self.info_stream("test info")
+
+        @command
+        def log_debug_message(self):
+            self.debug_stream("test debug")
+
+    class LogConsumerDevice(Device):
+        _last_log_data = []
+
+        @command(dtype_in=('str',))
+        def Log(self, argin):
+            self._last_log_data = argin
+            log_received.set()
+
+        @attribute(dtype=int)
+        def last_log_timestamp_ms(self):
+            return int(self._last_log_data[0])
+
+        @attribute(dtype=str)
+        def last_log_level(self):
+            return self._last_log_data[1]
+
+        @attribute(dtype=str)
+        def last_log_source(self):
+            return self._last_log_data[2]
+
+        @attribute(dtype=str)
+        def last_log_message(self):
+            return self._last_log_data[3]
+
+        @attribute(dtype=str)
+        def last_log_context_unused(self):
+            return self._last_log_data[4]
+
+        @attribute(dtype=str)
+        def last_log_thread_id(self):
+            return self._last_log_data[5]
+
+    def assert_log_details(level):
+        assert log_received.wait(0.5)
+        now_ms = int(time.time() * 1000)
+        assert 0 < proxy_consumer.last_log_timestamp_ms <= now_ms
+        assert proxy_consumer.last_log_level == level.upper()
+        assert proxy_consumer.last_log_source == "test/log/source"
+        assert proxy_consumer.last_log_message == "test {}".format(level)
+        assert proxy_consumer.last_log_context_unused == ""
+        assert len(proxy_consumer.last_log_thread_id) > 0
+        log_received.clear()
+
+    devices_info = (
+        {"class": LogSourceDevice, "devices": [{"name": "test/log/source"}]},
+        {"class": LogConsumerDevice,
+         "devices": [{"name": "test/log/consumer"}]},
+    )
+
+    with MultiDeviceTestContext(devices_info) as context:
+        proxy_source = context.get_device("test/log/source")
+        proxy_consumer = context.get_device("test/log/consumer")
+        consumer_access = context.get_device_access("test/log/consumer")
+        proxy_source.add_logging_target("device::{}".format(consumer_access))
+
+        proxy_source.log_fatal_message()
+        assert_log_details("fatal")
+
+        proxy_source.log_error_message()
+        assert_log_details("error")
+
+        proxy_source.log_warn_message()
+        assert_log_details("warn")
+
+        proxy_source.log_info_message()
+        assert_log_details("info")
+
+        proxy_source.log_debug_message()
+        assert_log_details("debug")
+
+
 # fixtures
 
 @pytest.fixture(params=[GoodEnum])
@@ -649,7 +737,6 @@ def test_get_enum_labels_fail(bad_enum):
 # DevEncoded
 
 def test_read_write_dev_encoded(server_green_mode):
-
     class TestDevice(Device):
         green_mode = server_green_mode
         attr_value = ("uint8", b"\xd2\xd3")
@@ -689,11 +776,9 @@ def test_read_write_dev_encoded(server_green_mode):
         assert proxy.attr == ("uint8", b"\xd6\xd7")
 
 
-
 # Test Exception propagation
 
 def test_exeption_propagation(server_green_mode):
-
     class TestDevice(Device):
         green_mode = server_green_mode
 
