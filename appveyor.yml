@@ -38,6 +38,7 @@ environment:
       PYTHON_ROOT: c:\Python36\
       CMAKE_GENERATOR: "Visual Studio 14 2015"
       boost_version: 1.73.0
+      GEVENT_NOT_SUPPORTED: true
     - platform: x64
       configuration: Release
       ARCH: x64-msvc14
@@ -59,6 +60,7 @@ environment:
       PYTHON_ROOT: c:\Python37\
       CMAKE_GENERATOR: "Visual Studio 14 2015"
       boost_version: 1.73.0
+      GEVENT_NOT_SUPPORTED: true
     - platform: x64
       configuration: Release
       ARCH: x64-msvc14
@@ -80,6 +82,7 @@ environment:
       PYTHON_ROOT: c:\Python38\
       CMAKE_GENERATOR: "Visual Studio 14 2015"
       boost_version: 1.73.0
+      GEVENT_NOT_SUPPORTED: true
     - platform: x64
       configuration: Release
       ARCH: x64-msvc14
