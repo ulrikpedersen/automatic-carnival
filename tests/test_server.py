@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import sys
 import textwrap
 import threading
@@ -26,6 +27,7 @@ except ImportError:
 PY3 = sys.version_info >= (3,)
 YIELD_FROM = "yield from" if PY3 else "yield asyncio.From"
 RETURN = "return" if PY3 else "raise asyncio.Return"
+WINDOWS = "nt" in os.name
 
 
 # Test state/status
@@ -618,26 +620,36 @@ def test_logging(server_green_mode):
 
     class LogSourceDevice(Device):
         green_mode = server_green_mode
+        _last_log_time = 0.0
 
         @command
         def log_fatal_message(self):
+            self._last_log_time = time.time()
             self.fatal_stream("test fatal")
 
         @command
         def log_error_message(self):
+            self._last_log_time = time.time()
             self.error_stream("test error")
 
         @command
         def log_warn_message(self):
+            self._last_log_time = time.time()
             self.warn_stream("test warn")
 
         @command
         def log_info_message(self):
+            self._last_log_time = time.time()
             self.info_stream("test info")
 
         @command
         def log_debug_message(self):
+            self._last_log_time = time.time()
             self.debug_stream("test debug")
+
+        @attribute(dtype=float)
+        def last_log_time(self):
+            return self._last_log_time
 
     class LogConsumerDevice(Device):
         _last_log_data = []
@@ -671,16 +683,30 @@ def test_logging(server_green_mode):
         def last_log_thread_id(self):
             return self._last_log_data[5]
 
-    def assert_log_details(level):
+    def assert_log_details_correct(level):
         assert log_received.wait(0.5)
-        now_ms = int(time.time() * 1000)
-        assert 0 < proxy_consumer.last_log_timestamp_ms <= now_ms
+        _assert_log_time_close_enough()
+        _assert_log_fields_correct_for_level(level)
+        log_received.clear()
+
+    def _assert_log_time_close_enough():
+        log_emit_time = proxy_source.last_log_time
+        log_receive_time = proxy_consumer.last_log_timestamp_ms / 1000.0
+        now = time.time()
+        # cppTango logger time function may use a different
+        # implementation to CPython's time.time().  This is
+        # especially noticeable on Windows platforms.
+        timer_implementation_tolerance = 0.020 if WINDOWS else 0.001
+        min_time = log_emit_time - timer_implementation_tolerance
+        max_time = now + timer_implementation_tolerance
+        assert min_time <= log_receive_time <= max_time
+
+    def _assert_log_fields_correct_for_level(level):
         assert proxy_consumer.last_log_level == level.upper()
         assert proxy_consumer.last_log_source == "test/log/source"
         assert proxy_consumer.last_log_message == "test {}".format(level)
         assert proxy_consumer.last_log_context_unused == ""
         assert len(proxy_consumer.last_log_thread_id) > 0
-        log_received.clear()
 
     devices_info = (
         {"class": LogSourceDevice, "devices": [{"name": "test/log/source"}]},
@@ -695,19 +721,19 @@ def test_logging(server_green_mode):
         proxy_source.add_logging_target("device::{}".format(consumer_access))
 
         proxy_source.log_fatal_message()
-        assert_log_details("fatal")
+        assert_log_details_correct("fatal")
 
         proxy_source.log_error_message()
-        assert_log_details("error")
+        assert_log_details_correct("error")
 
         proxy_source.log_warn_message()
-        assert_log_details("warn")
+        assert_log_details_correct("warn")
 
         proxy_source.log_info_message()
-        assert_log_details("info")
+        assert_log_details_correct("info")
 
         proxy_source.log_debug_message()
-        assert_log_details("debug")
+        assert_log_details_correct("debug")
 
 
 # fixtures
