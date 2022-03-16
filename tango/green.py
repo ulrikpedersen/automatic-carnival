@@ -104,7 +104,7 @@ class AbstractExecutor(object):
         # Wait and timeout are not supported in synchronous mode
         if not self.asynchronous and (not wait or timeout):
             raise ValueError('Not supported in synchronous mode')
-        # Sychronous (no delegation)
+        # Synchronous (no delegation)
         if not self.asynchronous or not self.in_executor_context():
             return fn(*args, **kwargs)
         # Asynchronous delegation

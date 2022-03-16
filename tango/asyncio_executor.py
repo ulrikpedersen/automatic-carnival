@@ -77,7 +77,7 @@ class AsyncioExecutor(AbstractExecutor):
         """Return a result from an asyncio future."""
         if self.loop.is_running():
             raise RuntimeError("Loop is already running")
-        coro = asyncio.wait_for(accessor, timeout, loop=self.loop)
+        coro = asyncio.wait_for(accessor, timeout)
         return self.loop.run_until_complete(coro)
 
     def submit(self, fn, *args, **kwargs):
