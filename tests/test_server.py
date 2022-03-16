@@ -25,9 +25,7 @@ except ImportError:
     import trollius as asyncio  # noqa: F401
 
 # Constants
-PY3 = sys.version_info >= (3,)
-YIELD_FROM = "yield from" if PY3 else "yield asyncio.From"
-RETURN = "return" if PY3 else "raise asyncio.Return"
+ASYNC_AWAIT_AVAILABLE = sys.version_info >= (3, 5)
 WINDOWS = "nt" in os.name
 
 
@@ -545,13 +543,21 @@ def test_inheritance(server_green_mode):
             return 3 * A.dev_status(self)
 
         if server_green_mode == GreenMode.Asyncio:
-            code = textwrap.dedent("""\
-                @asyncio.coroutine
-                def dev_status(self):
-                    coro = super(type(self), self).dev_status()
-                    result = {YIELD_FROM}(coro)
-                    {RETURN}(3*result)
-            """).format(**globals())
+            if ASYNC_AWAIT_AVAILABLE:
+                code = textwrap.dedent("""\
+                    async def dev_status(self):
+                        coro = super(type(self), self).dev_status()
+                        result = await coro
+                        return 3*result
+                """).format(**globals())
+            else:
+                code = textwrap.dedent("""\
+                    @asyncio.coroutine
+                    def dev_status(self):
+                        coro = super(type(self), self).dev_status()
+                        result = yield asyncio.From(coro)
+                        raise asyncio.Return(3*result)
+                """).format(**globals())
             exec(code)
 
     with DeviceTestContext(B) as proxy:
