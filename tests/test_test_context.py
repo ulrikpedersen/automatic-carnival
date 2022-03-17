@@ -18,7 +18,7 @@ from tango.test_utils import (
 )
 
 
-AT_LEAST_PY35 = sys.version_info >= (3, 5)
+ASYNC_AWAIT_AVAILABLE = sys.version_info >= (3, 5)
 
 
 class Device1(Device):
@@ -53,7 +53,7 @@ class Device1Futures(Device1):
     green_mode = tango.GreenMode.Futures
 
 
-if AT_LEAST_PY35:
+if ASYNC_AWAIT_AVAILABLE:
     code = textwrap.dedent("""
         class Device1AsyncInit(Device1):
             green_mode = tango.GreenMode.Asyncio
@@ -76,7 +76,7 @@ def test_single_device(server_green_mode):
         assert proxy.attr1 == 100
 
 
-@pytest.mark.skipif(not AT_LEAST_PY35, reason="async/await only in Python 3.5+")
+@pytest.mark.skipif(not ASYNC_AWAIT_AVAILABLE, reason="async/await only in Python 3.5+")
 def test_single_async_init_device():
     with DeviceTestContext(Device1AsyncInit) as proxy:
         assert proxy.attr1 == 150
@@ -165,7 +165,7 @@ def test_multi_with_two_devices(server_green_mode):
         assert proxy2.attr2 == 200
 
 
-@pytest.mark.skipif(not AT_LEAST_PY35, reason="async/await only in Python 3.5+")
+@pytest.mark.skipif(not ASYNC_AWAIT_AVAILABLE, reason="async/await only in Python 3.5+")
 def test_multi_with_async_devices_initialised():
 
     class TestDevice2Async(Device2):
