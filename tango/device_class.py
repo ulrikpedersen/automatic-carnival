@@ -25,7 +25,7 @@ except ImportError:
     import collections as collections_abc
 
 from ._tango import Except, DevFailed, DeviceClass, CmdArgType, \
-    DispLevel, UserDefaultAttrProp
+    DispLevel, UserDefaultAttrProp, MultiClassAttribute
 from .pyutil import Util
 
 from .utils import is_pure_str, is_non_str_seq, seqStr_2_obj, obj_2_str, \
@@ -885,6 +885,44 @@ def __doc_DeviceClass():
 
         Parameters : None
         Return     : None
+    """)
+
+    document_method("get_class_attr", """
+    get_class_attr(self) -> None
+
+        Returns the instance of the MultiClassAttribute for the class 
+
+        :param: None
+        
+        :returns: the instance of the MultiClassAttribute for the class
+        :rtype: MultiClassAttribute
+    """)
+
+    document_method("get_pipe_list", """
+    get_pipe_list(self, dev_name) -> None
+
+        Returns the list of pipes for the specified device 
+
+        :param: dev_name - name of the device
+        :type: str
+
+        :returns: list of Pipe objects for device
+        :rtype: list(Pipe)
+    """)
+
+    document_method("get_pipe_by_name", """
+    get_pipe_by_name(self, pipe_name, dev_name) -> None
+
+        Returns the instance of the MultiClassAttribute for the class 
+
+        :param: pipe_name - name of the pipe
+        :type: str
+        
+        :param: dev_name - name of the device
+        :type: str
+
+        :returns: Pipe object
+        :rtype: Pipe
     """)
 
 
