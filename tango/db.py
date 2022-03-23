@@ -1657,10 +1657,10 @@ def __doc_Database():
 
             Return the list of all servers registered in the database.
             If wildcard parameter is given, then the list of matching servers
-            will be returned (ex: Serial/\*)
+            will be returned (ex: Serial/*)
 
         Parameters :
-            - wildcard : (str) host wildcard (ex: Serial/\*)
+            - wildcard : (str) host wildcard (ex: Serial/*)
         Return     : DbDatum containing list of registered servers
     """)
 
