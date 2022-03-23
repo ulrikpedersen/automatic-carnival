@@ -314,6 +314,43 @@ def __doc_Util():
        Throws     : DevFailed instead of aborting if exit is set to False
     """)
 
+    document_static_method("init", """
+    init(*args) -> Util
+
+       Static method that creates and gets the singleton object reference.
+       This method returns a reference to the object of the Util class. 
+       If the class singleton object has not been created, it will be instantiated
+
+       :param *args: the process commandline arguments
+       
+       :return: (Util) the tango Util object
+       :rtype: (Util)
+    """)
+
+    document_method("get_device_ior", """
+    get_device_ior(self, device) -> str
+
+        Get the associated with device CORBA object reference
+
+        :param device: (DeviceImpl) device object
+        :type device: (DeviceImpl)
+        
+        :return: the associated CORBA object reference
+        :rtype: str
+    """)
+
+    document_method("get_dserver_ior", """
+    get_dserver_ior(self, device_server) -> str
+
+        Get the associated with device CORBA object reference
+
+        :param device_server: (DServer) device object
+        :type device_server: (DServer)
+
+        :return: the associated CORBA object reference
+        :rtype: str
+    """)
+
     document_method("set_trace_level", """
     set_trace_level(self, level) -> None
 
@@ -514,6 +551,21 @@ def __doc_Util():
     server_run(self) -> None
 
             Run the CORBA event loop.
+            This method runs the CORBA event loop. For UNIX or Linux operating system,
+            this method does not return. For Windows in a non-console mode, this method
+            start a thread which enter the CORBA event loop.
+
+        Parameters : None
+        Return     : None
+    """)
+
+    # TODO finish documentation
+    document_method("orb_run", """
+    orb_run(self) -> None
+
+            TODO: CHECK description
+            
+            Alternative way to run the CORBA event loop.
             This method runs the CORBA event loop. For UNIX or Linux operating system,
             this method does not return. For Windows in a non-console mode, this method
             start a thread which enter the CORBA event loop.
@@ -735,6 +787,29 @@ def __doc_Util():
         Return     : None
 
         New in PyTango 8.1.0
+    """)
+
+    # TODO finish documentation
+    # document_method("set_interceptors", """
+    # set_interceptors(self) -> None
+    #
+    #     TODO DOCU
+    #
+    # """)
+
+    # TODO finish documentation
+    # document_static_method("set_use_db", """
+    # set_use_db(self) -> None
+    #
+    #     TODO DOCU
+    #
+    # """)
+
+    document_method("server_cleanup", """
+    server_cleanup(self) -> None
+
+        This method cleanup a Tango device server and relinquish all computer resources before the process exit
+
     """)
 
 
