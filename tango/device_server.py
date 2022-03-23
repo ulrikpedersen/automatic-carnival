@@ -1348,42 +1348,6 @@ def __doc_DeviceImpl():
         :rtype: Sequence[AttributeConfig]
     """)
 
-    document_method("get_attribute_config_2", """
-    get_attribute_config_2(self, attr_name) -> Sequence[AttributeConfig_2]
-
-        Returns the list of AttributeConfig_2 for the requested names
-
-        :param attr_names: sequence of str with attribute names
-        :type attr_name: list[str]
-
-        :returns: AttributeConfig_2 for each requested attribute name
-        :rtype: Sequence[AttributeConfig_2]
-    """)
-
-    document_method("get_attribute_config_3", """
-    get_attribute_config_3(self, attr_name) -> Sequence[AttributeConfig_3]
-
-        Returns the list of AttributeConfig_3 for the requested names
-
-        :param attr_names: sequence of str with attribute names
-        :type attr_name: list[str]
-
-        :returns: AttributeConfig_3 for each requested attribute name
-        :rtype: Sequence[AttributeConfig_3]
-    """)
-
-    document_method("set_attribute_config_3", """
-    set_attribute_config_3(self, new_conf) -> None
-
-        Sets attribute configuration locally and in the Tango database
-
-        :param new_conf: The new attribute(s) configuration. One AttributeConfig structure is needed for each attribute to update
-        :type attr_name: list[AttributeConfig_3]
-
-        :returns: None
-        :rtype: None
-    """)
-
     document_method("get_command_poll_period", """
     get_command_poll_period(self, cmd_name) -> int
 
@@ -1613,6 +1577,42 @@ def __doc_extra_DeviceImpl(cls):
         :type signo: int
 
         :raises DevFailed: This method does not throw exception but a redefined method can.
+    """)
+
+    document_method("get_attribute_config_2", """
+    get_attribute_config_2(self, attr_name) -> Sequence[AttributeConfig_2]
+
+        Returns the list of AttributeConfig_2 for the requested names
+
+        :param attr_names: sequence of str with attribute names
+        :type attr_name: list[str]
+
+        :returns: AttributeConfig_2 for each requested attribute name
+        :rtype: Sequence[AttributeConfig_2]
+    """)
+
+    document_method("get_attribute_config_3", """
+    get_attribute_config_3(self, attr_name) -> Sequence[AttributeConfig_3]
+
+        Returns the list of AttributeConfig_3 for the requested names
+
+        :param attr_names: sequence of str with attribute names
+        :type attr_name: list[str]
+
+        :returns: AttributeConfig_3 for each requested attribute name
+        :rtype: Sequence[AttributeConfig_3]
+    """)
+
+    document_method("set_attribute_config_3", """
+    set_attribute_config_3(self, new_conf) -> None
+
+        Sets attribute configuration locally and in the Tango database
+
+        :param new_conf: The new attribute(s) configuration. One AttributeConfig structure is needed for each attribute to update
+        :type attr_name: list[AttributeConfig_3]
+
+        :returns: None
+        :rtype: None
     """)
 
     copy_doc(cls, "dev_state")
