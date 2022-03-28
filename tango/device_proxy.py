@@ -2374,21 +2374,24 @@ def __doc_DeviceProxy():
     document_method("is_command_polled", """
     is_command_polled(self, cmd_name) -> bool
 
-            True if the command is polled.
+        True if the command is polled.
 
-        Parameters :
-            - cmd_name : (str) command name
-        Return     : boolean value
+        :param str cmd_name: command name
+        
+        :returns: boolean value
+        :rtype: bool
+        
     """)
 
     document_method("is_attribute_polled", """
     is_attribute_polled(self, attr_name) -> bool
 
-            True if the attribute is polled.
+        True if the attribute is polled.
 
-        Parameters :
-            - attr_name : (str) attribute name
-        Return     : boolean value
+        :param str attr_name: attribute name
+        
+        :returns: boolean value
+        :rtype: bool
     """)
 
     document_method("stop_poll_command", """

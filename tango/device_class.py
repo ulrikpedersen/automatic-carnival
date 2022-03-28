@@ -887,6 +887,41 @@ def __doc_DeviceClass():
         Return     : None
     """)
 
+    document_method("get_class_attr", """
+    get_class_attr(self) -> None
+
+        Returns the instance of the :class:`tango.MultiClassAttribute` for the class 
+
+        :param: None
+        
+        :returns: the instance of the :class:`tango.MultiClassAttribute` for the class
+        :rtype: :class:`tango.MultiClassAttribute`
+    """)
+
+    document_method("get_pipe_list", """
+    get_pipe_list(self, dev_name) -> None
+
+        Returns the list of pipes for the specified device 
+
+        :param atr dev_name: name of the device
+
+        :returns: list of :class:`tango.server.pipe` objects for device
+        :rtype: :class:`tango.server.pipe`
+    """)
+
+    document_method("get_pipe_by_name", """
+    get_pipe_by_name(self, pipe_name, dev_name) -> None
+
+        Returns the :class:`Pipe` instance with name <pipe_name> for the specified device 
+
+        :param str pipe_name: name of the pipe
+        
+        :param str dev_name: name of the device
+
+        :returns: :class:`tango.server.pipe` object
+        :rtype: :class:`tango.server.pipe`
+    """)
+
 
 def device_class_init(doc=True):
     __init_DeviceClass()
