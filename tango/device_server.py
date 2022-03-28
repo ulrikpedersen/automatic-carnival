@@ -265,6 +265,7 @@ def __DeviceImpl__get_device_class(self):
         Get device class singleton.
 
         :returns: the device class singleton (device_class field)
+        :rtype: DeviceClass
 
     """
     try:
@@ -1125,7 +1126,7 @@ def __doc_DeviceImpl():
     document_method("init_logger", """
     init_logger(self) -> None
 
-        Setups logger for the device
+        Setups logger for the device.  Called automatically when device starts.
     """)
 
     document_method("start_logging", """
@@ -1156,8 +1157,7 @@ def __doc_DeviceImpl():
 
         True if the attribute is polled.
 
-        :param attr_name: attribute name
-        :type attr_name: str
+        :param str attr_name: attribute name
         
         :return: True if the attribute is polled
         :rtype: bool
@@ -1168,8 +1168,7 @@ def __doc_DeviceImpl():
 
         True if the command is polled.
 
-        :param attr_name: attribute name
-        :type attr_name: str
+        :param str cmd_name: attribute name
         
         :return: True if the command is polled
         :rtype: bool
@@ -1180,11 +1179,9 @@ def __doc_DeviceImpl():
 
         Add an attribute to the list of polled attributes.
 
-        :param attr_name: attribute name
-        :type attr_name: str
+        :param str attr_name: attribute name
         
-        :param period: polling period in milliseconds
-        :type period: int
+        :param int period: polling period in milliseconds
 
         :return: None
         :rtype: None
@@ -1195,11 +1192,9 @@ def __doc_DeviceImpl():
 
         Add a command to the list of polled commands.
 
-        :param cmd_name: attribute name
-        :type cmd_name: str
+        :param str cmd_name: attribute name
 
-        :param period: polling period in milliseconds
-        :type period: int
+        :param int period: polling period in milliseconds
 
         :return: None
         :rtype: None
@@ -1210,8 +1205,7 @@ def __doc_DeviceImpl():
 
         Remove an attribute from the list of polled attributes.
 
-        :param attr_name: attribute name
-        :type attr_name: str
+        :param str attr_name: attribute name
 
         :return: None
         :rtype: None
@@ -1222,8 +1216,7 @@ def __doc_DeviceImpl():
 
         Remove a command from the list of polled commands.
 
-        :param cmd_name: cmd_name name
-        :type cmd_name: str
+        :param str cmd_name: cmd_name name
 
         :return: None
         :rtype: None
@@ -1337,15 +1330,15 @@ def __doc_DeviceImpl():
     """)
 
     document_method("get_attribute_config", """
-    get_attribute_config(self, attr_name) -> Sequence[AttributeConfig]
+    get_attribute_config(self, attr_names) -> list[DeviceAttributeConfig]
 
         Returns the list of AttributeConfig for the requested names
 
         :param attr_names: sequence of str with attribute names
-        :type attr_name: list[str]
+        :type attr_names: list[str]
 
-        :returns: AttributeConfig for each requested attribute name
-        :rtype: Sequence[AttributeConfig]
+        :returns: :class:`tango.DeviceAttributeConfig` for each requested attribute name
+        :rtype: list[:class:`tango.DeviceAttributeConfig`]
     """)
 
     document_method("get_command_poll_period", """
@@ -1580,27 +1573,27 @@ def __doc_extra_DeviceImpl(cls):
     """)
 
     document_method("get_attribute_config_2", """
-    get_attribute_config_2(self, attr_name) -> Sequence[AttributeConfig_2]
+    get_attribute_config_2(self, attr_names) -> list[AttributeConfig_2]
 
         Returns the list of AttributeConfig_2 for the requested names
 
         :param attr_names: sequence of str with attribute names
-        :type attr_name: list[str]
+        :type attr_names: list[str]
 
-        :returns: AttributeConfig_2 for each requested attribute name
-        :rtype: Sequence[AttributeConfig_2]
+        :returns: list of :class:`tango.AttributeConfig_2` for each requested attribute name
+        :rtype: list[:class:`tango.AttributeConfig_2`]
     """)
 
     document_method("get_attribute_config_3", """
-    get_attribute_config_3(self, attr_name) -> Sequence[AttributeConfig_3]
+    get_attribute_config_3(self, attr_name) -> list[AttributeConfig_3]
 
         Returns the list of AttributeConfig_3 for the requested names
 
         :param attr_names: sequence of str with attribute names
-        :type attr_name: list[str]
+        :type attr_names: list[str]
 
-        :returns: AttributeConfig_3 for each requested attribute name
-        :rtype: Sequence[AttributeConfig_3]
+        :returns: list of :class:`tango.AttributeConfig_3` for each requested attribute name
+        :rtype: list[:class:`tango.AttributeConfig_3`]
     """)
 
     document_method("set_attribute_config_3", """
@@ -1609,7 +1602,7 @@ def __doc_extra_DeviceImpl(cls):
         Sets attribute configuration locally and in the Tango database
 
         :param new_conf: The new attribute(s) configuration. One AttributeConfig structure is needed for each attribute to update
-        :type attr_name: list[AttributeConfig_3]
+        :type new_conf: list[:class:`tango.AttributeConfig_3`]
 
         :returns: None
         :rtype: None
@@ -2434,7 +2427,7 @@ def __doc_Attr():
 
         This method checks data type and throws an exception in case of unsupported data type
 
-        :raises API_AttrWrongDefined: If the data type is unsupported.
+        :raises: :class:`DevFailed`: If the data type is unsupported.
     """)
 
     document_method("is_allowed", """
@@ -2443,10 +2436,10 @@ def __doc_Attr():
         Returns whether the request_type is allowed for the specified device
         
         :param device: instance of Device
-        :type device: Device
+        :type device: :class:`tango.server.Device`
         
         :param request_type: AttReqType.READ_REQ for read request or AttReqType.WRITE_REQ for write request
-        :type request_type: AttReqType
+        :type request_type: :const:`AttReqType`
 
         :returns: True if request_type is allowed for the specified device
         :rtype: bool
@@ -2470,7 +2463,7 @@ def __doc_Attr():
     #
     #     TODO: Check description
     #
-    #     Default write empty method. For readable attribute, it is necessary to overwrite it
+    #     Default write empty method. For writable attribute, it is necessary to overwrite it
     #
     #     :param device: instance of Device
     #     :type device: Device

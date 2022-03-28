@@ -25,7 +25,7 @@ except ImportError:
     import collections as collections_abc
 
 from ._tango import Except, DevFailed, DeviceClass, CmdArgType, \
-    DispLevel, UserDefaultAttrProp, MultiClassAttribute
+    DispLevel, UserDefaultAttrProp
 from .pyutil import Util
 
 from .utils import is_pure_str, is_non_str_seq, seqStr_2_obj, obj_2_str, \
@@ -890,12 +890,12 @@ def __doc_DeviceClass():
     document_method("get_class_attr", """
     get_class_attr(self) -> None
 
-        Returns the instance of the MultiClassAttribute for the class 
+        Returns the instance of the :class:`tango.MultiClassAttribute` for the class 
 
         :param: None
         
-        :returns: the instance of the MultiClassAttribute for the class
-        :rtype: MultiClassAttribute
+        :returns: the instance of the :class:`tango.MultiClassAttribute` for the class
+        :rtype: :class:`tango.MultiClassAttribute`
     """)
 
     document_method("get_pipe_list", """
@@ -903,26 +903,23 @@ def __doc_DeviceClass():
 
         Returns the list of pipes for the specified device 
 
-        :param: dev_name - name of the device
-        :type: str
+        :param atr dev_name: name of the device
 
-        :returns: list of Pipe objects for device
-        :rtype: list(Pipe)
+        :returns: list of :class:`tango.server.pipe` objects for device
+        :rtype: :class:`tango.server.pipe`
     """)
 
     document_method("get_pipe_by_name", """
     get_pipe_by_name(self, pipe_name, dev_name) -> None
 
-        Returns the instance of the MultiClassAttribute for the class 
+        Returns the :class:`Pipe` instance with name <pipe_name> for the specified device 
 
-        :param: pipe_name - name of the pipe
-        :type: str
+        :param str pipe_name: name of the pipe
         
-        :param: dev_name - name of the device
-        :type: str
+        :param str dev_name: name of the device
 
-        :returns: Pipe object
-        :rtype: Pipe
+        :returns: :class:`tango.server.pipe` object
+        :rtype: :class:`tango.server.pipe`
     """)
 
 

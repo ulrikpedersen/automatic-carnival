@@ -1,5 +1,4 @@
-# Simple docker file to create Docker with pre-installed packadges to compile docs
-# Y.Matveev, Marсh, 2022
+# Simple docker file to create Docker with pre-installed packages to compile docs
 
 FROM sphinxdoc/sphinx
 

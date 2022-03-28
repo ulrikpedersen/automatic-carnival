@@ -17,7 +17,7 @@ docker build . -t pytango-doc
 Run an instance of the container, volume mounting an external PyTango repo into the container.  For example:
 
 ```shell script
-docker run -it --rm -v ~/tango-src/pytango:/opt/pytango pytango-dev:py3.7-tango9.3.2 /bin/bash
+docker run -it --rm -v ~/tango-src/pytango:/opt/pytango pytango-doc /bin/bash
 ```
 
 Inside the container:
