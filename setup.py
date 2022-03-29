@@ -567,6 +567,10 @@ def setup_args():
             "pytest-xdist < 2.5",
             "pytest-forked < 1.4",
         ]
+    elif PYTHON_VERSION < (3, 7):
+        tests_require += [
+            "pytest < 7.1",
+        ]
     else:
         tests_require += ["pytest", "pytest-xdist"]
 
