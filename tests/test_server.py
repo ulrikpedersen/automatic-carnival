@@ -11,10 +11,11 @@ import enum
 from tango import AttrData, AttrWriteType, DevFailed, DevEncoded, \
     DevEnum, DevState, GreenMode, READ_WRITE, SCALAR
 from tango.server import Device
+from tango.pyutil import parse_args
 from tango.server import command, attribute, device_property
 from tango.test_utils import DeviceTestContext, MultiDeviceTestContext, \
     GoodEnum, BadEnumNonZero, BadEnumSkipValues, BadEnumDuplicates, \
-    assert_close
+    assert_close, os_system, DEVICE_SERVER_ARGUMENTS
 from tango.utils import get_enum_labels, EnumTypeError
 
 
@@ -821,10 +822,9 @@ def test_read_write_dev_encoded(server_green_mode):
         assert proxy.attr == ("uint8", b"\xd6\xd7")
 
 
-
 # Test Exception propagation
 
-def test_exeption_propagation(server_green_mode):
+def test_exception_propagation(server_green_mode):
 
     class TestDevice(Device):
         green_mode = server_green_mode
@@ -845,3 +845,14 @@ def test_exeption_propagation(server_green_mode):
         with pytest.raises(DevFailed) as record:
             proxy.cmd()
         assert "ZeroDivisionError" in record.value.args[0].desc
+
+
+@pytest.mark.parametrize("applicable_os, test_input, expected_output, exception_raised", DEVICE_SERVER_ARGUMENTS)
+def test_device_server_arguments(applicable_os, test_input, expected_output, exception_raised, os_system):
+    if sys.platform in applicable_os:
+        try:
+            assert set(expected_output) == set(parse_args(test_input.split()))
+        except SystemExit as err:
+            assert exception_raised
+    else:
+        pytest.skip("unsupported os for test_input")
