@@ -115,35 +115,27 @@ OS_SYSTEMS = ['linux', 'win']
 #    os_system, in string, out arguments list, raised exception
 DEVICE_SERVER_ARGUMENTS = (
     (['linux', 'win'], 'MyDs instance --nodb --port 1234',
-     ['MyDs', 'instance', '-nodb', '-ORBendPoint', 'giop:tcp::1234'], False),
+     ['MyDs', 'instance', '-nodb', '-ORBendPoint', 'giop:tcp::1234']),
     (['linux', 'win'], 'MyDs -port 1234 -host myhost instance',
-     ['MyDs', 'instance', '-ORBendPoint', 'giop:tcp:myhost:1234'], False),
+     ['MyDs', 'instance', '-ORBendPoint', 'giop:tcp:myhost:1234']),
     (['linux', 'win'], 'MyDs instance --ORBendPoint giop:tcp::1234',
-     ['MyDs', 'instance', '-ORBendPoint', 'giop:tcp::1234'], False),
+     ['MyDs', 'instance', '-ORBendPoint', 'giop:tcp::1234']),
     (['linux', 'win'], 'MyDs instance -nodb -port 1000 -dlist a/b/c;d/e/f',
-     ['MyDs', 'instance', '-ORBendPoint', 'giop:tcp::1000', '-nodb', '-dlist', 'a/b/c;d/e/f'], False),
-    (['linux', 'win'], 'MyDs instance -nodb -dlist a/b/c;d/e/f',
-     [], True),
+     ['MyDs', 'instance', '-ORBendPoint', 'giop:tcp::1000', '-nodb', '-dlist', 'a/b/c;d/e/f']),
+    ([], 'MyDs instance -nodb -dlist a/b/c;d/e/f', []),  # this test should always fail
 
 # the most complicated case: verbose
-    (['linux', 'win'], 'MyDs instance -vvvv',
-     ['MyDs', 'instance', '-v4'], False),
-    (['linux', 'win'], 'MyDs instance --verbose --verbose --verbose --verbose',
-     ['MyDs', 'instance', '-v4'], False),
-    (['linux', 'win'], 'MyDs instance -v4',
-     ['MyDs', 'instance', '-v4'], False),
-    (['linux', 'win'], 'MyDs instance -v 4',
-     ['MyDs', 'instance', '-v4'], False),
+    (['linux', 'win'], 'MyDs instance -vvvv', ['MyDs', 'instance', '-v4']),
+    (['linux', 'win'], 'MyDs instance --verbose --verbose --verbose --verbose', ['MyDs', 'instance', '-v4']),
+    (['linux', 'win'], 'MyDs instance -v4', ['MyDs', 'instance', '-v4']),
+    (['linux', 'win'], 'MyDs instance -v 4', ['MyDs', 'instance', '-v4']),
 
 # some options can be only in win, in linux should be error
-    (['win'], 'MyDs instance -dbg -i -s -u',
-     ['MyDs', 'instance', '-dbg', '-i', '-s', '-u'], False),
-    (['linux'], 'MyDs instance -dbg -i -s -u',
-     [], True),
+    (['win'], 'MyDs instance -dbg -i -s -u', ['MyDs', 'instance', '-dbg', '-i', '-s', '-u']),
 
 # varialbe ORB options
     (['linux', 'win'], 'MyDs instance -ORBtest1 test1 --ORBtest2 test2',
-     ['MyDs', 'instance', '-ORBtest1', 'test1', '-ORBtest2', 'test2'], False)
+     ['MyDs', 'instance', '-ORBtest1', 'test1', '-ORBtest2', 'test2'])
 )
 
 def repr_type(x):

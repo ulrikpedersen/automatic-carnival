@@ -847,12 +847,9 @@ def test_exception_propagation(server_green_mode):
         assert "ZeroDivisionError" in record.value.args[0].desc
 
 
-@pytest.mark.parametrize("applicable_os, test_input, expected_output, exception_raised", DEVICE_SERVER_ARGUMENTS)
-def test_device_server_arguments(applicable_os, test_input, expected_output, exception_raised, os_system):
-    if sys.platform in applicable_os:
-        try:
-            assert set(expected_output) == set(parse_args(test_input.split()))
-        except SystemExit as err:
-            assert exception_raised
-    else:
-        pytest.skip("unsupported os for test_input")
+@pytest.mark.parametrize("applicable_os, test_input, expected_output", DEVICE_SERVER_ARGUMENTS)
+def test(applicable_os, test_input, expected_output, os_system):
+    try:
+        assert set(expected_output) == set(parse_args(test_input.split()))
+    except SystemExit as err:
+        assert sys.platform not in applicable_os
