@@ -848,7 +848,7 @@ def test_exception_propagation(server_green_mode):
 
 
 @pytest.mark.parametrize("applicable_os, test_input, expected_output", DEVICE_SERVER_ARGUMENTS)
-def test(applicable_os, test_input, expected_output, os_system):
+def test_arguments(applicable_os, test_input, expected_output, os_system):
     try:
         assert set(expected_output) == set(parse_args(test_input.split()))
     except SystemExit as err:

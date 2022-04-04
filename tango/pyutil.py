@@ -292,8 +292,11 @@ def parse_args(args):
         if type(value) == bool:
             if value:
                 args += ["-{:s}".format(key)]
-        elif value is not None and key not in ['host', 'port', 'verbose', 'instance_name']:
-            args += ["-{:s}".format(key), "{:s}".format(value)]
+        elif value is not None:
+            if key == 'file':
+                args += ["-{:s}={:s}".format(key, value)]
+            elif key not in ['host', 'port', 'verbose', 'instance_name']:
+                args += ["-{:s}".format(key), "{:s}".format(value)]
 
     return args
 
