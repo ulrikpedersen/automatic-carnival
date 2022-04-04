@@ -10,6 +10,7 @@ default:
   image: continuumio/miniconda3:4.9.2
 
 variables:
+  GIT_STRATEGY: clone
   CPP_TANGO_VERSION: "9.3.4"
   CACHE_FALLBACK_KEY: "$CI_DEFAULT_BRANCH"
   TWINE_USERNAME: __token__
