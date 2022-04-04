@@ -63,6 +63,7 @@ build-pypi-sdist-package:
   stage: build
   image: python:3.8
   script:
+    - df -h
     - python setup.py check sdist
   artifacts:
     expire_in: 1 day
