@@ -210,7 +210,7 @@ def __Util__delete_device(self, klass_name, device_name):
 
 def parse_args(args):
     parser = ArgumentParser(prog=os.path.splitext(args[0])[0], usage="%(prog)s instance_name [-v[trace level]] " +
-                             "[-file=<file_name> | -nodb [-host] [-port] [-dlist ]]", add_help=False)
+                             "[-file=<file_name> | -nodb [-host] [-port] [-dlist]]", add_help=False)
 
     parser.add_argument('instance_name', nargs='+', help='Server instance name')
     parser.add_argument("-h", "-?", "--help", action="help", help="show this help message and exit")
