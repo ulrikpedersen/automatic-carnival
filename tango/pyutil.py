@@ -209,8 +209,8 @@ def __Util__delete_device(self, klass_name, device_name):
 
 
 def parse_args(args):
-    parser = ArgumentParser(prog=os.path.splitext(args[0])[0], usage="%(prog)s instance_name [-v[trace level]] "
-                                             "[-file=<file_name> | -nodb [-host] [-port] [-dlist]]", add_help=False)
+    parser = ArgumentParser(prog=os.path.splitext(args[0])[0], usage="%(prog)s instance_name [-v[trace level]] " +
+                             "[-file=<file_name> | -nodb [-host] [-port] [-dlist]]", add_help=False)
 
     parser.add_argument('instance_name', help='Device server instance name')
     parser.add_argument("-h", "-?", "--help", action="help", help="show this help message and exit")
@@ -232,10 +232,10 @@ def parse_args(args):
                             help="Install the service and choose the automatic startup mode")
         parser.add_argument("-u", dest="u", action='store_true', default=False, help="Uninstall the service")
 
-    group = parser.add_argument_group("Run server without database")
+    group = parser.add_argument_group("Run device server without database")
     group.add_argument("-nodb", "--nodb", dest="nodb", action="store_true", help="run server without DB")
     group.add_argument("-host", "--host", dest="host", default='', action="store",
-                       help="Host from which server accept requests (alternatively use ORBendPoint option)")
+                       help="Host from which server accepts requests (alternatively use ORBendPoint option)")
     group.add_argument("-port", "--port", dest="port", default='', action="store",
                        help="Port on which the device server listens (alternatively use ORBendPoint option)")
     group.add_argument("-dlist", "--dlist", dest="dlist", metavar="DEV1,DEV2,etc",
