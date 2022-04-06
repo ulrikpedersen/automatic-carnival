@@ -209,21 +209,21 @@ def __Util__delete_device(self, klass_name, device_name):
 
 
 def parse_args(args):
-    parser = ArgumentParser(prog=os.path.splitext(args[0])[0], usage="%(prog)s instance_name [-v[trace level]] " +
-                             "[-file=<file_name> | -nodb [-host] [-port] [-dlist ]]", add_help=False)
+    parser = ArgumentParser(prog=os.path.splitext(args[0])[0], usage="%(prog)s instance_name [-v[trace level]] "
+                                             "[-file=<file_name> | -nodb [-host] [-port] [-dlist]]", add_help=False)
 
-    parser.add_argument('instance_name', nargs='+', help='Server instance name')
+    parser.add_argument('instance_name', help='Device server instance name')
     parser.add_argument("-h", "-?", "--help", action="help", help="show this help message and exit")
 
     parser.add_argument("-v", "--verbose", dest="verbose", action='count',
                         help="set the trace level. " +
-                             "Can be used in count way: -vvvv or --verbose --verbose")
+                             "Can be used in count way: -vv or --verbose --verbose")
     # this option won't be used, since we manually pop all -vN and -v N arguments, but we have to display help about it
     parser.add_argument("-vLEVEL", dest="vn", action='store', metavar=" ",
                         help="directly set the trace level to LEVEL")
 
     parser.add_argument("-file", "--file", dest="file", metavar="FILE_PATH",
-                        help="start a device server using an ASCII file instead of the Tango database")
+                        help="start device server using an ASCII file instead of the Tango database")
 
     if sys.platform.startswith("win"):
         parser.add_argument("-dbg", "--dbg", dest="dbg", action='store_true', default=False, help="Enable debug")
@@ -246,7 +246,7 @@ def parse_args(args):
 
     group.add_argument("-ORBendPoint", "--ORBendPoint", dest="ORBendPoint", action="store",
                        metavar="giop:tcp:<host>:<port>",
-                       help="Specifying the host from which server accept " +
+                       help="Specifying the host from which server accept "
                             "requests and port on which the device server listens.")
 
     group.add_argument("-ORB<any_another_option>", "--ORB<any_another_option>", dest="ORB_not_used", action="store",
