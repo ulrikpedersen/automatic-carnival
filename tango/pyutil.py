@@ -216,14 +216,14 @@ def parse_args(args):
     parser.add_argument("-h", "-?", "--help", action="help", help="show this help message and exit")
 
     parser.add_argument("-v", "--verbose", dest="verbose", action='count',
-                        help="set the trace level" +
-                             "Can be user in count way: -vvvv or --verbose --verbose")
+                        help="set the trace level. " +
+                             "Can be used in count way: -vvvv or --verbose --verbose")
     # this option won't be used, since we manually pop all -vN and -v N arguments, but we have to display help about it
     parser.add_argument("-vLEVEL", dest="vn", action='store', metavar=" ",
-                        help="Directly set the trace level to LEVEL")
+                        help="directly set the trace level to LEVEL")
 
     parser.add_argument("-file", "--file", dest="file", metavar="FILE_PATH",
-                        help="Start a device server using an ASCII file instead of the Tango database.")
+                        help="start a device server using an ASCII file instead of the Tango database")
 
     if sys.platform.startswith("win"):
         parser.add_argument("-dbg", "--dbg", dest="dbg", action='store_true', default=False, help="Enable debug")
@@ -239,7 +239,7 @@ def parse_args(args):
     group.add_argument("-port", "--port", dest="port", default='', action="store",
                        help="Port on which the device server listens (alternatively use ORBendPoint option)")
     group.add_argument("-dlist", "--dlist", dest="dlist", metavar="DEV1,DEV2,etc",
-                       help="Give the device name list. This option is supported only with the -nodb option.")
+                       help="The device name list. This option is supported only with the -nodb option.")
 
     group = parser.add_argument_group("ORB options (started with -ORBxxx):" +
                                       "options directly passed to the underlying ORB. Should be rarely used")
@@ -248,6 +248,10 @@ def parse_args(args):
                        metavar="giop:tcp:<host>:<port>",
                        help="Specifying the host from which server accept " +
                             "requests and port on which the device server listens.")
+
+    group.add_argument("-ORB<any_another_option>", "--ORB<any_another_option>", dest="ORB_not_used", action="store",
+                       metavar="giop:tcp:<host>:<port>",
+                       help="Any another ORB option")
 
     # workaround to add arbitrary ORB options
     for arg in args:
@@ -275,7 +279,7 @@ def parse_args(args):
         parsed_args.ORBendPoint = 'giop:tcp:{:s}:{:s}'.format(parsed_args.host, parsed_args.port)
 
     if parsed_args.nodb and parsed_args.ORBendPoint is None:
-        raise SystemExit('-nodb option should used with ([-host] -port) or -ORBendPoint option')
+        raise SystemExit('-nodb option should used with [-host] -port or -ORBendPoint options')
 
     args = [os.path.splitext(args[0])[0]]
 
@@ -295,7 +299,7 @@ def parse_args(args):
         elif value is not None:
             if key == 'file':
                 args += ["-{:s}={:s}".format(key, value)]
-            elif key not in ['host', 'port', 'verbose', 'instance_name']:
+            elif key not in ['host', 'port', 'verbose', 'instance_name', 'ORB_not_used']:
                 args += ["-{:s}".format(key), "{:s}".format(value)]
 
     return args

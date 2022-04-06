@@ -13,7 +13,7 @@ From within this folder, run commands like the following:
 
 ```shell script
 export PYTHON_VERSION=3.7
-export TANGO_VERSION=9.3.4
+exportTANGO_VERSION=9.3.4
 docker build . -t pytango-dev:py${PYTHON_VERSION}-tango${TANGO_VERSION} --build-arg PYTHON_VERSION --build-arg TANGO_VERSION
 ```
 
