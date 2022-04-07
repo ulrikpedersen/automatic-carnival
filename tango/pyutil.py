@@ -210,7 +210,7 @@ def __Util__delete_device(self, klass_name, device_name):
 
 def parse_args(args):
     parser = ArgumentParser(prog=os.path.splitext(args[0])[0], usage="%(prog)s instance_name [-v[trace level]] " +
-                             "[-file=<file_name> | -nodb [-host] [-port] [-dlist]]", add_help=False)
+                             "[-host] [-port] [-file=<file_name> | -nodb [-dlist]]", add_help=False)
 
     parser.add_argument('instance_name', nargs='+', help='Device server instance name')
     parser.add_argument("-h", "-?", "--help", action="help", help="show this help message and exit")
@@ -225,6 +225,11 @@ def parse_args(args):
     parser.add_argument("-file", "--file", dest="file", metavar="FILE_PATH",
                         help="start device server using an ASCII file instead of the Tango database")
 
+    parser.add_argument("-host", "--host", dest="host", default='', action="store",
+                       help="Force the host from which server accepts requests (alternatively use ORBendPoint option)")
+    parser.add_argument("-port", "--port", dest="port", default='', action="store",
+                       help="Force the port on which the device server listens (alternatively use ORBendPoint option)")
+
     if sys.platform.startswith("win"):
         parser.add_argument("-dbg", "--dbg", dest="dbg", action='store_true', default=False, help="Enable debug")
         parser.add_argument("-i", dest="i", action='store_true', default=False, help="Install the service")
@@ -234,10 +239,6 @@ def parse_args(args):
 
     group = parser.add_argument_group("Run device server without database")
     group.add_argument("-nodb", "--nodb", dest="nodb", action="store_true", help="run server without DB")
-    group.add_argument("-host", "--host", dest="host", default='', action="store",
-                       help="Host from which server accepts requests (alternatively use ORBendPoint option)")
-    group.add_argument("-port", "--port", dest="port", default='', action="store",
-                       help="Port on which the device server listens (alternatively use ORBendPoint option)")
     group.add_argument("-dlist", "--dlist", dest="dlist", metavar="DEV1,DEV2,etc",
                        help="The device name list. This option is supported only with the -nodb option.")
 
