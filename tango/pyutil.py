@@ -212,7 +212,7 @@ def parse_args(args):
     parser = ArgumentParser(prog=os.path.splitext(args[0])[0], usage="%(prog)s instance_name [-v[trace level]] " +
                              "[-file=<file_name> | -nodb [-host] [-port] [-dlist]]", add_help=False)
 
-    parser.add_argument('instance_name', help='Device server instance name')
+    parser.add_argument('instance_name', nargs='+', help='Device server instance name')
     parser.add_argument("-h", "-?", "--help", action="help", help="show this help message and exit")
 
     parser.add_argument("-v", "--verbose", dest="verbose", action='count',
