@@ -124,7 +124,8 @@ DEVICE_SERVER_ARGUMENTS = (
      ['MyDs', 'instance', '-ORBendPoint', 'giop:tcp::1000', '-nodb', '-dlist', 'a/b/c;d/e/f']),
     (['linux', 'win'], 'MyDs instance -file a/b/c',
      ['MyDs', 'instance', '-file=a/b/c']),
-    ([], 'MyDs instance -nodb -dlist a/b/c;d/e/f', []),  # this test should always fail
+    ([], 'MyDs instance -nodb', []),  # this test should always fail
+    ([], 'MyDs instance -dlist a/b/c;d/e/f', []),  # this test should always fail
 
 # the most complicated case: verbose
     (['linux', 'win'], 'MyDs instance -vvvv', ['MyDs', 'instance', '-v4']),

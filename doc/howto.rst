@@ -72,8 +72,7 @@ To run server without database use option -nodb.
     $ python <server_file>.py <instance_name> -nodb -port 10000
     Ready to accept request
 
-If you do not provide -port/-host/-ORBendPoint options, then the -ORBendPoint giop:tcp:: will be automatically added,
-making server to be listening from all host at any port.
+Note, that to start server in this mode you should provide a port with either \-\-post, or \-\-ORBendPoint option
 
 Additionally, you can use the following options:
 
