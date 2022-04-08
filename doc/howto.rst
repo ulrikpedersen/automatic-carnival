@@ -56,41 +56,58 @@ and the Tango C++ library version that PyTango was compiled with::
 
 
 Start server from command line
--------------------
+------------------------------
 
 To start server from the command line execute the following command:
 
-    >>> python <server_file>.py <instance_name>
+.. sourcecode:: console
+
+    $ python <server_file>.py <instance_name>
     Ready to accept request
 
 To run server without database use option -nodb.
+
+.. sourcecode:: console
+
+    $ python <server_file>.py <instance_name> -nodb -port 10000
+    Ready to accept request
+
 If you do not provide -port/-host/-ORBendPoint options, then the -ORBendPoint giop:tcp:: will be automatically added,
 making server to be listening from all host at any port.
 
-    >>> python <server_file>.py <instance_name> -nodb -port 10000
-    Ready to accept request
-
 Additionally, you can use the following options:
 
-    -h, -?, --help : show usage help
+    -h, -?, \-\-help : show usage help
 
-    -v, -verbose: set the trace level. Can be user in count way: -vvvv set level to 4 or --verbose --verbose set to 2
+    -v, \-\-verbose: set the trace level. Can be user in count way: -vvvv set level to 4 or --verbose --verbose set to 2
 
     -vN: directly set the trace level to N, e.g. -v3 - set level to 3
 
-    -file <file_name>: start a device server using an ASCII file instead of the Tango database
+    \-\-file <file_name>: start a device server using an ASCII file instead of the Tango database
 
-    -host <host_name>: force the host from which server accept requests
+    \-\-host <host_name>: force the host from which server accept requests
 
-    -port <port>: force the port on which the device server listens
+    \-\-port <port>: force the port on which the device server listens
 
-    -nodb: run server without DB
+    \-\-nodb: run server without DB
 
-    -dlist <dev1,dev2,etc>: the device name list. This option is supported only with the -nodb option
+    \-\-dlist <dev1,dev2,etc>: the device name list. This option is supported only with the -nodb option
 
-    -ORBendPoint giop:tcp:<host>:<port>: Specifying the host from which server accept requests and port on which the device server listens.
+    \-\-ORBendPoint giop:tcp:<host>:<port>: Specifying the host from which server accept requests and port on which the device server listens.
 
 Note: any ORB option can be provided if it starts with -ORB<option>
+
+Additionally in Windows the following option can be used:
+
+    -i: install the service
+
+    -s: install the service and choose the automatic startup mode
+
+    -u: uninstall the service
+
+    \-\-dbg: run in console mode to debug service. The service must have been installed prior to use it.
+
+Note: all long-options can be provided in non-POSIX format: -port or \-\-port etc...
 
 Report a bug
 ------------

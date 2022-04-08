@@ -276,11 +276,11 @@ def parse_args(args):
 
     parsed_args = parser.parse_args(args[1:])
 
-    if parsed_args.host or parsed_args.port and parsed_args.ORBendPoint is None:
+    if (parsed_args.host or parsed_args.port) and parsed_args.ORBendPoint is None:
         parsed_args.ORBendPoint = 'giop:tcp:{:s}:{:s}'.format(parsed_args.host, parsed_args.port)
 
     if parsed_args.nodb and parsed_args.ORBendPoint is None:
-        raise SystemExit('-nodb option should used with [-host] -port or -ORBendPoint options')
+        parsed_args.ORBendPoint = 'giop:tcp::'
 
     args = [os.path.splitext(args[0])[0]]
 
