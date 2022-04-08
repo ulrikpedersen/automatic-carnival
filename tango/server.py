@@ -514,7 +514,7 @@ def is_tango_object(arg):
     """Return tango data if the argument is a tango object,
     False otherwise.
     """
-    classes = attribute, device_property
+    classes = attribute, device_property, pipe
     if isinstance(arg, classes):
         return arg
     try:
