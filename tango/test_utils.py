@@ -177,3 +177,11 @@ if pytest:
         GreenMode.Gevent])
     def server_green_mode(request):
         return request.param
+
+    def conditional_decorator(dec, condition):
+        def decorator(func):
+            if not condition:
+                # Return the function unchanged, not decorated.
+                return func
+            return dec(func)
+        return decorator

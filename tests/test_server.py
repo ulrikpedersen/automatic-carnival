@@ -14,7 +14,7 @@ from tango.server import Device
 from tango.server import command, attribute, device_property
 from tango.test_utils import DeviceTestContext, MultiDeviceTestContext, \
     GoodEnum, BadEnumNonZero, BadEnumSkipValues, BadEnumDuplicates, \
-    assert_close
+    assert_close, conditional_decorator
 from tango.utils import get_enum_labels, EnumTypeError
 
 
@@ -431,34 +431,21 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(
             )
             self.add_attribute(attr)
 
+        @conditional_decorator(asyncio.coroutine, server_green_mode == GreenMode.Asyncio)
         def read_attr(self, attr):
             attr.set_value(self.attr_value)
 
+        @conditional_decorator(asyncio.coroutine, server_green_mode == GreenMode.Asyncio)
         def write_attr(self, attr):
             self.attr_value = attr.get_write_value()
 
+        @conditional_decorator(asyncio.coroutine, server_green_mode == GreenMode.Asyncio)
         def is_attr_allowed(self, req_type):
             return self._is_test_attr_allowed
 
         @command(dtype_in=bool)
         def make_allowed(self, yesno):
             self._is_test_attr_allowed = yesno
-
-        if server_green_mode == GreenMode.Asyncio:
-            code = textwrap.dedent("""\
-                @asyncio.coroutine
-                def read_attr(self, attr):
-                    attr.set_value(self.attr_value)
-            
-                @asyncio.coroutine
-                def write_attr(self, attr):
-                    self.attr_value = attr.get_write_value()
-        
-                @asyncio.coroutine
-                def is_attr_allowed(self, req_type):
-                    {RETURN}(self._is_test_attr_allowed)
-            """).format(**globals())
-            exec(code)
 
     with DeviceTestContext(TestDevice,
                            timeout=600
