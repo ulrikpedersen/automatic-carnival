@@ -22,6 +22,9 @@ import six
 import types
 import numbers
 import enum
+
+from argparse import ArgumentParser
+
 try:
     import collections.abc as collections_abc  # python 3.3+
 except ImportError:
@@ -30,7 +33,7 @@ except ImportError:
 from ._tango import StdStringVector, StdDoubleVector, \
     DbData, DbDatum, DbDevInfos, DbDevExportInfos, CmdArgType, AttrDataFormat, \
     EventData, AttrConfEventData, DataReadyEventData, DevFailed, constants, \
-    DevState, CommunicationFailed, PipeEventData, DevIntrChangeEventData
+    DevState, CommunicationFailed, PipeEventData, DevIntrChangeEventData, Database
 
 from . import _tango
 from .constants import AlrmValueNotSpec, StatusNotSet, TgLibVers
@@ -1761,3 +1764,23 @@ else:
             return s
         else:
             raise TypeError("not expecting type '%s'" % type(s))
+
+
+class PyTangoArgumentParser(ArgumentParser):
+    def print_usage(self, file):
+        super(PyTangoArgumentParser, self).print_usage(file)
+        try:
+            db = Database()
+            instances = db.get_instance_name_list(self.prog)
+            if instances.size():
+                file.write('\nInstance names defined in database for server {}:\n'.format(self.prog))
+                for instance in instances:
+                    print(instance + '\n')
+            else:
+                file.write('\nWarning! No defined instance in database for server {} found!\n'.format(self.prog))
+        except DevFailed as err:
+            if err.args[0].reason == 'API_ReadOnlyMode':
+                file.write("\nWarning: Control System configured with AccessControl" 
+                           "but can't communicate with AccessControl server\n\n")
+            else:
+                file.write("\nError: {}\n\n".format(err.args[0].desc))
