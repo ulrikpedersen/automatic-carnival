@@ -15,7 +15,7 @@ from tango.pyutil import parse_args
 from tango.server import command, attribute, device_property
 from tango.test_utils import DeviceTestContext, MultiDeviceTestContext, \
     GoodEnum, BadEnumNonZero, BadEnumSkipValues, BadEnumDuplicates, \
-    assert_close, os_system, DEVICE_SERVER_ARGUMENTS
+    assert_close, os_system, DEVICE_SERVER_ARGUMENTS, conditional_decorator
 from tango.utils import get_enum_labels, EnumTypeError
 
 
@@ -435,12 +435,15 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(
             )
             self.add_attribute(attr)
 
+        @conditional_decorator(asyncio.coroutine, server_green_mode == GreenMode.Asyncio)
         def read_attr(self, attr):
             attr.set_value(self.attr_value)
 
+        @conditional_decorator(asyncio.coroutine, server_green_mode == GreenMode.Asyncio)
         def write_attr(self, attr):
             self.attr_value = attr.get_write_value()
 
+        @conditional_decorator(asyncio.coroutine, server_green_mode == GreenMode.Asyncio)
         def is_attr_allowed(self, req_type):
             return self._is_test_attr_allowed
 
