@@ -37,6 +37,7 @@ except ImportError:
 
 # Platform constants
 POSIX = "posix" in os.name
+MACOS = "darwin" in os.sys.platform
 WINDOWS = "nt" in os.name
 IS64 = 8 * struct.calcsize("P") == 64
 PYTHON_VERSION = sys.version_info
@@ -317,7 +318,7 @@ class build_ext(dftbuild_ext):
 
     def build_extension(self, ext):
         if self.use_cpp_0x:
-            ext.extra_compile_args += ["-std=c++0x"]
+            ext.extra_compile_args += ["-std=c++14"]
             ext.define_macros += [("PYTANGO_HAS_UNIQUE_PTR", "1")]
         ext.extra_compile_args += [
             "-Wno-deprecated-declarations",
@@ -373,7 +374,14 @@ def setup_args():
     sys_libs = []
 
     # Link specifically to libtango version 9
-    tangolib = ":libtango.so.9" if POSIX else "tango"
+    tangolib = ""
+    if POSIX and not MACOS:
+        # This is likely a Linux and not another BSD system:
+        tangolib = ":libtango.so.94"
+    else:
+        # This covers also macOS.  It is happy if just the right
+        # path to the library and its name are specified.
+        tangolib = "tango"
     directories["libraries"].append(tangolib)
 
     add_lib("omni", directories, sys_libs, lib_name="omniORB4")
