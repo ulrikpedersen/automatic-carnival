@@ -22,10 +22,12 @@ import sys
 import re
 import copy
 
+from argparse import ArgumentParser
+
 from ._tango import Util, Except, DevFailed, DbDevInfo, EnsureOmniThread, is_omni_thread
 from .utils import document_method as __document_method
 from .utils import document_static_method as __document_static_method
-from .utils import PyTangoArgumentParser
+from .utils import PyTangoHelpFormatter
 from .globals import class_list, cpp_class_list, get_constructed_classes
 
 try:
@@ -209,8 +211,9 @@ def __Util__delete_device(self, klass_name, device_name):
 
 
 def parse_args(args):
-    parser = PyTangoArgumentParser(prog=os.path.splitext(args[0])[0], usage="%(prog)s instance_name [-v[trace level]] " +
-                                   "[-host] [-port] [-file=<file_name> | -nodb [-dlist]]", add_help=False)
+    parser = ArgumentParser(prog=os.path.splitext(args[0])[0], usage="%(prog)s instance_name [-v[trace level]] " +
+                                   "[-host] [-port] [-file=<file_name> | -nodb [-dlist]]", add_help=False,
+                            formatter_class=PyTangoHelpFormatter)
 
     parser.add_argument('instance_name', nargs='+', help='Device server instance name')
     parser.add_argument("-h", "-?", "--help", action="help", help="show this help message and exit")
