@@ -402,7 +402,7 @@ def setup_args():
         macros.append(("PYTANGO_NUMPY_VERSION", numpy.__version__))
         macros.append(("NPY_NO_DEPRECATED_API", "0"))
 
-    if POSIX:
+    if POSIX or MACOS:
         directories = pkg_config(*sys_libs, **directories)
 
     Release = get_release_info()
