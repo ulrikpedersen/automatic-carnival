@@ -18,12 +18,18 @@ __all__ = ("Util", "pyutil_init", "EnsureOmniThread", "is_omni_thread")
 __docformat__ = "restructuredtext"
 
 import os
+import sys
+import re
 import copy
+
+from argparse import ArgumentParser
 
 from ._tango import Util, Except, DevFailed, DbDevInfo, EnsureOmniThread, is_omni_thread
 from .utils import document_method as __document_method
 from .utils import document_static_method as __document_static_method
+from .utils import PyTangoHelpFormatter
 from .globals import class_list, cpp_class_list, get_constructed_classes
+
 try:
     import collections.abc as collections_abc  # python 3.3+
 except ImportError:
@@ -204,15 +210,116 @@ def __Util__delete_device(self, klass_name, device_name):
     dc.device_destroyer(device_name)
 
 
+def parse_args(args):
+    parser = ArgumentParser(prog=os.path.splitext(args[0])[0], usage="%(prog)s instance_name [-v[trace level]] " +
+                                   "[-host] [-port] [-file=<file_name> | -nodb [-dlist]]", add_help=False,
+                            formatter_class=PyTangoHelpFormatter)
+
+    parser.add_argument('instance_name', nargs='+', help='Device server instance name')
+    parser.add_argument("-h", "-?", "--help", action="help", help="show this help message and exit")
+
+    parser.add_argument("-v", "--verbose", dest="verbose", action='count',
+                        help="set the trace level. " +
+                             "Can be used in count way: -vv or --verbose --verbose")
+    # this option won't be used, since we manually pop all -vN and -v N arguments, but we have to display help about it
+    parser.add_argument("-vLEVEL", dest="vn", action='store', metavar=" ",
+                        help="directly set the trace level to LEVEL")
+
+    parser.add_argument("-file", "--file", dest="file", metavar="FILE_PATH",
+                        help="start device server using an ASCII file instead of the Tango database")
+
+    parser.add_argument("-host", "--host", dest="host", default='', action="store",
+                       help="Force the host from which server accepts requests (alternatively use ORBendPoint option)")
+    parser.add_argument("-port", "--port", dest="port", default='', action="store",
+                       help="Force the port on which the device server listens (alternatively use ORBendPoint option)")
+
+    if sys.platform.startswith("win"):
+        parser.add_argument("-dbg", "--dbg", dest="dbg", action='store_true', default=False, help="Enable debug")
+        parser.add_argument("-i", dest="i", action='store_true', default=False, help="Install the service")
+        parser.add_argument("-s", dest="s", action='store_true', default=False,
+                            help="Install the service and choose the automatic startup mode")
+        parser.add_argument("-u", dest="u", action='store_true', default=False, help="Uninstall the service")
+
+    group = parser.add_argument_group("Run device server without database")
+    group.add_argument("-nodb", "--nodb", dest="nodb", action="store_true", help="run server without DB")
+    group.add_argument("-dlist", "--dlist", dest="dlist", metavar="DEV1,DEV2,etc",
+                       help="The device name list. This option is supported only with the -nodb option.")
+
+    group = parser.add_argument_group("ORB options (started with -ORBxxx):" +
+                                      "options directly passed to the underlying ORB. Should be rarely used")
+
+    group.add_argument("-ORBendPoint", "--ORBendPoint", dest="ORBendPoint", action="store",
+                       metavar="giop:tcp:<host>:<port>",
+                       help="Specifying the host from which server accept "
+                            "requests and port on which the device server listens.")
+
+    group.add_argument("-ORB<any_another_option>", "--ORB<any_another_option>", dest="ORB_not_used", action="store",
+                       metavar="giop:tcp:<host>:<port>",
+                       help="Any another ORB option")
+
+    # workaround to add arbitrary ORB options
+    for arg in args:
+        if "ORB" in arg and "endPoint" not in arg:
+            arg = arg.strip('-')
+            group.add_argument("-" + arg, "--" + arg, action="store", dest=arg)
+
+    # since -vvvv and -v4 options are incompatible, we have to pop all -vN options
+    verbose = None
+    for ind, arg in enumerate(args):
+        if re.match(r'-[vV][=]?\d+', arg) is not None:
+            verbose = int(re.findall(r'\d+', arg)[0])
+            args.remove(arg)
+            break
+        if len(arg) == 2 and re.match(r'-[vV]', arg) is not None:
+            if ind + 1 < len(args) and re.match(r'\d+', args[ind + 1]) is not None:
+                verbose = int(args[ind + 1])
+                args.pop(ind + 1)
+                args.remove(arg)
+                break
+
+    parsed_args = parser.parse_args(args[1:])
+
+    if parsed_args.port and parsed_args.ORBendPoint is None:
+        parsed_args.ORBendPoint = 'giop:tcp:{:s}:{:s}'.format(parsed_args.host, parsed_args.port)
+
+    if parsed_args.nodb and parsed_args.ORBendPoint is None:
+        raise SystemExit('-nodb option should used with [-host] -port or -ORBendPoint options')
+
+    if parsed_args.dlist is not None and not parsed_args.nodb:
+        raise SystemExit('-dlist should be used only with -nodb option')
+
+    args = [os.path.splitext(args[0])[0]]
+
+    args += parsed_args.instance_name
+
+    # -v4 has priority on -vvvv
+    if verbose is not None:
+        args += ['-v{}'.format(verbose)]
+    elif parsed_args.verbose is not None:
+        args += ['-v{}'.format(parsed_args.verbose)]
+
+    # we add back only exist options
+    for key, value in parsed_args.__dict__.items():
+        if type(value) == bool:
+            if value:
+                args += ["-{:s}".format(key)]
+        elif value is not None:
+            if key == 'file':
+                args += ["-{:s}={:s}".format(key, value)]
+            elif key not in ['host', 'port', 'verbose', 'instance_name', 'ORB_not_used']:
+                args += ["-{:s}".format(key), "{:s}".format(value)]
+
+    return args
+
+
+
 def __Util__init__(self, args):
-    args = copy.copy(args)
-    args[0] = os.path.splitext(args[0])[0]
+    args = parse_args(copy.copy(args))
     Util.__init_orig__(self, args)
 
 
 def __Util__init(args):
-    args = list(args)
-    args[0] = os.path.splitext(args[0])[0]
+    args = parse_args(list(args))
     return Util.__init_orig(args)
 
 
@@ -814,7 +921,6 @@ def __doc_Util():
         unnecessary to call this, unless Util.server_run has been bypassed. 
 
     """)
-
 
 
 #

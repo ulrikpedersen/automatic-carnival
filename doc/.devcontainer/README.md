@@ -22,6 +22,12 @@ docker run -it --rm -v ~/tango-src/pytango:/opt/pytango pytango-doc /bin/bash
 
 Inside the container:
 
+go to /opt/pytango folder 
+```shell script
+cd /opt/pytango
+```
+and build the documentation 
+
 ```shell script
 python -m sphinx doc build/sphinx
 ```

@@ -22,6 +22,9 @@ import six
 import types
 import numbers
 import enum
+
+from argparse import HelpFormatter
+
 try:
     import collections.abc as collections_abc  # python 3.3+
 except ImportError:
@@ -30,7 +33,7 @@ except ImportError:
 from ._tango import StdStringVector, StdDoubleVector, \
     DbData, DbDatum, DbDevInfos, DbDevExportInfos, CmdArgType, AttrDataFormat, \
     EventData, AttrConfEventData, DataReadyEventData, DevFailed, constants, \
-    DevState, CommunicationFailed, PipeEventData, DevIntrChangeEventData
+    DevState, CommunicationFailed, PipeEventData, DevIntrChangeEventData, Database
 
 from . import _tango
 from .constants import AlrmValueNotSpec, StatusNotSet, TgLibVers
@@ -1761,3 +1764,22 @@ else:
             return s
         else:
             raise TypeError("not expecting type '%s'" % type(s))
+
+
+class PyTangoHelpFormatter(HelpFormatter):
+
+    def _format_usage(self, usage, actions, groups, prefix):
+        usage = super(PyTangoHelpFormatter, self)._format_usage(usage, actions, groups, prefix)
+        try:
+            db = Database()
+            servers_list = db.get_instance_name_list(self._prog)
+            if servers_list.size():
+                usage += 'Instance names defined in database for server {}:\n'.format(self._prog)
+                for server in servers_list:
+                    usage += '\t' + str(server) + '\n'
+            else:
+                usage += 'Warning! No defined instance in database for server {} found!\n'.format(self._prog)
+        except DevFailed:
+            pass
+
+        return usage
