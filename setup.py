@@ -372,18 +372,7 @@ def setup_args():
         "libraries": [],
     }
     sys_libs = []
-
-    # Link specifically to libtango version 9
-    tangolib = ""
-    if POSIX and not MACOS:
-        # This is likely a Linux and not another BSD system:
-        tangolib = ":libtango.so.94"
-    else:
-        # This covers also macOS.  It is happy if just the right
-        # path to the library and its name are specified.
-        tangolib = "tango"
-    directories["libraries"].append(tangolib)
-
+    add_lib("tango", directories, sys_libs, lib_name="tango")
     add_lib("omni", directories, sys_libs, lib_name="omniORB4")
     add_lib("zmq", directories, sys_libs, lib_name="libzmq")
     add_lib("tango", directories, sys_libs, inc_suffix="tango")
