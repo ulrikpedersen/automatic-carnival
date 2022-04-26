@@ -36,7 +36,10 @@ from .device_class import DeviceClass
 from .device_server import LatestDeviceImpl
 from .utils import get_enum_labels
 from .utils import is_seq, is_non_str_seq
-from .utils import scalar_to_array_type, TO_TANGO_TYPE
+from .utils import patch_attr_methods, patch_pipe_methods, \
+    patch_standard_device_methods, get_tango_type_format, \
+    set_complex_value, from_typeformat_to_type
+from .utils import get_worker, set_worker
 from .green import get_green_mode, get_executor
 from .pyutil import Util
 
@@ -45,368 +48,6 @@ __all__ = ("DeviceMeta", "Device", "LatestDeviceImpl", "attribute",
            "run", "server_run", "Server")
 
 API_VERSION = 2
-
-# Worker access
-
-_WORKER = get_executor()
-
-
-def set_worker(worker):
-    global _WORKER
-    _WORKER = worker
-
-
-def get_worker():
-    return _WORKER
-
-
-# Helpers
-
-def _get_tango_type_format(dtype=None, dformat=None):
-    if dformat is None:
-        dformat = AttrDataFormat.SCALAR
-        if is_non_str_seq(dtype):
-            dtype = dtype[0]
-            dformat = AttrDataFormat.SPECTRUM
-            if is_non_str_seq(dtype):
-                dtype = dtype[0]
-                dformat = AttrDataFormat.IMAGE
-    return TO_TANGO_TYPE[dtype], dformat
-
-
-def from_typeformat_to_type(dtype, dformat):
-    if dformat == AttrDataFormat.SCALAR:
-        return dtype
-    elif dformat == AttrDataFormat.IMAGE:
-        raise TypeError("Cannot translate IMAGE to tango type")
-    return scalar_to_array_type(dtype)
-
-
-def set_complex_value(attr, value):
-    is_tuple = isinstance(value, tuple)
-    dtype, fmt = attr.get_data_type(), attr.get_data_format()
-    if dtype == CmdArgType.DevEncoded:
-        if is_tuple and len(value) == 4:
-            attr.set_value_date_quality(*value)
-        elif is_tuple and len(value) == 3 and is_non_str_seq(value[0]):
-            attr.set_value_date_quality(value[0][0],
-                                        value[0][1],
-                                        *value[1:])
-        else:
-            attr.set_value(*value)
-    else:
-        if is_tuple:
-            if len(value) == 3:
-                if fmt == AttrDataFormat.SCALAR:
-                    attr.set_value_date_quality(*value)
-                elif fmt == AttrDataFormat.SPECTRUM:
-                    if is_seq(value[0]):
-                        attr.set_value_date_quality(*value)
-                    else:
-                        attr.set_value(value)
-                else:
-                    if is_seq(value[0]) and is_seq(value[0][0]):
-                        attr.set_value_date_quality(*value)
-                    else:
-                        attr.set_value(value)
-            else:
-                attr.set_value(value)
-        else:
-            attr.set_value(value)
-
-
-def _get_wrapped_read_method(attribute, read_method):
-    read_args = inspect_getargspec(read_method)
-    nb_args = len(read_args.args)
-
-    green_mode = attribute.read_green_mode
-
-    if nb_args < 2:
-        if green_mode == GreenMode.Synchronous:
-            @functools.wraps(read_method)
-            def read_attr(self, attr):
-                ret = read_method(self)
-                if not attr.get_value_flag() and ret is not None:
-                    set_complex_value(attr, ret)
-                return ret
-        else:
-            @functools.wraps(read_method)
-            def read_attr(self, attr):
-                worker = get_worker()
-                ret = worker.execute(read_method, self)
-                if not attr.get_value_flag() and ret is not None:
-                    set_complex_value(attr, ret)
-                return ret
-    else:
-        if green_mode == GreenMode.Synchronous:
-            read_attr = read_method
-        else:
-            @functools.wraps(read_method)
-            def read_attr(self, attr):
-                return get_worker().execute(read_method, self, attr)
-
-    return read_attr
-
-
-def __patch_read_method(tango_device_klass, attribute):
-    """
-    Checks if method given by it's name for the given DeviceImpl
-    class has the correct signature. If a read/write method doesn't
-    have a parameter (the traditional Attribute), then the method is
-    wrapped into another method which has correct parameter definition
-    to make it work.
-
-    :param tango_device_klass: a DeviceImpl class
-    :type tango_device_klass: class
-    :param attribute: the attribute data information
-    :type attribute: AttrData
-    """
-    read_method = getattr(attribute, "fget", None)
-    if read_method:
-        method_name = "__read_{0}__".format(attribute.attr_name)
-        attribute.read_method_name = method_name
-    else:
-        method_name = attribute.read_method_name
-        read_method = getattr(tango_device_klass, method_name)
-
-    read_attr = _get_wrapped_read_method(attribute, read_method)
-    method_name = "__read_{0}_wrapper__".format(attribute.attr_name)
-    attribute.read_method_name = method_name
-
-    setattr(tango_device_klass, method_name, read_attr)
-
-
-def _get_wrapped_write_method(attribute, write_method):
-    green_mode = attribute.write_green_mode
-
-    if green_mode == GreenMode.Synchronous:
-        @functools.wraps(write_method)
-        def write_attr(self, attr):
-            value = attr.get_write_value()
-            return write_method(self, value)
-    else:
-        @functools.wraps(write_method)
-        def write_attr(self, attr):
-            value = attr.get_write_value()
-            return get_worker().execute(write_method, self, value)
-    return write_attr
-
-
-def __patch_write_method(tango_device_klass, attribute):
-    """
-    Checks if method given by it's name for the given DeviceImpl
-    class has the correct signature. If a read/write method doesn't
-    have a parameter (the traditional Attribute), then the method is
-    wrapped into another method which has correct parameter definition
-    to make it work.
-
-    :param tango_device_klass: a DeviceImpl class
-    :type tango_device_klass: class
-    :param attribute: the attribute data information
-    :type attribute: AttrData
-    """
-    write_method = getattr(attribute, "fset", None)
-    if write_method:
-        method_name = "__write_{0}__".format(attribute.attr_name)
-        attribute.write_method_name = method_name
-    else:
-        method_name = attribute.write_method_name
-        write_method = getattr(tango_device_klass, method_name)
-
-    write_attr = _get_wrapped_write_method(attribute, write_method)
-    setattr(tango_device_klass, method_name, write_attr)
-
-
-def __patch_attr_methods(tango_device_klass, attribute):
-    """
-    Checks if the read and write methods have the correct signature.
-    If a read/write method doesn't have a parameter (the traditional
-    Attribute), then the method is wrapped into another method to make
-    this work.
-
-    :param tango_device_klass: a DeviceImpl class
-    :type tango_device_klass: class
-    :param attribute: the attribute data information
-    :type attribute: AttrData
-    """
-    if attribute.attr_write in (AttrWriteType.READ,
-                                AttrWriteType.READ_WRITE):
-        __patch_read_method(tango_device_klass, attribute)
-    if attribute.attr_write in (AttrWriteType.WRITE,
-                                AttrWriteType.READ_WRITE):
-        __patch_write_method(tango_device_klass, attribute)
-
-
-def _get_wrapped_pipe_read_method(pipe, read_method):
-    read_args = inspect_getargspec(read_method)
-    nb_args = len(read_args.args)
-
-    green_mode = pipe.read_green_mode
-
-    if nb_args < 2:
-        if green_mode == GreenMode.Synchronous:
-            @functools.wraps(read_method)
-            def read_pipe(self, pipe):
-                ret = read_method(self)
-                if not pipe.get_value_flag() and ret is not None:
-                    pipe.set_value(pipe, ret)
-                return ret
-        else:
-            @functools.wraps(read_method)
-            def read_pipe(self, pipe):
-                worker = get_worker()
-                ret = worker.execute(read_method, self)
-                if ret is not None:
-                    pipe.set_value(ret)
-                return ret
-    else:
-        if green_mode == GreenMode.Synchronous:
-            read_pipe = read_method
-        else:
-            @functools.wraps(read_method)
-            def read_pipe(self, pipe):
-                return get_worker().execute(read_method, self, pipe)
-
-    return read_pipe
-
-
-def __patch_pipe_read_method(tango_device_klass, pipe):
-    """
-    Checks if method given by it's name for the given DeviceImpl
-    class has the correct signature. If a read/write method doesn't
-    have a parameter (the traditional Pipe), then the method is
-    wrapped into another method which has correct parameter definition
-    to make it work.
-
-    :param tango_device_klass: a DeviceImpl class
-    :type tango_device_klass: class
-    :param pipe: the pipe data information
-    :type pipe: PipeData
-    """
-    read_method = getattr(pipe, "fget", None)
-    if read_method:
-        method_name = "__read_{0}__".format(pipe.pipe_name)
-        pipe.read_method_name = method_name
-    else:
-        method_name = pipe.read_method_name
-        read_method = getattr(tango_device_klass, method_name)
-
-    read_pipe = _get_wrapped_pipe_read_method(pipe, read_method)
-    method_name = "__read_{0}_wrapper__".format(pipe.pipe_name)
-    pipe.read_method_name = method_name
-
-    setattr(tango_device_klass, method_name, read_pipe)
-
-
-def _get_wrapped_pipe_write_method(pipe, write_method):
-    green_mode = pipe.write_green_mode
-
-    if green_mode == GreenMode.Synchronous:
-        @functools.wraps(write_method)
-        def write_pipe(self, pipe):
-            value = pipe.get_value()
-            return write_method(self, value)
-    else:
-        @functools.wraps(write_method)
-        def write_pipe(self, pipe):
-            value = pipe.get_value()
-            return get_worker().execute(write_method, self, value)
-    return write_pipe
-
-
-def __patch_pipe_write_method(tango_device_klass, pipe):
-    """
-    Checks if method given by it's name for the given DeviceImpl
-    class has the correct signature. If a read/write method doesn't
-    have a parameter (the traditional Pipe), then the method is
-    wrapped into another method which has correct parameter definition
-    to make it work.
-
-    :param tango_device_klass: a DeviceImpl class
-    :type tango_device_klass: class
-    :param pipe: the pipe data information
-    :type pipe: PipeData
-    """
-    write_method = getattr(pipe, "fset", None)
-    if write_method:
-        method_name = "__write_{0}__".format(pipe.pipe_name)
-        pipe.write_method_name = method_name
-    else:
-        method_name = pipe.write_method_name
-        write_method = getattr(tango_device_klass, method_name)
-
-    write_pipe = _get_wrapped_pipe_write_method(pipe, write_method)
-    setattr(tango_device_klass, method_name, write_pipe)
-
-
-def __patch_pipe_methods(tango_device_klass, pipe):
-    """
-    Checks if the read and write methods have the correct signature.
-    If a read/write method doesn't have a parameter (the traditional
-    Pipe), then the method is wrapped into another method to make
-    this work.
-
-    :param tango_device_klass: a DeviceImpl class
-    :type tango_device_klass: class
-    :param pipe: the pipe data information
-    :type pipe: PipeData
-    """
-    __patch_pipe_read_method(tango_device_klass, pipe)
-    if pipe.pipe_write == PipeWriteType.PIPE_READ_WRITE:
-        __patch_pipe_write_method(tango_device_klass, pipe)
-
-
-def __patch_standard_device_methods(klass):
-    # TODO allow to force non green mode
-
-    init_device_orig = klass.init_device
-
-    @functools.wraps(init_device_orig)
-    def init_device(self):
-        return get_worker().execute(init_device_orig, self)
-
-    setattr(klass, "init_device", init_device)
-
-    delete_device_orig = klass.delete_device
-
-    @functools.wraps(delete_device_orig)
-    def delete_device(self):
-        return get_worker().execute(delete_device_orig, self)
-
-    setattr(klass, "delete_device", delete_device)
-
-    dev_state_orig = klass.dev_state
-
-    @functools.wraps(dev_state_orig)
-    def dev_state(self):
-        return get_worker().execute(dev_state_orig, self)
-
-    setattr(klass, "dev_state", dev_state)
-
-    dev_status_orig = klass.dev_status
-
-    @functools.wraps(dev_status_orig)
-    def dev_status(self):
-        return get_worker().execute(dev_status_orig, self)
-
-    setattr(klass, "dev_status", dev_status)
-
-    read_attr_hardware_orig = klass.read_attr_hardware
-
-    @functools.wraps(read_attr_hardware_orig)
-    def read_attr_hardware(self, attr_list):
-        return get_worker().execute(read_attr_hardware_orig, self, attr_list)
-
-    setattr(klass, "read_attr_hardware", read_attr_hardware)
-
-    always_executed_hook_orig = klass.always_executed_hook
-
-    @functools.wraps(always_executed_hook_orig)
-    def always_executed_hook(self):
-        return get_worker().execute(always_executed_hook_orig, self)
-
-    setattr(klass, "always_executed_hook", always_executed_hook)
-
 
 class _DeviceClass(DeviceClass):
     def __init__(self, name):
@@ -428,6 +69,7 @@ class _DeviceClass(DeviceClass):
             if init_dyn_attrs and callable(init_dyn_attrs):
                 try:
                     init_dyn_attrs()
+                    pass
                 except Exception:
                     dev.warn_stream("Failed to initialize dynamic attributes")
                     dev.debug_stream("Details: " + traceback.format_exc())
@@ -457,14 +99,14 @@ def __create_tango_deviceclass_klass(tango_device_klass, attrs=None):
                 attr_name = attr_obj.attr_name
             attr_list[attr_name] = attr_obj
             if not attr_obj.forward:
-                __patch_attr_methods(tango_device_klass, attr_obj)
+                patch_attr_methods(tango_device_klass, attr_obj)
         elif isinstance(attr_obj, pipe):
             if attr_obj.pipe_name is None:
                 attr_obj._set_name(attr_name)
             else:
                 attr_name = attr_obj.pipe_name
             pipe_list[attr_name] = attr_obj
-            __patch_pipe_methods(tango_device_klass, attr_obj)
+            patch_pipe_methods(tango_device_klass, attr_obj)
         elif isinstance(attr_obj, device_property):
             attr_obj.name = attr_name
             # if you modify the attr_obj order then you should
@@ -483,7 +125,7 @@ def __create_tango_deviceclass_klass(tango_device_klass, attrs=None):
                 cmd_name, cmd_info = attr_obj.__tango_command__
                 cmd_list[cmd_name] = cmd_info
 
-    __patch_standard_device_methods(tango_device_klass)
+    patch_standard_device_methods(tango_device_klass)
 
     devclass_name = klass_name + "Class"
 
@@ -821,7 +463,7 @@ class attribute(AttrData):
                 kwargs['enum_labels'] = get_enum_labels(dtype)
                 dtype = CmdArgType.DevEnum
             kwargs['dtype'], kwargs['dformat'] = \
-                _get_tango_type_format(dtype, dformat)
+                get_tango_type_format(dtype, dformat)
         self.build_from_dict(kwargs)
 
     def get_attribute(self, obj):
@@ -1122,8 +764,8 @@ def command(f=None, dtype_in=None, dformat_in=None, doc_in="",
             green_mode=green_mode)
     name = f.__name__
 
-    dtype_format_in = _get_tango_type_format(dtype_in, dformat_in)
-    dtype_format_out = _get_tango_type_format(dtype_out, dformat_out)
+    dtype_format_in = get_tango_type_format(dtype_in, dformat_in)
+    dtype_format_out = get_tango_type_format(dtype_out, dformat_out)
 
     din = [from_typeformat_to_type(*dtype_format_in), doc_in]
     dout = [from_typeformat_to_type(*dtype_format_out), doc_out]
@@ -1157,7 +799,7 @@ def command(f=None, dtype_in=None, dformat_in=None, doc_in="",
 class _BaseProperty(object):
     def __init__(self, dtype, doc='', default_value=None, update_db=False):
         self.name = None
-        dtype = from_typeformat_to_type(*_get_tango_type_format(dtype))
+        dtype = from_typeformat_to_type(*get_tango_type_format(dtype))
         self.dtype = dtype
         self.doc = doc
         self.default_value = default_value

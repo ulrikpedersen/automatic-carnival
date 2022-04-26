@@ -431,17 +431,42 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(
             )
             self.add_attribute(attr)
 
-        @conditional_decorator(asyncio.coroutine, server_green_mode == GreenMode.Asyncio)
-        def read_attr(self, attr):
-            attr.set_value(self.attr_value)
+        if sys.version_info[1] > 7:
+            if server_green_mode == GreenMode.Asyncio:
+                async def read_attr(self, attr):
+                    attr.set_value(self.attr_value)
+            else:
+                def read_attr(self, attr):
+                    attr.set_value(self.attr_value)
+        else:
+            @conditional_decorator(asyncio.coroutine, server_green_mode == GreenMode.Asyncio)
+            def read_attr(self, attr):
+                attr.set_value(self.attr_value)
 
-        @conditional_decorator(asyncio.coroutine, server_green_mode == GreenMode.Asyncio)
-        def write_attr(self, attr):
-            self.attr_value = attr.get_write_value()
+        if sys.version_info[1] > 7:
+            if server_green_mode == GreenMode.Asyncio:
+                async def write_attr(self, attr):
+                    self.attr_value = attr.get_write_value()
+            else:
+                def write_attr(self, attr):
+                    self.attr_value = attr.get_write_value()
+        else:
+            @conditional_decorator(asyncio.coroutine, server_green_mode == GreenMode.Asyncio)
+            def write_attr(self, attr):
+                self.attr_value = attr.get_write_value()
 
-        @conditional_decorator(asyncio.coroutine, server_green_mode == GreenMode.Asyncio)
-        def is_attr_allowed(self, req_type):
-            return self._is_test_attr_allowed
+        if sys.version_info[1] > 7:
+            if server_green_mode == GreenMode.Asyncio:
+                async def is_attr_allowed(self, req_type):
+                    return self._is_test_attr_allowed
+            else:
+                def is_attr_allowed(self, req_type):
+                    return self._is_test_attr_allowed
+        else:
+            @conditional_decorator(asyncio.coroutine, server_green_mode == GreenMode.Asyncio)
+            def is_attr_allowed(self, req_type):
+                return self._is_test_attr_allowed
+
 
         @command(dtype_in=bool)
         def make_allowed(self, yesno):
