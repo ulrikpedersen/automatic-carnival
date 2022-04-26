@@ -25,7 +25,7 @@ from ._tango import (
     DispLevel, UserDefaultAttrProp, StdStringVector)
 
 from .utils import document_method as __document_method
-from .utils import copy_doc, get_latest_device_class
+from .utils import copy_doc, get_latest_device_class, run_in_executor
 from .attr_data import AttrData
 
 from .log4tango import TangoStream
@@ -350,22 +350,37 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
     if r_meth is None:
         if attr_data is not None:
             r_name = attr_data.read_method_name
+        if hasattr(self, r_name):
+            r_meth = getattr(self, r_name)
     else:
         r_name = r_meth.__name__
+
+    if r_name is not None:
+        setattr(self, r_name, run_in_executor(r_meth))
 
     w_name = 'write_%s' % att_name
     if w_meth is None:
         if attr_data is not None:
             w_name = attr_data.write_method_name
+        if hasattr(self, w_name):
+            w_meth = getattr(self, w_name)
     else:
         w_name = w_meth.__name__
+
+    if w_meth is not None:
+        setattr(self, w_name, run_in_executor(w_meth))
 
     ia_name = 'is_%s_allowed' % att_name
     if is_allo_meth is None:
         if attr_data is not None:
             ia_name = attr_data.is_allowed_name
+        if hasattr(self, ia_name):
+            is_allo_meth = getattr(self, ia_name)
     else:
         ia_name = is_allo_meth.__name__
+
+    if is_allo_meth is not None:
+        setattr(self, ia_name, run_in_executor(is_allo_meth))
 
     try:
         self._add_attribute(attr, r_name, w_name, ia_name)
@@ -1639,7 +1654,7 @@ def __doc_Attribute():
     """)
 
     document_method("is_max_alarm", """
-    is_max_alarm(self) -> bool
+    is_max_alarm(self) -> boolы была отрицательная.
 
         Check if the attribute is in maximum alarm condition.
 
