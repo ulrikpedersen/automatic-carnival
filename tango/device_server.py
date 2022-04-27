@@ -1654,7 +1654,7 @@ def __doc_Attribute():
     """)
 
     document_method("is_max_alarm", """
-    is_max_alarm(self) -> boolы была отрицательная.
+    is_max_alarm(self) -> bool
 
         Check if the attribute is in maximum alarm condition.
 
