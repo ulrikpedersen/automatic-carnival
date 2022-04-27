@@ -15,7 +15,7 @@ from tango.pyutil import parse_args
 from tango.server import command, attribute, device_property
 from tango.test_utils import DeviceTestContext, MultiDeviceTestContext, \
     GoodEnum, BadEnumNonZero, BadEnumSkipValues, BadEnumDuplicates, \
-    assert_close, os_system, DEVICE_SERVER_ARGUMENTS, conditional_decorator
+    assert_close, DEVICE_SERVER_ARGUMENTS, os_system
 from tango.utils import get_enum_labels, EnumTypeError
 
 
@@ -27,7 +27,6 @@ except ImportError:
 
 # Constants
 PY3 = sys.version_info >= (3,)
-YIELD_FROM = "yield from" if PY3 else "yield asyncio.From"
 RETURN = "return" if PY3 else "raise asyncio.Return"
 ASYNC_AWAIT_AVAILABLE = sys.version_info >= (3, 5)
 WINDOWS = "nt" in os.name
@@ -435,61 +434,45 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(
             )
             self.add_attribute(attr)
 
-        if sys.version_info[1] > 7:
-            if server_green_mode == GreenMode.Asyncio:
-                async def read_attr(self, attr):
-                    attr.set_value(self.attr_value)
-            else:
-                def read_attr(self, attr):
-                    attr.set_value(self.attr_value)
-        else:
-            @conditional_decorator(asyncio.coroutine, server_green_mode == GreenMode.Asyncio)
-            def read_attr(self, attr):
-                attr.set_value(self.attr_value)
+        def read_attr(self, attr):
+            attr.set_value(self.attr_value)
 
-        if sys.version_info[1] > 7:
-            if server_green_mode == GreenMode.Asyncio:
-                async def write_attr(self, attr):
-                    self.attr_value = attr.get_write_value()
-            else:
-                def write_attr(self, attr):
-                    self.attr_value = attr.get_write_value()
-        else:
-            @conditional_decorator(asyncio.coroutine, server_green_mode == GreenMode.Asyncio)
-            def write_attr(self, attr):
-                self.attr_value = attr.get_write_value()
+        def write_attr(self, attr):
+            self.attr_value = attr.get_write_value()
 
-        if sys.version_info[1] > 7:
-            if server_green_mode == GreenMode.Asyncio:
-                async def is_attr_allowed(self, req_type):
-                    return self._is_test_attr_allowed
-            else:
-                def is_attr_allowed(self, req_type):
-                    return self._is_test_attr_allowed
-        else:
-            @conditional_decorator(asyncio.coroutine, server_green_mode == GreenMode.Asyncio)
-            def is_attr_allowed(self, req_type):
-                return self._is_test_attr_allowed
-
+        def is_attr_allowed(self, req_type):
+            return self._is_test_attr_allowed
 
         @command(dtype_in=bool)
         def make_allowed(self, yesno):
             self._is_test_attr_allowed = yesno
 
         if server_green_mode == GreenMode.Asyncio:
-            code = textwrap.dedent("""\
-                @asyncio.coroutine
-                def read_attr(self, attr):
-                    attr.set_value(self.attr_value)
+            if sys.version_info > (3, 4):
+                code = textwrap.dedent("""\
+                    async def read_attr(self, attr):
+                        attr.set_value(self.attr_value)
+                
+                    async def write_attr(self, attr):
+                        self.attr_value = attr.get_write_value()
             
-                @asyncio.coroutine
-                def write_attr(self, attr):
-                    self.attr_value = attr.get_write_value()
-        
-                @asyncio.coroutine
-                def is_attr_allowed(self, req_type):
-                    {RETURN}(self._is_test_attr_allowed)
-            """).format(**globals())
+                    async def is_attr_allowed(self, req_type):
+                        {RETURN}(self._is_test_attr_allowed)
+                """).format(**globals())
+            else:
+                code = textwrap.dedent("""\
+                    @asyncio.coroutine
+                    def read_attr(self, attr):
+                        attr.set_value(self.attr_value)
+
+                    @asyncio.coroutine
+                    def write_attr(self, attr):
+                        self.attr_value = attr.get_write_value()
+
+                    @asyncio.coroutine
+                    def is_attr_allowed(self, req_type):
+                        {RETURN}(self._is_test_attr_allowed)
+                """).format(**globals())
             exec(code)
 
     with DeviceTestContext(TestDevice,
@@ -945,47 +928,6 @@ def test_exception_propagation(server_green_mode):
             proxy.cmd()
         assert "ZeroDivisionError" in record.value.args[0].desc
 
-# Test server dynamic attributes async mode
-
-def test_dyn_attr_async_read(typed_values, server_green_mode):
-    py_dtype, values, expected = typed_values
-
-    from tango.device_proxy import __get_tango_type
-    dtype = __get_tango_type(py_dtype)
-
-    class TestDevice(Device):
-        green_mode = server_green_mode
-
-        def __init__(self, *args, **kwargs):
-            super(TestDevice, self).__init__(*args, **kwargs)
-
-            attr = Attr("TestAttr", dtype, AttrWriteType.READ_WRITE)
-            self.add_attribute(attr, self.read_attr, self.write_attr, self.is_attr_allowed)
-            self._is_testattr_allowed = True
-
-        def read_attr(self, attr):
-            attr.set_value(self.attr_value)
-
-        def write_attr(self, attr):
-            self.attr_value = attr.get_write_value()
-
-        def is_attr_allowed(self, req_type):
-            return self._is_testattr_allowed
-
-        @command(dtype_in=bool)
-        def make_allowed(self, yesno):
-            self._is_testattr_allowed = yesno
-
-    with DeviceTestContext(TestDevice) as proxy:
-        proxy.make_allowed(True)
-        for value in values:
-            proxy.TestAttr = value
-            assert_close(proxy.TestAttr, expected(value))
-
-        proxy.make_allowed(False)
-        for value in values:
-            with pytest.raises(DevFailed):
-                proxy.TestAttr = value
 
 @pytest.mark.parametrize("applicable_os, test_input, expected_output", DEVICE_SERVER_ARGUMENTS)
 def test_arguments(applicable_os, test_input, expected_output, os_system):
