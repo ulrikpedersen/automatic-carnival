@@ -16,6 +16,7 @@ This is an internal PyTango module.
 from __future__ import print_function
 
 import copy
+import functools
 
 from ._tango import (
     DeviceImpl, Device_3Impl, Device_4Impl, Device_5Impl,
@@ -25,7 +26,8 @@ from ._tango import (
     DispLevel, UserDefaultAttrProp, StdStringVector)
 
 from .utils import document_method as __document_method
-from .utils import copy_doc, get_latest_device_class, run_in_executor
+from .utils import copy_doc, get_latest_device_class
+from .green import get_executor
 from .attr_data import AttrData
 
 from .log4tango import TangoStream
@@ -37,6 +39,27 @@ __all__ = ("ChangeEventProp", "PeriodicEventProp",
            "AttributeConfig", "AttributeConfig_2",
            "AttributeConfig_3", "AttributeConfig_5",
            "MultiAttrProp", "device_server_init")
+
+# Worker access
+
+_WORKER = get_executor()
+
+
+def set_worker(worker):
+    global _WORKER
+    _WORKER = worker
+
+
+def get_worker():
+    return _WORKER
+
+# patcher for dynamic attribute
+
+def __run_in_executor(fn):
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        return get_worker().execute(fn, *args, **kwargs)
+    return wrapper
 
 
 class LatestDeviceImpl(get_latest_device_class()):
@@ -355,8 +378,8 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
     else:
         r_name = r_meth.__name__
 
-    if r_name is not None:
-        setattr(self, r_name, run_in_executor(r_meth))
+    if r_meth is not None:
+        setattr(self, r_name, __run_in_executor(r_meth))
 
     w_name = 'write_%s' % att_name
     if w_meth is None:
@@ -368,7 +391,7 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
         w_name = w_meth.__name__
 
     if w_meth is not None:
-        setattr(self, w_name, run_in_executor(w_meth))
+        setattr(self, w_name, __run_in_executor(w_meth))
 
     ia_name = 'is_%s_allowed' % att_name
     if is_allo_meth is None:
@@ -380,7 +403,7 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
         ia_name = is_allo_meth.__name__
 
     if is_allo_meth is not None:
-        setattr(self, ia_name, run_in_executor(is_allo_meth))
+        setattr(self, ia_name, __run_in_executor(is_allo_meth))
 
     try:
         self._add_attribute(attr, r_name, w_name, ia_name)

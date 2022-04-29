@@ -29,7 +29,7 @@ from .utils import TO_TANGO_TYPE
 from ._tango import AttrDataFormat, CmdArgType, GreenMode
 from ._tango import DbDevInfo, Database, DevState, constants
 from .server import Device, _to_classes, _add_classes
-from .server import get_worker, set_worker
+from .device_server import get_worker, set_worker
 from .green import get_executor
 
 __all__ = ('Server',)

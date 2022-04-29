@@ -26,8 +26,6 @@ except ImportError:
     import trollius as asyncio  # noqa: F401
 
 # Constants
-PY3 = sys.version_info >= (3,)
-RETURN = "return" if PY3 else "raise asyncio.Return"
 ASYNC_AWAIT_AVAILABLE = sys.version_info >= (3, 5)
 WINDOWS = "nt" in os.name
 
@@ -448,7 +446,7 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(
             self._is_test_attr_allowed = yesno
 
         if server_green_mode == GreenMode.Asyncio:
-            if sys.version_info > (3, 4):
+            if ASYNC_AWAIT_AVAILABLE:
                 code = textwrap.dedent("""\
                     async def read_attr(self, attr):
                         attr.set_value(self.attr_value)
@@ -457,7 +455,7 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(
                         self.attr_value = attr.get_write_value()
             
                     async def is_attr_allowed(self, req_type):
-                        {RETURN}(self._is_test_attr_allowed)
+                        return self._is_test_attr_allowed
                 """).format(**globals())
             else:
                 code = textwrap.dedent("""\
@@ -471,13 +469,11 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(
 
                     @asyncio.coroutine
                     def is_attr_allowed(self, req_type):
-                        {RETURN}(self._is_test_attr_allowed)
+                        raise asyncio.Return(self._is_test_attr_allowed)
                 """).format(**globals())
             exec(code)
 
-    with DeviceTestContext(TestDevice,
-                           timeout=600
-                           ) as proxy:
+    with DeviceTestContext(TestDevice) as proxy:
         proxy.make_allowed(True)
         for value in values:
             proxy.dyn_attr = value
