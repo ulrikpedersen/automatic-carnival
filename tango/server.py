@@ -1319,7 +1319,6 @@ def __server_run(classes, args=None, msg_stream=sys.stdout, util=None,
 
     if green_mode in (GreenMode.Gevent, GreenMode.Asyncio):
         util.set_serial_model(SerialModel.NO_SYNC)
-        util.set_serial_model(SerialModel.NO_SYNC)
 
     worker = get_executor(green_mode)
     set_worker(worker)
