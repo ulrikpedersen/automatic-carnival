@@ -210,7 +210,6 @@ if pytest:
     def server_green_mode(request):
         return request.param
 
-
     @pytest.fixture(params=['linux', 'win'])
     def os_system(request):
         sys.platform = request.param

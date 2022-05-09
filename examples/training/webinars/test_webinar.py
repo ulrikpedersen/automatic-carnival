@@ -59,10 +59,10 @@ def test_read_attribute_full():
             print("init_device!")
 
         def read_attr_hardware(self, attr_list):
-            print(f"read_attr_hardware for {attr_list}")
+            print("read_attr_hardware for {}".format(str(attr_list)))
 
         def write_attr_hardware(self, attr_list):
-            print(f"write_attr_hardware for {attr_list}")
+            print("write_attr_hardware for {}".format(str(attr_list)))
 
         def always_executed_hook(self):
             print("always_executed_hook")

@@ -33,7 +33,7 @@ from ._tango import DevFailed, GreenMode, SerialModel
 from .attr_data import AttrData
 from .pipe_data import PipeData
 from .device_class import DeviceClass
-from .device_server import LatestDeviceImpl
+from .device_server import LatestDeviceImpl, get_worker, set_worker
 from .utils import get_enum_labels
 from .utils import is_seq, is_non_str_seq
 from .utils import scalar_to_array_type, TO_TANGO_TYPE
@@ -45,20 +45,6 @@ __all__ = ("DeviceMeta", "Device", "LatestDeviceImpl", "attribute",
            "run", "server_run", "Server")
 
 API_VERSION = 2
-
-# Worker access
-
-_WORKER = get_executor()
-
-
-def set_worker(worker):
-    global _WORKER
-    _WORKER = worker
-
-
-def get_worker():
-    return _WORKER
-
 
 # Helpers
 
