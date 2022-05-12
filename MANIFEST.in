@@ -1,6 +1,8 @@
 include LICENSE.txt
 include Makefile
 include winsetup.py
+include CMakeLists.txt
+include cmake/*
 
 graft ext
 graft doc
