@@ -349,7 +349,7 @@ void from_py_object(bopy::object &py_obj, Tango::MultiAttrProp<T> &multi_attr_pr
 		if(PySequence_Check(prop_py_obj.ptr()))
 		{
 			std::vector<Tango::DevDouble> change_vec;
-			for(long i = 0; i < bopy::len(prop_py_obj); i++)
+			for(Py_ssize_t i = 0; i < bopy::len(prop_py_obj); i++)
 				change_vec.push_back(bopy::extract<Tango::DevDouble>(prop_py_obj[i]));
 			multi_attr_prop.rel_change = change_vec;
 		}
@@ -366,7 +366,7 @@ void from_py_object(bopy::object &py_obj, Tango::MultiAttrProp<T> &multi_attr_pr
 		if(PySequence_Check(prop_py_obj.ptr()))
 		{
 			std::vector<Tango::DevDouble> change_vec;
-			for(long i = 0; i < bopy::len(prop_py_obj); i++)
+			for(Py_ssize_t i = 0; i < bopy::len(prop_py_obj); i++)
 				change_vec.push_back(bopy::extract<Tango::DevDouble>(prop_py_obj[i]));
 			multi_attr_prop.abs_change = change_vec;
 		}
@@ -383,7 +383,7 @@ void from_py_object(bopy::object &py_obj, Tango::MultiAttrProp<T> &multi_attr_pr
 		if(PySequence_Check(prop_py_obj.ptr()))
 		{
 			std::vector<Tango::DevDouble> change_vec;
-			for(long i = 0; i < bopy::len(prop_py_obj); i++)
+			for(Py_ssize_t i = 0; i < bopy::len(prop_py_obj); i++)
 				change_vec.push_back(bopy::extract<Tango::DevDouble>(prop_py_obj[i]));
 			multi_attr_prop.archive_rel_change = change_vec;
 		}
@@ -400,7 +400,7 @@ void from_py_object(bopy::object &py_obj, Tango::MultiAttrProp<T> &multi_attr_pr
 		if(PySequence_Check(prop_py_obj.ptr()))
 		{
 			std::vector<Tango::DevDouble> change_vec;
-			for(long i = 0; i < bopy::len(prop_py_obj); i++)
+			for(Py_ssize_t i = 0; i < bopy::len(prop_py_obj); i++)
 				change_vec.push_back(bopy::extract<Tango::DevDouble>(prop_py_obj[i]));
 			multi_attr_prop.archive_abs_change = change_vec;
 		}
@@ -488,7 +488,7 @@ inline void from_py_object(bopy::object &py_obj, Tango::MultiAttrProp<Tango::Dev
 		if(PySequence_Check(prop_py_obj.ptr()))
 		{
 			std::vector<Tango::DevDouble> change_vec;
-			for(long i = 0; i < bopy::len(prop_py_obj); i++)
+			for(Py_ssize_t i = 0; i < bopy::len(prop_py_obj); i++)
 				change_vec.push_back(bopy::extract<Tango::DevDouble>(prop_py_obj[i]));
 			multi_attr_prop.rel_change = change_vec;
 		}
@@ -505,7 +505,7 @@ inline void from_py_object(bopy::object &py_obj, Tango::MultiAttrProp<Tango::Dev
 		if(PySequence_Check(prop_py_obj.ptr()))
 		{
 			std::vector<Tango::DevDouble> change_vec;
-			for(long i = 0; i < bopy::len(prop_py_obj); i++)
+			for(Py_ssize_t i = 0; i < bopy::len(prop_py_obj); i++)
 				change_vec.push_back(bopy::extract<Tango::DevDouble>(prop_py_obj[i]));
 			multi_attr_prop.abs_change = change_vec;
 		}
@@ -522,7 +522,7 @@ inline void from_py_object(bopy::object &py_obj, Tango::MultiAttrProp<Tango::Dev
 		if(PySequence_Check(prop_py_obj.ptr()))
 		{
 			std::vector<Tango::DevDouble> change_vec;
-			for(long i = 0; i < bopy::len(prop_py_obj); i++)
+			for(Py_ssize_t i = 0; i < bopy::len(prop_py_obj); i++)
 				change_vec.push_back(bopy::extract<Tango::DevDouble>(prop_py_obj[i]));
 			multi_attr_prop.archive_rel_change = change_vec;
 		}
@@ -539,7 +539,7 @@ inline void from_py_object(bopy::object &py_obj, Tango::MultiAttrProp<Tango::Dev
 		if(PySequence_Check(prop_py_obj.ptr()))
 		{
 			std::vector<Tango::DevDouble> change_vec;
-			for(long i = 0; i < bopy::len(prop_py_obj); i++)
+			for(Py_ssize_t i = 0; i < bopy::len(prop_py_obj); i++)
 				change_vec.push_back(bopy::extract<Tango::DevDouble>(prop_py_obj[i]));
 			multi_attr_prop.archive_abs_change = change_vec;
 		}
@@ -629,7 +629,7 @@ inline void from_py_object(bopy::object &py_obj, Tango::MultiAttrProp<Tango::Dev
 		if(PySequence_Check(prop_py_obj.ptr()))
 		{
 			std::vector<Tango::DevDouble> change_vec;
-			for(long i = 0; i < bopy::len(prop_py_obj); i++)
+			for(Py_ssize_t i = 0; i < bopy::len(prop_py_obj); i++)
 				change_vec.push_back(bopy::extract<Tango::DevDouble>(prop_py_obj[i]));
 			multi_attr_prop.rel_change = change_vec;
 		}
@@ -646,7 +646,7 @@ inline void from_py_object(bopy::object &py_obj, Tango::MultiAttrProp<Tango::Dev
 		if(PySequence_Check(prop_py_obj.ptr()))
 		{
 			std::vector<Tango::DevDouble> change_vec;
-			for(long i = 0; i < bopy::len(prop_py_obj); i++)
+			for(Py_ssize_t i = 0; i < bopy::len(prop_py_obj); i++)
 				change_vec.push_back(bopy::extract<Tango::DevDouble>(prop_py_obj[i]));
 			multi_attr_prop.abs_change = change_vec;
 		}
@@ -663,7 +663,7 @@ inline void from_py_object(bopy::object &py_obj, Tango::MultiAttrProp<Tango::Dev
 		if(PySequence_Check(prop_py_obj.ptr()))
 		{
 			std::vector<Tango::DevDouble> change_vec;
-			for(long i = 0; i < bopy::len(prop_py_obj); i++)
+			for(Py_ssize_t i = 0; i < bopy::len(prop_py_obj); i++)
 				change_vec.push_back(bopy::extract<Tango::DevDouble>(prop_py_obj[i]));
 			multi_attr_prop.archive_rel_change = change_vec;
 		}
@@ -680,7 +680,7 @@ inline void from_py_object(bopy::object &py_obj, Tango::MultiAttrProp<Tango::Dev
 		if(PySequence_Check(prop_py_obj.ptr()))
 		{
 			std::vector<Tango::DevDouble> change_vec;
-			for(long i = 0; i < bopy::len(prop_py_obj); i++)
+			for(Py_ssize_t i = 0; i < bopy::len(prop_py_obj); i++)
 				change_vec.push_back(bopy::extract<Tango::DevDouble>(prop_py_obj[i]));
 			multi_attr_prop.archive_abs_change = change_vec;
 		}

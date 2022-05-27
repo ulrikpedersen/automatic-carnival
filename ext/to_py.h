@@ -73,9 +73,9 @@ struct CORBA_sequence_to_tuple
 {
     static PyObject* convert(CorbaContainerType const& a)
     {
-        unsigned long size = a.length();
+        Py_ssize_t size = a.length();
         PyObject *t = PyTuple_New(size);
-        for(unsigned long i=0; i < size; ++i)
+        for(Py_ssize_t i=0; i < size; ++i)
         {
             boost::python::object x(a[i]);
             PyTuple_SetItem(t, i, boost::python::incref(x.ptr()));
@@ -91,9 +91,9 @@ struct CORBA_sequence_to_tuple<Tango::DevVarStringArray>
 {
     static PyObject* convert(Tango::DevVarStringArray const& a)
     {
-        unsigned long size = a.length();
+        Py_ssize_t size = a.length();
         PyObject *t = PyTuple_New(size);
-        for(unsigned long i=0; i < size; ++i)
+        for(Py_ssize_t i=0; i < size; ++i)
         {
             boost::python::object x = from_char_to_boost_str(a[i].in());
             PyTuple_SetItem(t, i, boost::python::incref(x.ptr()));
@@ -109,18 +109,18 @@ struct CORBA_sequence_to_tuple<Tango::DevVarLongStringArray>
 {
     static PyObject* convert(Tango::DevVarLongStringArray const& a)
     {
-        unsigned long lsize = a.lvalue.length();
-        unsigned long ssize = a.svalue.length();
+        Py_ssize_t lsize = a.lvalue.length();
+        Py_ssize_t ssize = a.svalue.length();
         PyObject *lt = PyTuple_New(lsize);
         PyObject *st = PyTuple_New(ssize);
 
-        for(unsigned long i=0; i < lsize; ++i)
+        for(Py_ssize_t i=0; i < lsize; ++i)
         {
             boost::python::object x(a.lvalue[i]);
             PyTuple_SetItem(lt, i, boost::python::incref(x.ptr()));
         }
 
-        for(unsigned long i=0; i < ssize; ++i)
+        for(Py_ssize_t i=0; i < ssize; ++i)
         {
             boost::python::object x = from_char_to_boost_str(a.svalue[i].in());
             PyTuple_SetItem(st, i, boost::python::incref(x.ptr()));
@@ -139,18 +139,18 @@ struct CORBA_sequence_to_tuple<Tango::DevVarDoubleStringArray>
 {
     static PyObject* convert(Tango::DevVarDoubleStringArray const& a)
     {
-        unsigned long dsize = a.dvalue.length();
-        unsigned long ssize = a.svalue.length();
+        Py_ssize_t dsize = a.dvalue.length();
+        Py_ssize_t ssize = a.svalue.length();
         PyObject *dt = PyTuple_New(dsize);
         PyObject *st = PyTuple_New(ssize);
 
-        for(unsigned long i=0; i < dsize; ++i)
+        for(Py_ssize_t i=0; i < dsize; ++i)
         {
             boost::python::object x(a.dvalue[i]);
             PyTuple_SetItem(dt, i, boost::python::incref(x.ptr()));
         }
 
-        for(unsigned long i=0; i < ssize; ++i)
+        for(Py_ssize_t i=0; i < ssize; ++i)
         {
             boost::python::object x = from_char_to_boost_str(a.svalue[i].in());
             PyTuple_SetItem(st, i, boost::python::incref(x.ptr()));
@@ -169,9 +169,9 @@ struct CORBA_sequence_to_list
 {
     static PyObject* convert(CorbaContainerType const& a)
     {
-        unsigned long size = a.length();
+        Py_ssize_t size = a.length();
         boost::python::list ret;
-        for(unsigned long i=0; i < size; ++i)
+        for(Py_ssize_t i=0; i < size; ++i)
         {
             ret.append(a[i]);
         }
@@ -186,9 +186,9 @@ struct CORBA_sequence_to_list<Tango::DevVarStringArray>
 {
     static boost::python::list to_list(Tango::DevVarStringArray const& a)
     {
-        unsigned long size = a.length();
+        Py_ssize_t size = a.length();
         boost::python::list ret;
-        for(unsigned long i=0; i < size; ++i)
+        for(Py_ssize_t i=0; i < size; ++i)
         {
 	    boost::python::object x = from_char_to_boost_str(a[i].in());
             ret.append(x);
@@ -209,16 +209,16 @@ struct CORBA_sequence_to_list<Tango::DevVarLongStringArray>
 {
     static PyObject* convert(Tango::DevVarLongStringArray const& a)
     {
-        unsigned long lsize = a.lvalue.length();
-        unsigned long ssize = a.svalue.length();
+        Py_ssize_t lsize = a.lvalue.length();
+        Py_ssize_t ssize = a.svalue.length();
         
         boost::python::list ret, lt, st;
-        for(unsigned long i=0; i < lsize; ++i)
+        for(Py_ssize_t i=0; i < lsize; ++i)
         {
             lt.append(a.lvalue[i]);
         }
         
-        for(unsigned long i=0; i < ssize; ++i)
+        for(Py_ssize_t i=0; i < ssize; ++i)
         {
 	    boost::python::object x = from_char_to_boost_str(a.svalue[i].in());
             st.append(x);
@@ -238,16 +238,16 @@ struct CORBA_sequence_to_list <Tango::DevVarDoubleStringArray>
 {
     static PyObject* convert(Tango::DevVarDoubleStringArray const& a)
     {
-        unsigned long dsize = a.dvalue.length();
-        unsigned long ssize = a.svalue.length();
+        Py_ssize_t dsize = a.dvalue.length();
+        Py_ssize_t ssize = a.svalue.length();
         
         boost::python::list ret, dt, st;
-        for(unsigned long i=0; i < dsize; ++i)
+        for(Py_ssize_t i=0; i < dsize; ++i)
         {
             dt.append(a.dvalue[i]);
         }
         
-        for(unsigned long i=0; i < ssize; ++i)
+        for(Py_ssize_t i=0; i < ssize; ++i)
         {
 	    boost::python::object x = from_char_to_boost_str(a.svalue[i].in());
             st.append(x);

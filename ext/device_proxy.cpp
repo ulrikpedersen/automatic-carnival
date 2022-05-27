@@ -307,15 +307,15 @@ namespace PyDeviceProxy
     void __set_value(T& obj, bopy::object& py_value) {
         // need to fill item names first because in case it is a sub-blob,
         // the Tango C++ API doesnt't provide a way to do it
-        bopy::ssize_t n = bopy::len(py_value);
+        Py_ssize_t n = bopy::len(py_value);
         std::vector < std::string > elem_names;
-        for (bopy::ssize_t i = 0; i < n; ++i) {
+        for (Py_ssize_t i = 0; i < n; ++i) {
             std::string s = bopy::extract < std::string > (py_value[i]["name"]);
             elem_names.push_back(bopy::extract<std::string>(py_value[i]["name"]));
         }
         obj.set_data_elt_names(elem_names);
 
-        for (bopy::ssize_t i = 0; i < n; ++i) {
+        for (Py_ssize_t i = 0; i < n; ++i) {
             bopy::object item = py_value[i];
             std::string item_name = bopy::extract<std::string>(item["name"]);
             bopy::object py_item_data = item["value"];
