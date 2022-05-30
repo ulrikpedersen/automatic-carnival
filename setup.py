@@ -23,21 +23,11 @@ from ctypes.util import find_library
 from setuptools import setup, Extension
 from setuptools import Command
 from setuptools.command.build_ext import build_ext as dftbuild_ext
-from setuptools.command.install import install as dftinstall
+from setuptools.command.install import install
 
 from distutils.command.build import build as dftbuild
 from distutils.unixccompiler import UnixCCompiler
 from distutils.version import LooseVersion as V
-
-# Sphinx imports
-try:
-    import sphinx
-    import sphinx.util.console
-
-    sphinx.util.console.color_terminal = lambda: False
-    from sphinx.setup_command import BuildDoc
-except ImportError:
-    sphinx = None
 
 # Detect numpy
 try:
@@ -265,10 +255,7 @@ class build(dftbuild):
         )
     )
 
-    # No documentation option
-    user_options.append(("no-doc", None, "do not build documentation"))
-
-    boolean_options = dftbuild.boolean_options + ["strip-lib", "no-doc"]
+    boolean_options = dftbuild.boolean_options + ["strip-lib"]
 
     def initialize_options(self):
         dftbuild.initialize_options(self)
@@ -308,25 +295,6 @@ class build(dftbuild):
         finally:
             os.chdir(orig_dir)
 
-    def has_doc(self):
-        if self.no_doc:
-            return False
-        if sphinx is None:
-            return False
-        if V(sphinx.__version__) <= V("0.6.5"):
-            print(
-                "Documentation will not be generated:"
-                " sphinx version (%s) too low."
-                " Needs 0.6.6" % sphinx.__version__
-            )
-            return False
-        setup_dir = os.path.dirname(os.path.abspath(__file__))
-        return os.path.isdir(os.path.join(setup_dir, "doc"))
-
-    sub_commands = dftbuild.sub_commands + [
-        ("build_doc", has_doc),
-    ]
-
 
 class build_ext(dftbuild_ext):
     def build_extensions(self):
@@ -355,78 +323,6 @@ class build_ext(dftbuild_ext):
             "-Wno-deprecated-declarations",
         ]
         dftbuild_ext.build_extension(self, ext)
-
-
-if sphinx:
-
-    class build_doc(BuildDoc):
-        def run(self):
-            # make sure the python path is pointing to the newly built
-            # code so that the documentation is built on this and not a
-            # previously installed version
-
-            build_cmd = self.get_finalized_command("build")
-            sys.path.insert(0, os.path.abspath(build_cmd.build_lib))
-            sphinx.setup_command.BuildDoc.run(self)
-            sys.path.pop(0)
-
-
-class install_html(Command):
-
-    user_options = []
-
-    # Install directory option
-    user_options.append(
-        ("install-dir=", "d", "base directory for installing HTML documentation files")
-    )
-
-    def initialize_options(self):
-        self.install_dir = None
-
-    def finalize_options(self):
-        self.set_undefined_options("install", ("install_html", "install_dir"))
-
-    def run(self):
-        build_doc_cmd = self.get_finalized_command("build_doc")
-        src_html_dir = abspath(build_doc_cmd.build_dir, "html")
-        self.copy_tree(src_html_dir, self.install_dir)
-
-
-class install(dftinstall):
-
-    user_options = list(dftinstall.user_options)
-
-    # HTML directory option
-    user_options.append(
-        ("install-html=", None, "installation directory for HTML documentation")
-    )
-
-    def initialize_options(self):
-        dftinstall.initialize_options(self)
-        self.install_html = None
-
-    def finalize_options(self):
-        dftinstall.finalize_options(self)
-        # We do a hack here. We  cannot trust the 'install_base' value because
-        # it  is not  always  the final  target.  For  example,  in unix,  the
-        # install_base is '/usr' and all other install_* are directly relative
-        # to  it. However,in  unix-local (like  ubuntu) install_base  is still
-        # '/usr'  but,  for  example, install_data,  is  '$install_base/local'
-        # which breaks everything.
-
-        # The  hack consists  in  using install_data  instead of  install_base
-        # since install_data seems to be, in practice, the proper install_base
-        # on all different systems.
-        if self.install_html is None:
-            self.install_html = os.path.join(
-                self.install_data, "share", "doc", "pytango", "html"
-            )
-
-    def has_html(self):
-        return sphinx is not None
-
-    sub_commands = list(dftinstall.sub_commands)
-    sub_commands.append(("install_html", has_html))
 
 
 class check_tests_errors(Command):
@@ -654,13 +550,9 @@ def setup_args():
     cmdclass = {
         "build": build,
         "build_ext": build_ext,
-        "install_html": install_html,
         "install": install,
         "check_tests_errors": check_tests_errors,
     }
-
-    if sphinx:
-        cmdclass["build_doc"] = build_doc
 
     long_description = get_readme()
 
