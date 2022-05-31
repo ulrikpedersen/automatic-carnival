@@ -15,9 +15,15 @@ Linux
 
 PyTango is available on linux as an official debian/ubuntu package:
 
+- for Python 2.7:
 .. sourcecode:: console
 
-    $ sudo apt-get install python-pytango
+    $ sudo apt-get install python-tango
+
+- for Python 3.X:
+.. sourcecode:: console
+
+    $ sudo apt-get install python3-tango
 
 RPM packages are also available for RHEL & CentOS:
 
