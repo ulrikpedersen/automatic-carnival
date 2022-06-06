@@ -42,7 +42,6 @@ Python dependencies:
 Build dependencies:
 
 - setuptools_
-- sphinx_
 
 Optional dependencies:
 
@@ -104,7 +103,7 @@ For an interactive use, consider using ITango_, a tango IPython_ profile.
 Documentation
 -------------
 
-Check out the documentation_ for more informations.
+Check out the documentation_ for more information.
 
 
 
@@ -154,7 +153,6 @@ All contributions,  `PR and bug reports`_ are welcome, please see: `How to Contr
 .. _numpy: http://pypi.python.org/pypi/numpy
 .. _six: http://pypi.python.org/pypi/six
 .. _setuptools: http://pypi.python.org/pypi/setuptools
-.. _sphinx: http://pypi.python.org/pypi/sphinx
 .. _futures: http://pypi.python.org/pypi/futures
 .. _gevent: http://pypi.python.org/pypi/gevent
 
