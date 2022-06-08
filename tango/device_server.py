@@ -2215,26 +2215,6 @@ def __doc_WAttribute():
         :rtype: obj
     """)
 
-    document_method("is_memorized", """
-    is_memorized(self) -> bool
-
-        Check if the attribute is defined as memorized in the Tango DB.
-
-        :returns: true if the attribute is memorized.
-        :rtype: bool
-    """)
-
-    document_method("get_mem_value", """
-    get_mem_value(self) -> str
-
-        Get the attribute's memorized value.  This is the value
-        retrieved from Tango DB when the device was instantiated,
-        not the most recently stored value.
-
-        :returns: a string with the memorized value
-        :rtype: str
-    """)
-
 
 def __doc_MultiClassAttribute():
     def document_method(method_name, desc, append=True):

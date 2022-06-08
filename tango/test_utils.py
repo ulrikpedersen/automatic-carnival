@@ -191,14 +191,6 @@ if pytest:
         expected = lambda v: create_result(dtype, v)
         return dtype, values, expected
 
-    @pytest.fixture(
-        params=list((t, v) for t, v in TYPED_VALUES.items() if type(t) is not tuple),
-        ids=lambda x: repr_type(x[0]))
-    def scalar_typed_values(request):
-        dtype, values = request.param
-        expected = lambda v: create_result(dtype, v)
-        return dtype, values, expected
-
     @pytest.fixture(params=GreenMode.values.values())
     def green_mode(request):
         return request.param
