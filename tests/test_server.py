@@ -250,42 +250,6 @@ def test_read_write_attribute_enum(server_green_mode):
     assert 'enum_labels' in str(context.value)
 
 
-def test_attribute_is_memorized(scalar_typed_values, server_green_mode):
-    dtype, values, expected = scalar_typed_values
-
-    class TestDevice(Device):
-        green_mode = server_green_mode
-
-        @attribute(dtype=dtype,
-                   access=AttrWriteType.READ_WRITE,
-                   memorized=True)
-        def memorized_attr(self):
-            return values[0]
-
-        @memorized_attr.write
-        def memorized_attr(self, value):
-            pass
-
-        @attribute(dtype=dtype,
-                   access=AttrWriteType.READ_WRITE,
-                   memorized=False)
-        def non_memorized_attr(self):
-            return values[0]
-
-        @non_memorized_attr.write
-        def non_memorized_attr(self, value):
-            pass
-
-        @command(dtype_in=str, dtype_out=bool)
-        def is_attr_memorized(self, attr_name):
-            attr = getattr(self, attr_name)
-            return attr.is_memorized()
-
-    with DeviceTestContext(TestDevice) as proxy:
-        assert proxy.is_attr_memorized("memorized_attr")
-        assert not proxy.is_attr_memorized("non_memorized_attr")
-
-
 def test_wrong_attribute_read(server_green_mode):
 
     class TestDevice(Device):

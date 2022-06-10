@@ -725,9 +725,6 @@ void export_wattribute()
         .def("set_max_value", &PyWAttribute::set_max_value)
         .def("is_min_value", &Tango::WAttribute::is_min_value)
         .def("is_max_value", &Tango::WAttribute::is_max_value)
-        .def("is_memorized", &Tango::WAttribute::is_memorized)
-        .def("get_mem_value", &Tango::WAttribute::get_mem_value,
-            return_value_policy<copy_non_const_reference>())
         .def("get_write_value_length", &Tango::WAttribute::get_write_value_length)
         .def("set_write_value",
             (void (*) (Tango::WAttribute &, boost::python::object &))
@@ -738,10 +735,12 @@ void export_wattribute()
         .def("set_write_value",
             (void (*) (Tango::WAttribute &, boost::python::object &, long, long))
             &PyWAttribute::set_write_value)
+
         // old style get_write_value
         .def("get_write_value",
             &PyWAttribute::get_write_value_pytango3,
             ( arg_("self"), arg_("empty_list")))
+
         // new style get_write_value
         .def("get_write_value",
             &PyWAttribute::get_write_value,

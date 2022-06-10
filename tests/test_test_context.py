@@ -325,35 +325,30 @@ def memorized_attribute_test_device_factory():
             def write_attr(self, value):
                 self._attr_value = value
 
-            @attribute(dtype=str)
-            def attr_get_mem_value(self):
-                return self.attr.get_mem_value()
-
         return _Device
     return _factory
 
 
 @pytest.mark.parametrize(
-    "is_attribute_memorized, memorized_db_value, expected_read_value, expected_get_mem_value",
+    "is_attribute_memorized, memorized_value, expected_value",
     [
-        (False, None, 0, ""),
-        (False, "1", 0, ""),
-        (True, None, 0, tango.constants.MemNotUsed),
-        (True, "1", 1, "1"),
+        (False, None, 0),
+        (False, "1", 0),
+        (True, None, 0),
+        (True, "1", 1),
     ]
 )
 def test_multi_with_memorized_attribute_values(
     memorized_attribute_test_device_factory,
     is_attribute_memorized,
-    memorized_db_value,
-    expected_read_value,
-    expected_get_mem_value,
+    memorized_value,
+    expected_value
 ):
     TestDevice = memorized_attribute_test_device_factory(is_attribute_memorized)
 
     device_info = {"name": "test/device1/1"}
-    if memorized_db_value is not None:
-        device_info["memorized"] = {"attr": memorized_db_value}
+    if memorized_value is not None:
+        device_info["memorized"] = {"attr": memorized_value}
 
     devices_info = (
         {
@@ -364,32 +359,29 @@ def test_multi_with_memorized_attribute_values(
 
     with MultiDeviceTestContext(devices_info) as context:
         proxy = context.get_device("test/device1/1")
-        assert proxy.attr == expected_read_value
-        assert proxy.attr_get_mem_value == expected_get_mem_value
+        assert proxy.attr == expected_value
 
 
 @pytest.mark.parametrize(
-    "is_attribute_memorized, memorized_db_value, expected_read_value, expected_get_mem_value",
+    "is_attribute_memorized, memorized_value, expected_value",
     [
-        (False, None, 0, ""),
-        (False, "1", 0, ""),
-        (True, None, 0, tango.constants.MemNotUsed),
-        (True, "1", 1, "1"),
+        (False, None, 0),
+        (False, 1, 0),
+        (True, None, 0),
+        (True, 1, 1),
     ]
 )
 def test_single_with_memorized_attribute_values(
     memorized_attribute_test_device_factory,
     is_attribute_memorized,
-    memorized_db_value,
-    expected_read_value,
-    expected_get_mem_value,
+    memorized_value,
+    expected_value
 ):
     TestDevice = memorized_attribute_test_device_factory(is_attribute_memorized)
 
     kwargs = {
-        "memorized": {"attr": memorized_db_value}
-    } if memorized_db_value is not None else {}
+        "memorized": {"attr": memorized_value}
+    } if memorized_value is not None else {}
 
     with DeviceTestContext(TestDevice, **kwargs) as proxy:
-        assert proxy.attr == expected_read_value
-        assert proxy.attr_get_mem_value == expected_get_mem_value
+        assert proxy.attr == expected_value
