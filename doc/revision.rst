@@ -111,6 +111,8 @@ Document revisions
 +----------+----------------------------------------------------------------------------------+-----------------------------------------------------+-----------------------------------+
 | 24/12/20 | `9.3.3 <http://pytango.readthedocs.io/en/v9.3.3>`_                               | 9.3.3 Release                                       | A\. Joubert                       |
 +----------+----------------------------------------------------------------------------------+-----------------------------------------------------+-----------------------------------+
+| 14/06/22 | `9.3.4 <http://pytango.readthedocs.io/en/v9.3.4>`_                               | 9.3.4 Release                                       | A\. Joubert                       |
++----------+----------------------------------------------------------------------------------+-----------------------------------------------------+-----------------------------------+
 
 .. _pytango-version-history:
 
@@ -120,6 +122,53 @@ Version history
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Version  | Changes                                                                                                                                                                             |
 +==========+=====================================================================================================================================================================================+
+| 9.3.4    | 9.3.4 release.                                                                                                                                                                      |
+|          |                                                                                                                                                                                     |
+|          | Changes:                                                                                                                                                                            |
+|          |     - `Pull Request #430: Raise when setting non-existent DeviceProxy attr <https://gitlab.com/tango-controls/pytango/-/merge_requests/430>`_                                       |
+|          |     - `Pull Request #444: Add "friendly" argparser for device server arguments (#132, #354) <https://gitlab.com/tango-controls/pytango/-/merge_requests/444>`_                      |
+|          |                                                                                                                                                                                     |
+|          | Bug fixes:                                                                                                                                                                          |
+|          |     - `Pull Request #401: Fix read/write/is_allowed not called for dynamic attribute in async mode server (#173) <https://gitlab.com/tango-controls/pytango/-/merge_requests/401>`_ |
+|          |     - `Pull Request #417: Fix DeviceProxy constructor reference cycle (#412) <https://gitlab.com/tango-controls/pytango/-/merge_requests/417>`_                                     |
+|          |     - `Pull Request #418: Release GIL in DeviceProxy and AttributeProxy dtor <https://gitlab.com/tango-controls/pytango/-/merge_requests/418>`_                                     |
+|          |     - `Pull Request #434: Fix Device green_mode usage in MultiDeviceTestContext <https://gitlab.com/tango-controls/pytango/-/merge_requests/434>`_                                  |
+|          |     - `Pull Request #436: Fix MSVC 9 syntax issue with shared pointer deletion <https://gitlab.com/tango-controls/pytango/-/merge_requests/436>`_                                   |
+|          |     - `Pull Request #438: Add unit tests for device server logging <https://gitlab.com/tango-controls/pytango/-/merge_requests/438>`_                                               |
+|          |     - `Pull Request #446: Allow pipes to be inherited by Device subclasses (#439) <https://gitlab.com/tango-controls/pytango/-/merge_requests/446>`_                                |
+|          |                                                                                                                                                                                     |
+|          | Deprecation fixes:                                                                                                                                                                  |
+|          |     - `Pull Request #414: Fix deprecated warning with numpy 1.20 <https://gitlab.com/tango-controls/pytango/-/merge_requests/414>`_                                                 |
+|          |     - `Pull Request #424: tango/pytango_pprint.py: Use correct syntax for comparing object contents <https://gitlab.com/tango-controls/pytango/-/merge_requests/424>`_              |
+|          |     - `Pull Request #425: Fix some and silence some C++ compiler warnings <https://gitlab.com/tango-controls/pytango/-/merge_requests/425>`_                                        |
+|          |     - `Pull Request #439: Fix asyncio Python 3.10 compatibility (#429) <https://gitlab.com/tango-controls/pytango/-/merge_requests/439>`_                                           |
+|          |     - `Pull Request #449: Use Py_ssize_t for all CPython indexing <https://gitlab.com/tango-controls/pytango/-/merge_requests/449>`_                                                |
+|          |                                                                                                                                                                                     |
+|          | Doc fixes:                                                                                                                                                                          |
+|          |     - `Pull Request #404: Typo on Sphinx documentation (#173) <https://gitlab.com/tango-controls/pytango/-/merge_requests/404>`_                                                    |
+|          |     - `Pull Request #406: Fix docs - missing DbDevExportInfos and DbDevImportInfos <https://gitlab.com/tango-controls/pytango/-/merge_requests/406>`_                               |
+|          |     - `Pull Request #420: Fix broken link: no s in gevent <https://gitlab.com/tango-controls/pytango/-/merge_requests/420>`_                                                        |
+|          |     - `Pull Request #422: Uncomment docs of tango.Util.instance() and build docs for other static methods <https://gitlab.com/tango-controls/pytango/-/merge_requests/422>`_        |
+|          |     - `Pull Request #426: [docs] Fixed arguments name when calling command decorator <https://gitlab.com/tango-controls/pytango/-/merge_requests/426>`_                             |
+|          |     - `Pull Request #427: [docs] Fixed variables name in a tango.Database.add_server method example <https://gitlab.com/tango-controls/pytango/-/merge_requests/427>`_              |
+|          |     - `Pull Request #429: Add training material examples <https://gitlab.com/tango-controls/pytango/-/merge_requests/429>`_                                                         |
+|          |     - `Pull Request #433: Fix server method in DevEnum example in doc/data_types.rst <https://gitlab.com/tango-controls/pytango/-/merge_requests/433>`_                             |
+|          |     - `Pull Request #440: Resolve "Missing methods in Documentation" (#217) <https://gitlab.com/tango-controls/pytango/-/merge_requests/440>`_                                      |
+|          |     - `Pull Request #442: Invalid escape fix <https://gitlab.com/tango-controls/pytango/-/merge_requests/442>`_                                                                     |
+|          |     - `Pull Request #453: Remove docs generation from build <https://gitlab.com/tango-controls/pytango/-/merge_requests/453>`_                                                      |
+|          |     - `Pull Request #454: Debian/Ubuntu installation docs updated <https://gitlab.com/tango-controls/pytango/-/merge_requests/454>`_                                                |
+|          |     - `Pull Request #455: Update contribution guidelines, drop stable branch <https://gitlab.com/tango-controls/pytango/-/merge_requests/455>`_                                     |
+|          |                                                                                                                                                                                     |
+|          | DevOps fixes:                                                                                                                                                                       |
+|          |     - `Pull Request #409: Enable CI/CD in Gitlab (#399) <https://gitlab.com/tango-controls/pytango/-/merge_requests/409>`_                                                          |
+|          |     - `Pull Request #410: Replace github links <https://gitlab.com/tango-controls/pytango/-/merge_requests/410>`_                                                                   |
+|          |     - `Pull Request #411: Build and upload source distribution to pypi <https://gitlab.com/tango-controls/pytango/-/merge_requests/411>`_                                           |
+|          |     - `Pull Request #423: Use numpy parallel compilation if available (#416) <https://gitlab.com/tango-controls/pytango/-/merge_requests/423>`_                                     |
+|          |     - `Pull Request #428: Gitlab CI image build + push <https://gitlab.com/tango-controls/pytango/-/merge_requests/428>`_                                                           |
+|          |     - `Pull Request #445: Split Gitlab CI caches per job <https://gitlab.com/tango-controls/pytango/-/merge_requests/445>`_                                                         |
+|          |     - `Pull Request #448: Add missing cmake files to sdist <https://gitlab.com/tango-controls/pytango/-/merge_requests/448>`_                                                       |
+|          |                                                                                                                                                                                     |
++----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | 9.3.3    | 9.3.3 release.                                                                                                                                                                      |
 |          |                                                                                                                                                                                     |
 |          | Features:                                                                                                                                                                           |
