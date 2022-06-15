@@ -3,8 +3,8 @@
 FROM continuumio/miniconda3:4.8.2
 
 ARG PYTHON_VERSION=3.7
-ARG TANGO_VERSION=9.3.4
-COPY environment-py${PYTHON_VERSION}-tango${TANGO_VERSION}.yml /tmp/environment.yml
+ARG CPP_TANGO_VERSION=9.3.4
+COPY environment-py${PYTHON_VERSION}-tango${CPP_TANGO_VERSION}.yml /tmp/environment.yml
 
 RUN conda update -n base -c defaults conda
 RUN conda env create -f /tmp/environment.yml
