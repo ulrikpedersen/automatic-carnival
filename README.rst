@@ -2,12 +2,11 @@ PyTango
 =======
 
 |Doc Status|
-|Travis Build Status|
+|Gitlab Build Status|
 |Appveyor Build Status|
 |Pypi Version|
 |Python Versions|
-|Anaconda Cloud|
-|Codacy|
+|Conda|
 
 Main website: http://pytango.readthedocs.io
 
@@ -119,12 +118,12 @@ All contributions,  `PR and bug reports`_ are welcome, please see: `How to Contr
                 :target: http://pytango.readthedocs.io/en/latest
                 :alt:
 
-.. |Travis Build Status| image:: https://travis-ci.org/tango-controls/pytango.svg
-                         :target: https://travis-ci.org/tango-controls/pytango
+.. |Gitlab Build Status| image:: https://img.shields.io/gitlab/pipeline-status/tango-controls/pytango?branch=develop&label=develop
+                         :target: https://gitlab.com/tango-controls/pytango/-/pipelines?page=1&scope=branches&ref=develop
                          :alt:
 
-.. |Appveyor Build Status| image:: https://ci.appveyor.com/api/projects/status/v971w26kjdxmjopp?svg=true
-                           :target: https://ci.appveyor.com/project/tiagocoutinho/pytango
+.. |Appveyor Build Status| image:: https://img.shields.io/appveyor/build/ajoubertza/pytango-0h1yy/develop?label=develop%20%28Windows%29
+                           :target: https://ci.appveyor.com/project/ajoubertza/pytango-0h1yy/branch/develop
                            :alt:
 
 .. |Pypi Version| image:: https://img.shields.io/pypi/v/PyTango.svg
@@ -135,13 +134,9 @@ All contributions,  `PR and bug reports`_ are welcome, please see: `How to Contr
                      :target: https://pypi.python.org/pypi/PyTango/
                      :alt:
 
-.. |Anaconda Cloud| image:: https://anaconda.org/tango-controls/pytango/badges/version.svg
-                    :target: https://anaconda.org/tango-controls/pytango
+.. |Conda| image:: https://img.shields.io/conda/v/conda-forge/pytango
+                    :target: https://anaconda.org/conda-forge/pytango
                     :alt:
-
-.. |Codacy| image:: https://api.codacy.com/project/badge/Grade/c8f2b9fbdcd74f44b41bb4babcb4c8f3
-            :target: https://www.codacy.com/app/tango-controls/pytango?utm_source=github.com&utm_medium=referral&utm_content=tango-controls/pytango&utm_campaign=badger
-            :alt: Codacy Badge
 
 .. _Tango: http://tango-controls.org
 .. _Tango C++ API: https://tango-controls.github.io/cppTango-docs/index.html
