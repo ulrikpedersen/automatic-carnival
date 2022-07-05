@@ -253,15 +253,18 @@ def parse_args(args):
                        help="Specifying the host from which server accept "
                             "requests and port on which the device server listens.")
 
-    group.add_argument("-ORB<any_another_option>", "--ORB<any_another_option>", dest="ORB_not_used", action="store",
-                       metavar="giop:tcp:<host>:<port>",
-                       help="Any another ORB option")
+    group.add_argument("-ORB<other_option>", "--ORB<other_option>", dest="ORB_not_used", action="store",
+                       metavar="other_value",
+                       help="Any other ORB option, e.g., -ORBtraceLevel 5")
 
     # workaround to add arbitrary ORB options
     for arg in args:
-        if "ORB" in arg and "endPoint" not in arg:
-            arg = arg.strip('-')
-            group.add_argument("-" + arg, "--" + arg, action="store", dest=arg)
+        match = re.match(r"(-ORB|--ORB)(?P<suffix>\w+)", arg)
+        if match:
+            suffix = match.group("suffix")
+            if suffix != "endPoint":
+                arg = arg.lstrip('-')
+                group.add_argument("-" + arg, "--" + arg, action="store", dest=arg)
 
     # since -vvvv and -v4 options are incompatible, we have to pop all -vN options
     verbose = None
