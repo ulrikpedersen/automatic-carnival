@@ -391,7 +391,7 @@ def setup_args():
     if not has_numpy():
         macros.append(("DISABLE_PYTANGO_NUMPY", None))
     else:
-        macros.append(("PYTANGO_NUMPY_VERSION", '"%s"' % numpy.__version__))
+        macros.append(("PYTANGO_NUMPY_VERSION", numpy.__version__))
         macros.append(("NPY_NO_DEPRECATED_API", "0"))
 
     if POSIX:

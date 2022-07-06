@@ -14,6 +14,10 @@
 #include "tango_numpy.h"
 #include "tgutils.h"
 
+// From https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html
+#define xstr(a) str(a)
+#define str(a) #a
+
 using namespace boost::python;
 
 long TANGO_VERSION_HEX;
@@ -33,7 +37,7 @@ void export_constants()
 #else
     consts_scope.attr("NUMPY_SUPPORT") = true;
 #ifdef PYTANGO_NUMPY_VERSION
-    consts_scope.attr("NUMPY_VERSION") = PYTANGO_NUMPY_VERSION;
+    consts_scope.attr("NUMPY_VERSION") = xstr(PYTANGO_NUMPY_VERSION);
 #else
     consts_scope.attr("NUMPY_VERSION") = "0.0.0";
 #endif
