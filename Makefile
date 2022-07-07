@@ -55,7 +55,7 @@ else
 NUMPY_INC = -I$(NUMPY_ROOT)/include
 endif
 
-PYTANGO_NUMPY_VERSION = \"$(shell $(PY_EXC) -c "import sys, numpy; sys.stdout.write(numpy.__version__)")\"
+PYTANGO_NUMPY_VERSION = $(shell $(PY_EXC) -c "import sys, numpy; sys.stdout.write(numpy.__version__)")
 
 ifndef prefix
 ifdef user
