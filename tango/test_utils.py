@@ -209,5 +209,7 @@ if pytest:
 
     @pytest.fixture(params=['linux', 'win'])
     def os_system(request):
+        original_platform = sys.platform
         sys.platform = request.param
         yield
+        sys.platform = original_platform
