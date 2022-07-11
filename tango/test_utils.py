@@ -136,9 +136,14 @@ DEVICE_SERVER_ARGUMENTS = (
 # some options can be only in win, in linux should be error
     (['win'], 'MyDs instance -dbg -i -s -u', ['MyDs', 'instance', '-dbg', '-i', '-s', '-u']),
 
-# varialbe ORB options
+# variable ORB options
     (['linux', 'win'], 'MyDs instance -ORBtest1 test1 --ORBtest2 test2',
-     ['MyDs', 'instance', '-ORBtest1', 'test1', '-ORBtest2', 'test2'])
+     ['MyDs', 'instance', '-ORBtest1', 'test1', '-ORBtest2', 'test2']),
+    (['linux', 'win'], 'MyDs ORBinstance -ORBtest myORBparam',
+     ['MyDs', 'ORBinstance', '-ORBtest', 'myORBparam']),
+    (['linux', 'win'], 'MyDs instance -nodb -ORBendPoint giop:tcp:localhost:1234 -ORBendPointPublish giop:tcp:myhost.local:2345',
+     ['MyDs', 'instance', '-nodb', '-ORBendPoint', 'giop:tcp:localhost:1234', '-ORBendPointPublish', 'giop:tcp:myhost.local:2345']),
+    ([], 'MyDs instance -ORBtest1 test1 --orbinvalid value', []),  # lowercase "orb" should fail
 )
 
 def repr_type(x):
@@ -204,5 +209,7 @@ if pytest:
 
     @pytest.fixture(params=['linux', 'win'])
     def os_system(request):
+        original_platform = sys.platform
         sys.platform = request.param
         yield
+        sys.platform = original_platform

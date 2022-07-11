@@ -16,8 +16,7 @@ from tango.server import command, attribute, device_property
 from tango.test_utils import DeviceTestContext, MultiDeviceTestContext, \
     GoodEnum, BadEnumNonZero, BadEnumSkipValues, BadEnumDuplicates, \
     assert_close, DEVICE_SERVER_ARGUMENTS, os_system
-from tango.utils import get_enum_labels, EnumTypeError
-
+from tango.utils import EnumTypeError, get_enum_labels, is_pure_str
 
 # Asyncio imports
 try:
@@ -889,7 +888,22 @@ def test_exception_propagation(server_green_mode):
         assert "ZeroDivisionError" in record.value.args[0].desc
 
 
-@pytest.mark.parametrize("applicable_os, test_input, expected_output", DEVICE_SERVER_ARGUMENTS)
+def _avoid_double_colon_node_ids(val):
+    """Return node IDs without a double colon.
+
+    IDs with "::" can't be used to launch a test from the command line, as pytest
+    considers this sequence as a module/test name separator.  Add something extra
+    to keep them usable for single test command line execution (e.g., under Windows CI).
+    """
+    if is_pure_str(val) and "::" in val:
+        return str(val).replace("::", ":_:")
+
+
+@pytest.mark.parametrize(
+    "applicable_os, test_input, expected_output",
+    DEVICE_SERVER_ARGUMENTS,
+    ids=_avoid_double_colon_node_ids
+)
 def test_arguments(applicable_os, test_input, expected_output, os_system):
     try:
         assert set(expected_output) == set(parse_args(test_input.split()))

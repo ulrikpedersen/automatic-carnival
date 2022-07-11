@@ -18,13 +18,21 @@ def pytest_sessionfinish(session):
         print("Generating windows test script...")
         script_path = os.path.join(os.path.dirname(__file__), "run_tests_win.bat")
         with open(script_path, "w") as f:
-            f.write("REM this script will run all tests separately.")
+            f.write("REM this script will run all tests separately.\n")
             for item in session.items:
-                f.write("\n")
                 f.write(
-                    "pytest -c pytest_empty_config.txt "
+                    "pytest -c pytest_empty_config.txt -v "
                 )  # this empty file is created by appveyor
-                f.write(item.nodeid)
+                f.write('"{}"\n'.format(item.nodeid))
+                # Abort if pytest could not execute properly
+                # From: https://docs.pytest.org/en/7.1.x/reference/exit-codes.html
+                #   Exit code 0: All tests were collected and passed successfully
+                #   Exit code 1: Tests were collected and run but some of the tests failed
+                #   Exit code 2: Test execution was interrupted by the user
+                #   Exit code 3: Internal error happened while executing tests
+                #   Exit code 4: pytest command line usage error
+                #   Exit code 5: No tests were collected
+                f.write("if %ERRORLEVEL% geq 2 if %ERRORLEVEL% leq 5 exit /b %ERRORLEVEL%\n")
 
 
 @pytest.hookimpl(hookwrapper=True)
