@@ -847,8 +847,11 @@ signature for Python device server which is:
 attr is an instance of the Attr class, r_meth is the method which has to be
 executed with the attribute is read, w_meth is the method to be executed
 when the attribute is written and is_allo_meth is the method to be executed
-to implement the attribute state machine. The method passed here as argument
-as to be class method and not object method. Which argument you have to use
+to implement the attribute state machine.
+
+NOTE: the method passed here as argument has to be bound methods.
+
+Which argument you have to use
 depends on the type of the attribute (A WRITE attribute does not need a
 read method). Note, that depending on the number of argument you pass to this
 method, you may have to use Python keyword argument. The necessary methods

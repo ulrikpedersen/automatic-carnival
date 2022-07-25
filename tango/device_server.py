@@ -25,6 +25,7 @@ from ._tango import (
     Attr, Logger, AttrWriteType, AttrDataFormat,
     DispLevel, UserDefaultAttrProp, StdStringVector)
 
+from tango import GreenMode
 from .utils import document_method as __document_method
 from .utils import copy_doc, get_latest_device_class
 from .green import get_executor
@@ -360,6 +361,8 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
         :raises DevFailed:
     """
 
+    async_mode = self.green_mode != GreenMode.Synchronous
+
     attr_data = None
     if isinstance(attr, AttrData):
         attr_data = attr
@@ -378,7 +381,15 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
     else:
         r_name = r_meth.__name__
 
-    if r_meth is not None:
+    if attr_data is not None:
+        if not attr_data.bound_read_method:
+            msg = 'unbound fread method is not compatible with asynchronous modes!'
+            if async_mode:
+                raise SyntaxError('ERROR: ' + msg)
+            else:
+                print('WARNING: ' + msg)
+
+    if r_meth is not None and async_mode:
         setattr(self, r_name, __run_in_executor(r_meth))
 
     w_name = 'write_%s' % att_name
@@ -390,7 +401,15 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
     else:
         w_name = w_meth.__name__
 
-    if w_meth is not None:
+    if attr_data is not None:
+        if not attr_data.bound_read_method:
+            msg = 'unbound fwrite method is not compatible with asynchronous modes!'
+            if async_mode:
+                raise SyntaxError('ERROR: ' + msg)
+            else:
+                print('WARNING: ' + msg)
+
+    if w_meth is not None and async_mode:
         setattr(self, w_name, __run_in_executor(w_meth))
 
     ia_name = 'is_%s_allowed' % att_name
@@ -402,7 +421,15 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
     else:
         ia_name = is_allo_meth.__name__
 
-    if is_allo_meth is not None:
+    if attr_data is not None:
+        if not attr_data.bound_is_allowed:
+            msg = 'unbound isallowed method is not compatible with asynchronous modes!'
+            if async_mode:
+                raise SyntaxError('ERROR: ' + msg)
+            else:
+                print('WARNING: ' + msg)
+
+    if is_allo_meth is not None and async_mode:
         setattr(self, ia_name, __run_in_executor(is_allo_meth))
 
     try:
