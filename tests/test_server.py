@@ -15,7 +15,7 @@ from tango.pyutil import parse_args
 from tango.server import command, attribute, device_property
 from tango.test_utils import DeviceTestContext, MultiDeviceTestContext, \
     GoodEnum, BadEnumNonZero, BadEnumSkipValues, BadEnumDuplicates, \
-    assert_close, DEVICE_SERVER_ARGUMENTS
+    assert_close, DEVICE_SERVER_ARGUMENTS, os_system
 from tango.utils import EnumTypeError, get_enum_labels, is_pure_str
 
 # Asyncio imports
@@ -490,7 +490,7 @@ def test_unbound_read_write_dynamic_attribute(server_green_mode):
             pass
     # in all async modes unbound methods are not allowed
     else:
-        with pytest.raises(DevFailed) as context:
+        with pytest.raises(DevFailed):
             with DeviceTestContext(TestDevice):
                 pass
 

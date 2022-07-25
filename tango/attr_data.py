@@ -44,9 +44,9 @@ class AttrData(object):
         self.polling_period = -1
         self.memorized = False
         self.hw_memorized = False
-        self.bound_read_method = None
-        self.bound_write_method = None
-        self.bound_is_allowed = None
+        self.unbound_read_method = None
+        self.unbound_write_method = None
+        self.unbound_is_allowed = None
         if name is None:
             self.read_method_name = None
             self.write_method_name = None
@@ -105,21 +105,21 @@ class AttrData(object):
                 if is_pure_str(fread):
                     self.read_method_name = fread
                 elif inspect.isroutine(fread):
-                    self.bound_read_method = hasattr(fread, '__self__')
+                    self.unbound_read_method = not (hasattr(fread, '__self__') | hasattr(fread, '__wrapped__'))
                     self.read_method_name = fread.__name__
             fwrite = attr_dict.pop('fset', attr_dict.pop('fwrite', None))
             if fwrite is not None:
                 if is_pure_str(fwrite):
                     self.write_method_name = fwrite
                 elif inspect.isroutine(fwrite):
-                    self.bound_write_method = hasattr(fwrite, '__self__')
+                    self.unbound_write_method = not (hasattr(fwrite, '__self__') | hasattr(fwrite, '__wrapped__'))
                     self.write_method_name = fwrite.__name__
             fisallowed = attr_dict.pop('fisallowed', None)
             if fisallowed is not None:
                 if is_pure_str(fisallowed):
                     self.is_allowed_name = fisallowed
                 elif inspect.isroutine(fisallowed):
-                    self.bound_is_allowed = hasattr(fisallowed, '__self__')
+                    self.unbound_is_allowed = not (hasattr(fisallowed, '__self__') | hasattr(fwrite, '__wrapped__'))
                     self.is_allowed_name = fisallowed.__name__
             self.attr_class = attr_dict.pop("klass", self.DftAttrClassMap[self.attr_format])
             self.attr_args.extend((self.attr_name, self.attr_type, self.attr_write))

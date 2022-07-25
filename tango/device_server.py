@@ -361,7 +361,10 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
         :raises DevFailed:
     """
 
-    async_mode = self.green_mode != GreenMode.Synchronous
+    if hasattr(self, 'green_mode'):
+        async_mode = self.green_mode != GreenMode.Synchronous
+    else:
+        async_mode = True
 
     attr_data = None
     if isinstance(attr, AttrData):
@@ -382,14 +385,15 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
         r_name = r_meth.__name__
 
     if attr_data is not None:
-        if not attr_data.bound_read_method:
+        if attr_data.unbound_read_method:
             msg = 'unbound fread method is not compatible with asynchronous modes!'
             if async_mode:
-                raise SyntaxError('ERROR: ' + msg)
+                self.debug_stream(msg)
+                raise DevFailed(msg)
             else:
-                print('WARNING: ' + msg)
+                self.warn_stream(msg)
 
-    if r_meth is not None and async_mode:
+    if r_meth is not None and not hasattr(r_meth, '__wrapped__') and async_mode:
         setattr(self, r_name, __run_in_executor(r_meth))
 
     w_name = 'write_%s' % att_name
@@ -402,14 +406,15 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
         w_name = w_meth.__name__
 
     if attr_data is not None:
-        if not attr_data.bound_read_method:
+        if attr_data.unbound_write_method:
             msg = 'unbound fwrite method is not compatible with asynchronous modes!'
             if async_mode:
-                raise SyntaxError('ERROR: ' + msg)
+                self.debug_stream(msg)
+                raise DevFailed(msg)
             else:
-                print('WARNING: ' + msg)
+                self.warn_stream(msg)
 
-    if w_meth is not None and async_mode:
+    if w_meth is not None and not hasattr(w_meth, '__wrapped__') and async_mode:
         setattr(self, w_name, __run_in_executor(w_meth))
 
     ia_name = 'is_%s_allowed' % att_name
@@ -422,14 +427,15 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
         ia_name = is_allo_meth.__name__
 
     if attr_data is not None:
-        if not attr_data.bound_is_allowed:
+        if attr_data.unbound_is_allowed:
             msg = 'unbound isallowed method is not compatible with asynchronous modes!'
             if async_mode:
-                raise SyntaxError('ERROR: ' + msg)
+                self.debug_stream(msg)
+                raise DevFailed(msg)
             else:
-                print('WARNING: ' + msg)
+                self.warn_stream(msg)
 
-    if is_allo_meth is not None and async_mode:
+    if is_allo_meth is not None and not hasattr(is_allo_meth, '__wrapped__') and async_mode:
         setattr(self, ia_name, __run_in_executor(is_allo_meth))
 
     try:
