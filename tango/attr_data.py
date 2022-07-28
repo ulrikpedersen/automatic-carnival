@@ -25,7 +25,7 @@ import inspect
 from ._tango import Except, CmdArgType, AttrDataFormat, AttrWriteType
 from ._tango import DispLevel, UserDefaultAttrProp, UserDefaultFwdAttrProp
 from ._tango import Attr, SpectrumAttr, ImageAttr, FwdAttr
-from .utils import is_non_str_seq, is_pure_str
+from .utils import is_non_str_seq, is_pure_str, check_method_is_unbound
 
 
 class AttrData(object):
@@ -105,21 +105,21 @@ class AttrData(object):
                 if is_pure_str(fread):
                     self.read_method_name = fread
                 elif inspect.isroutine(fread):
-                    self.unbound_read_method = not (hasattr(fread, '__self__') | hasattr(fread, '__wrapped__'))
+                    self.unbound_read_method = check_method_is_unbound(fread)
                     self.read_method_name = fread.__name__
             fwrite = attr_dict.pop('fset', attr_dict.pop('fwrite', None))
             if fwrite is not None:
                 if is_pure_str(fwrite):
                     self.write_method_name = fwrite
                 elif inspect.isroutine(fwrite):
-                    self.unbound_write_method = not (hasattr(fwrite, '__self__') | hasattr(fwrite, '__wrapped__'))
+                    self.unbound_write_method = check_method_is_unbound(fwrite)
                     self.write_method_name = fwrite.__name__
             fisallowed = attr_dict.pop('fisallowed', None)
             if fisallowed is not None:
                 if is_pure_str(fisallowed):
                     self.is_allowed_name = fisallowed
                 elif inspect.isroutine(fisallowed):
-                    self.unbound_is_allowed = not (hasattr(fisallowed, '__self__') | hasattr(fwrite, '__wrapped__'))
+                    self.unbound_is_allowed = check_method_is_unbound(fisallowed)
                     self.is_allowed_name = fisallowed.__name__
             self.attr_class = attr_dict.pop("klass", self.DftAttrClassMap[self.attr_format])
             self.attr_args.extend((self.attr_name, self.attr_type, self.attr_write))

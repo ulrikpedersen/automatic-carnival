@@ -27,7 +27,7 @@ from ._tango import (
 
 from tango import GreenMode
 from .utils import document_method as __document_method
-from .utils import copy_doc, get_latest_device_class
+from .utils import copy_doc, get_latest_device_class, check_method_is_unbound
 from .green import get_executor
 from .attr_data import AttrData
 
@@ -60,8 +60,13 @@ def __run_in_executor(fn):
     @functools.wraps(fn)
     def wrapper(*args, **kwargs):
         return get_worker().execute(fn, *args, **kwargs)
-    return wrapper
+    # to avoid double wrapping we add an empty field, and then use it to check, whether function is already wrapped
+    wrapper.wrapped_with_executor = True
 
+    if not hasattr(fn, 'wrapped_with_executor'):
+        return wrapper
+    else:
+        return fn
 
 class LatestDeviceImpl(get_latest_device_class()):
     __doc__ = """\
@@ -375,67 +380,79 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
 
     add_name_in_list = False
 
+    r_unbound = None
     r_name = 'read_%s' % att_name
     if r_meth is None:
         if attr_data is not None:
             r_name = attr_data.read_method_name
+            r_unbound = attr_data.unbound_read_method
         if hasattr(self, r_name):
             r_meth = getattr(self, r_name)
     else:
         r_name = r_meth.__name__
 
-    if attr_data is not None:
-        if attr_data.unbound_read_method:
-            msg = 'unbound fread method is not compatible with asynchronous modes!'
-            if async_mode:
-                self.debug_stream(msg)
-                raise DevFailed(msg)
-            else:
-                self.warn_stream(msg)
+    if r_unbound is None and r_meth is not None:
+        r_unbound = check_method_is_unbound(r_meth)
 
-    if r_meth is not None and not hasattr(r_meth, '__wrapped__') and async_mode:
+    if r_unbound is not None and r_unbound:
+        msg = 'unbound fread method is not compatible with asynchronous modes!'
+        if async_mode:
+            self.debug_stream(msg)
+            raise DevFailed(msg)
+        else:
+            self.warn_stream(msg)
+
+    if r_meth is not None and async_mode:
         setattr(self, r_name, __run_in_executor(r_meth))
 
+    w_unbound = None
     w_name = 'write_%s' % att_name
     if w_meth is None:
         if attr_data is not None:
             w_name = attr_data.write_method_name
+            w_unbound = attr_data.unbound_write_method
         if hasattr(self, w_name):
             w_meth = getattr(self, w_name)
     else:
         w_name = w_meth.__name__
 
-    if attr_data is not None:
-        if attr_data.unbound_write_method:
-            msg = 'unbound fwrite method is not compatible with asynchronous modes!'
-            if async_mode:
-                self.debug_stream(msg)
-                raise DevFailed(msg)
-            else:
-                self.warn_stream(msg)
+    if w_unbound is None and w_meth is not None:
+        w_unbound = check_method_is_unbound(w_meth)
 
-    if w_meth is not None and not hasattr(w_meth, '__wrapped__') and async_mode:
+    if w_unbound is not None and w_unbound:
+        msg = 'unbound fwrite method is not compatible with asynchronous modes!'
+        if async_mode:
+            self.debug_stream(msg)
+            raise DevFailed(msg)
+        else:
+            self.warn_stream(msg)
+
+    if w_meth is not None and async_mode:
         setattr(self, w_name, __run_in_executor(w_meth))
 
+    ia_unbound = None
     ia_name = 'is_%s_allowed' % att_name
     if is_allo_meth is None:
         if attr_data is not None:
             ia_name = attr_data.is_allowed_name
+            ia_unbound = attr_data.unbound_is_allowed
         if hasattr(self, ia_name):
             is_allo_meth = getattr(self, ia_name)
     else:
         ia_name = is_allo_meth.__name__
 
-    if attr_data is not None:
-        if attr_data.unbound_is_allowed:
-            msg = 'unbound isallowed method is not compatible with asynchronous modes!'
-            if async_mode:
-                self.debug_stream(msg)
-                raise DevFailed(msg)
-            else:
-                self.warn_stream(msg)
+    if ia_unbound is None and is_allo_meth is not None:
+        ia_unbound = check_method_is_unbound(is_allo_meth)
 
-    if is_allo_meth is not None and not hasattr(is_allo_meth, '__wrapped__') and async_mode:
+    if ia_unbound is not None and ia_unbound:
+        msg = 'unbound isallowed method is not compatible with asynchronous modes!'
+        if async_mode:
+            self.debug_stream(msg)
+            raise DevFailed(msg)
+        else:
+            self.warn_stream(msg)
+
+    if is_allo_meth is not None and async_mode:
         setattr(self, ia_name, __run_in_executor(is_allo_meth))
 
     try:
