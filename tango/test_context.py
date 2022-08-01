@@ -480,6 +480,7 @@ class MultiDeviceTestContext(object):
     def __exit__(self, exc_type, exception, trace):
         """Exit method for context support."""
         self.stop()
+        return False
 
 
 # Single device test context
