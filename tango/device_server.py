@@ -415,10 +415,7 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
 def _ensure_user_method_executable(obj, name, user_method):
     if user_method is not None:
         assert name == user_method.__name__, (
-                "Sanity check failed. PyTango bug? When accessing Tango attributes, "
-                "the PyTango extension code, PyAttr::read, uses the name of the "
-                "method to get a reference to it from the Device object. "
-                "The names must match. "
+                "Sanity check failed. PyTango bug? The names must match. "
                 "{} != {} on {}".format(name, user_method.__name__, obj)
             )
         is_unbound = type(user_method) is types.FunctionType
@@ -427,11 +424,16 @@ def _ensure_user_method_executable(obj, name, user_method):
             if bound_user_method is None:
                 raise ValueError(
                     "User-supplied method for attributes must be "
-                    "a bound method on the Device class. "
+                    "available as a bound method on the Device class. "
+                    "When accessing Tango attributes, the PyTango extension "
+                    "code, PyAttr::read, uses the name of the method "
+                    "to get a reference to it from the Device object. "
                     "{} was not found on {} (name {}).".format(user_method, obj, name)
                 )
             user_method = bound_user_method
-        setattr(obj, name, __run_in_executor(user_method))
+        user_method_cannot_be_run_directly = get_worker().asynchronous
+        if user_method_cannot_be_run_directly:
+            setattr(obj, name, __run_in_executor(user_method))
     # else user hasn't provided a method, which may be OK (e.g., using named lookup, or
     # unnecessary method like a write for a read-only attribute).
 
