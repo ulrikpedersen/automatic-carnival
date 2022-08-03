@@ -42,7 +42,7 @@
 #ifndef IfchangeServerClass_H
 #define IfchangeServerClass_H
 
-#include <tango.h>
+#include <tango/tango.h>
 #include <IfchangeServer.h>
 
 

@@ -190,7 +190,7 @@ namespace PyDeviceImpl
     {
         return to_list<std::vector<std::string> >::convert(self.get_polled_attr());
     }
-    
+
     inline PyObject* get_non_auto_polled_cmd(Tango::DeviceImpl &self)
     {
         return to_list<std::vector<std::string> >::convert(self.get_non_auto_polled_cmd());
@@ -200,7 +200,7 @@ namespace PyDeviceImpl
     {
         return to_list<std::vector<std::string> >::convert(self.get_non_auto_polled_attr());
     }
-    
+
     /* **********************************
      * change event USING set_value
      * **********************************/
@@ -513,7 +513,7 @@ namespace PyDeviceImpl
     	Tango::DevicePipeBlob dpb;
     	bool reuse = false;
     	PyDevicePipe::set_value(dpb, pipe_data);
-    	self.push_pipe_event(__pipe_name, &dpb, reuse);        
+    	self.push_pipe_event(__pipe_name, &dpb, reuse);
     }
 
     void check_attribute_method_defined(PyObject *self,
@@ -557,11 +557,11 @@ namespace PyDeviceImpl
                        boost::python::object is_allowed_meth_name)
     {
         Tango::Attr &new_attr = const_cast<Tango::Attr &>(c_new_attr);
-        
+
         std::string
             attr_name = new_attr.get_name(),
             read_name_met, write_name_met, is_allowed_method;
-            
+
         if (read_meth_name.ptr() == Py_None)
         {
             read_name_met = "read_" + attr_name;
@@ -588,7 +588,7 @@ namespace PyDeviceImpl
         {
             is_allowed_method = boost::python::extract<const char *>(is_allowed_meth_name);
         }
-        
+
         Tango::AttrWriteType attr_write = new_attr.get_writable();
 
         //
@@ -644,11 +644,11 @@ namespace PyDeviceImpl
         py_attr_ptr->set_read_name(read_name_met);
         py_attr_ptr->set_write_name(write_name_met);
         py_attr_ptr->set_allowed_name(is_allowed_method);
-        
+
         if (new_attr.get_memorized())
             attr_ptr->set_memorized();
         attr_ptr->set_memorized_init(new_attr.get_memorized_init());
-        
+
         attr_ptr->set_disp_level(new_attr.get_disp_level());
         attr_ptr->set_polling_period(new_attr.get_polling_period());
         attr_ptr->set_change_event(new_attr.is_change_event(),
@@ -656,7 +656,7 @@ namespace PyDeviceImpl
         attr_ptr->set_archive_event(new_attr.is_archive_event(),
                                     new_attr.is_check_archive_criteria());
         attr_ptr->set_data_ready_event(new_attr.is_data_ready_event());
-        
+
         //
         // Install attribute in Tango.
         //
@@ -735,28 +735,28 @@ namespace PyDeviceImpl
 	      << log4tango::LogInitiator::_begin_log << msg;
 	}
     }
-    
+
     PyObject* get_attribute_config(Tango::DeviceImpl &self, object &py_attr_name_seq)
     {
         Tango::DevVarStringArray par;
         convert2array(py_attr_name_seq, par);
-        
-        Tango::AttributeConfigList *attr_conf_list_ptr = 
+
+        Tango::AttributeConfigList *attr_conf_list_ptr =
             self.get_attribute_config(par);
-        
+
         boost::python::list ret = to_py(*attr_conf_list_ptr);
         delete attr_conf_list_ptr;
-        
+
         return boost::python::incref(ret.ptr());
     }
-    
+
     void set_attribute_config(Tango::DeviceImpl &self, object &py_attr_conf_list)
     {
         Tango::AttributeConfigList attr_conf_list;
         from_py_object(py_attr_conf_list, attr_conf_list);
         self.set_attribute_config(attr_conf_list);
     }
-    
+
     bool is_attribute_polled(Tango::DeviceImpl &self, const std::string &att_name)
     {
         DeviceImplWrap *self_w = (DeviceImplWrap*)(&self);
@@ -903,13 +903,13 @@ namespace PyDevice_2Impl
     {
         Tango::DevVarStringArray par;
         convert2array(attr_name_seq, par);
-        
-        Tango::AttributeConfigList_2 *attr_conf_list_ptr = 
+
+        Tango::AttributeConfigList_2 *attr_conf_list_ptr =
             self.get_attribute_config_2(par);
-        
+
         boost::python::list ret = to_py(*attr_conf_list_ptr);
         delete attr_conf_list_ptr;
-        
+
         return boost::python::incref(ret.ptr());
     }
 
@@ -928,7 +928,7 @@ PyDeviceImplBase::~PyDeviceImplBase()
 
 void PyDeviceImplBase::py_delete_dev()
 {}
- 
+
 Device_3ImplWrap::Device_3ImplWrap(PyObject *self, CppDeviceClass *cl,
                                    std::string &st)
     :Tango::Device_3Impl(cl,st),
@@ -1085,16 +1085,16 @@ namespace PyDevice_3Impl
     {
         Tango::DevVarStringArray par;
         convert2array(attr_name_seq, par);
-        
-        Tango::AttributeConfigList_3 *attr_conf_list_ptr = 
+
+        Tango::AttributeConfigList_3 *attr_conf_list_ptr =
             self.get_attribute_config_3(par);
-        
+
         boost::python::list ret = to_py(*attr_conf_list_ptr);
         delete attr_conf_list_ptr;
-        
+
         return boost::python::incref(ret.ptr());
     }
-    
+
     void set_attribute_config_3(Tango::Device_3Impl &self, object &py_attr_conf_list)
     {
         Tango::AttributeConfigList_3 attr_conf_list;
@@ -1254,7 +1254,7 @@ void Device_4ImplWrap::signal_handler(long signo)
     {
         long nb_err = df.errors.length();
         df.errors.length(nb_err + 1);
-        
+
         df.errors[nb_err].reason = CORBA::string_dup(
             "PyDs_UnmanagedSignalHandlerException");
         df.errors[nb_err].desc = CORBA::string_dup(
@@ -1422,7 +1422,7 @@ void Device_5ImplWrap::signal_handler(long signo)
     {
         long nb_err = df.errors.length();
         df.errors.length(nb_err + 1);
-        
+
         df.errors[nb_err].reason = CORBA::string_dup(
             "PyDs_UnmanagedSignalHandlerException");
         df.errors[nb_err].desc = CORBA::string_dup(
@@ -1456,7 +1456,7 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_archive_event_overload,
                                        Tango::DeviceImpl::set_archive_event, 2, 3)
 BOOST_PYTHON_FUNCTION_OVERLOADS(remove_attribute_overload,
                                 PyDeviceImpl::remove_attribute, 2, 3)
-                                       
+
 void export_device_impl()
 {
  
@@ -1471,7 +1471,7 @@ void export_device_impl()
     
     void (Tango::DeviceImpl::*stop_polling1)() = &Tango::DeviceImpl::stop_polling;
     void (Tango::DeviceImpl::*stop_polling2)(bool) = &Tango::DeviceImpl::stop_polling;
-    
+
     class_<Tango::DeviceImpl, std::auto_ptr<DeviceImplWrap>, boost::noncopyable>("DeviceImpl",
         init<CppDeviceClass *, const char *,
              boost::python::optional<const char *, Tango::DevState, const char *> >())
@@ -1520,7 +1520,7 @@ void export_device_impl()
         .def("poll_command", &PyDeviceImpl::poll_command)
         .def("stop_poll_attribute", &PyDeviceImpl::stop_poll_attribute)
         .def("stop_poll_command", &PyDeviceImpl::stop_poll_command)
-                        
+
         .def("get_exported_flag", &Tango::DeviceImpl::get_exported_flag)
         .def("get_poll_ring_depth", &Tango::DeviceImpl::get_poll_ring_depth)
         .def("get_poll_old_factor", &Tango::DeviceImpl::get_poll_old_factor)
@@ -1542,11 +1542,11 @@ void export_device_impl()
             (long (Tango::DeviceImpl::*) (const std::string &))
             get_attr_poll_ring_depth_)
         .def("is_device_locked", &Tango::DeviceImpl::is_device_locked)
-        
+
         .def("init_logger", &Tango::DeviceImpl::init_logger)
         .def("start_logging", &Tango::DeviceImpl::start_logging)
         .def("stop_logging", &Tango::DeviceImpl::stop_logging)
-        
+
         //.def("set_exported_flag", &Tango::DeviceImpl::set_exported_flag)
         //.def("set_poll_ring_depth", &Tango::DeviceImpl::set_poll_ring_depth)
 
@@ -1704,17 +1704,17 @@ void export_device_impl()
         .def("__fatal_stream", &PyDeviceImpl::fatal)
 
         .def("get_min_poll_period", &Tango::DeviceImpl::get_min_poll_period)
-        .def("get_cmd_min_poll_period", 
+        .def("get_cmd_min_poll_period",
             &Tango::DeviceImpl::get_cmd_min_poll_period,
             return_internal_reference<>())
-        .def("get_attr_min_poll_period", 
+        .def("get_attr_min_poll_period",
             &Tango::DeviceImpl::get_attr_min_poll_period,
             return_internal_reference<>())
 	.def("is_there_subscriber",
 	     &Tango::DeviceImpl::is_there_subscriber)
     ;
     implicitly_convertible<std::auto_ptr<DeviceImplWrap>, std::auto_ptr<Tango::DeviceImpl> >();
-    
+
     class_<Tango::Device_2Impl, Device_2ImplWrap,
            bases<Tango::DeviceImpl>,
            boost::noncopyable>

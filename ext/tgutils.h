@@ -12,7 +12,7 @@
 #pragma once
 
 #include <cassert>
-#include <tango.h>
+#include <tango/tango.h>
 
 #ifndef TANGO_VERSION_NB
 #define TANGO_VERSION_NB \

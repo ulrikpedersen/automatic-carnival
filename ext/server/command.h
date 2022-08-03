@@ -13,7 +13,7 @@
 #define _COMMAND_H_
 
 #include <boost/python.hpp>
-#include <tango.h>
+#include <tango/tango.h>
 
 class PyCmd : public Tango::Command
 {

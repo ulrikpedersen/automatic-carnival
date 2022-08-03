@@ -12,7 +12,7 @@
 #pragma once
 
 #include <boost/python.hpp>
-#include <tango.h>
+#include <tango/tango.h>
 #include "exception.h"
 #include "pytgutils.h"
 #include "server/device_impl.h"

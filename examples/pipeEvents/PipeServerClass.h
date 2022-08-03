@@ -42,7 +42,7 @@
 #ifndef PipeServerClass_H
 #define PipeServerClass_H
 
-#include <tango.h>
+#include <tango/tango.h>
 #include <PipeServer.h>
 
 
