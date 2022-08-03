@@ -444,6 +444,7 @@ def setup_args():
 
     if PYTHON2:
         tests_require += [
+            "attrs < 22",
             "configparser < 5",
             "contextlib2 < 21",
             "futures",
