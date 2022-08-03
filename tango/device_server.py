@@ -17,6 +17,7 @@ from __future__ import print_function
 
 import copy
 import functools
+import types
 
 from ._tango import (
     DeviceImpl, Device_3Impl, Device_4Impl, Device_5Impl,
@@ -377,9 +378,7 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
             r_meth = getattr(self, r_name)
     else:
         r_name = r_meth.__name__
-
-    if r_meth is not None:
-        setattr(self, r_name, __run_in_executor(r_meth))
+    _ensure_user_method_executable(self, r_name, r_meth)
 
     w_name = 'write_%s' % att_name
     if w_meth is None:
@@ -389,9 +388,7 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
             w_meth = getattr(self, w_name)
     else:
         w_name = w_meth.__name__
-
-    if w_meth is not None:
-        setattr(self, w_name, __run_in_executor(w_meth))
+    _ensure_user_method_executable(self, w_name, w_meth)
 
     ia_name = 'is_%s_allowed' % att_name
     if is_allo_meth is None:
@@ -400,10 +397,8 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
         if hasattr(self, ia_name):
             is_allo_meth = getattr(self, ia_name)
     else:
-        ia_name = is_allo_meth.__name__
-
-    if is_allo_meth is not None:
-        setattr(self, ia_name, __run_in_executor(is_allo_meth))
+            ia_name = is_allo_meth.__name__
+    _ensure_user_method_executable(self, ia_name, is_allo_meth)
 
     try:
         self._add_attribute(attr, r_name, w_name, ia_name)
@@ -415,6 +410,30 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
             self._remove_attr_meth(att_name)
         raise
     return attr
+
+
+def _ensure_user_method_executable(obj, name, user_method):
+    if user_method is not None:
+        assert name == user_method.__name__, (
+                "Sanity check failed. PyTango bug? When accessing Tango attributes, "
+                "the PyTango extension code, PyAttr::read, uses the name of the "
+                "method to get a reference to it from the Device object. "
+                "The names must match. "
+                "{} != {} on {}".format(name, user_method.__name__, obj)
+            )
+        is_unbound = type(user_method) is types.FunctionType
+        if is_unbound:
+            bound_user_method = getattr(obj, user_method.__name__, None)
+            if bound_user_method is None:
+                raise ValueError(
+                    "User-supplied method for attributes must be "
+                    "a bound method on the Device class. "
+                    "{} was not found on {} (name {}).".format(user_method, obj, name)
+                )
+            user_method = bound_user_method
+        setattr(obj, name, __run_in_executor(user_method))
+    # else user hasn't provided a method, which may be OK (e.g., using named lookup, or
+    # unnecessary method like a write for a read-only attribute).
 
 
 def __DeviceImpl__remove_attribute(self, attr_name):
