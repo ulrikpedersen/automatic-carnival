@@ -17,7 +17,6 @@ from __future__ import print_function
 
 import copy
 import functools
-import types
 
 from ._tango import (
     DeviceImpl, Device_3Impl, Device_4Impl, Device_5Impl,
@@ -418,8 +417,11 @@ def _ensure_user_method_executable(obj, name, user_method):
                 "Sanity check failed. PyTango bug? The names must match. "
                 "{} != {} on {}".format(name, user_method.__name__, obj)
             )
-        is_unbound = type(user_method) is types.FunctionType
-        if is_unbound:
+        is_bound = (
+            hasattr(user_method, "__self__")
+            and getattr(user_method, "__self__") is not None
+        )
+        if not is_bound:
             bound_user_method = getattr(obj, user_method.__name__, None)
             if bound_user_method is None:
                 raise ValueError(
