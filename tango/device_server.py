@@ -367,8 +367,6 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
 
     att_name = attr.get_name()
 
-    add_name_in_list = False
-
     r_name = 'read_%s' % att_name
     if r_meth is None:
         if attr_data is not None:
@@ -399,15 +397,7 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
             ia_name = is_allo_meth.__name__
     _ensure_user_method_executable(self, ia_name, is_allo_meth)
 
-    try:
-        self._add_attribute(attr, r_name, w_name, ia_name)
-        if add_name_in_list:
-            cl = self.get_device_class()
-            cl.dyn_att_added_methods.append(att_name)
-    except:
-        if add_name_in_list:
-            self._remove_attr_meth(att_name)
-        raise
+    self._add_attribute(attr, r_name, w_name, ia_name)
     return attr
 
 
@@ -451,45 +441,7 @@ def __DeviceImpl__remove_attribute(self, attr_name):
 
         :raises DevFailed:
     """
-    try:
-        # Call this method in a try/except in case remove_attribute
-        # is called during the DS shutdown sequence
-        cl = self.get_device_class()
-    except:
-        return
-
-    dev_list = cl.get_device_list()
-    nb_dev = len(dev_list)
-    if nb_dev == 1:
-        self._remove_attr_meth(attr_name)
-    else:
-        nb_except = 0
-        for dev in dev_list:
-            try:
-                dev.get_device_attr().get_attr_by_name(attr_name)
-            except:
-                nb_except += 1
-        if nb_except == nb_dev - 1:
-            self._remove_attr_meth(attr_name)
     self._remove_attribute(attr_name)
-
-
-def __DeviceImpl___remove_attr_meth(self, attr_name):
-    """for internal usage only"""
-    cl = self.get_device_class()
-    if cl.dyn_att_added_methods.count(attr_name) != 0:
-        r_meth_name = 'read_%s' % attr_name
-        if hasattr(self.__class__, r_meth_name):
-            delattr(self.__class__, r_meth_name)
-
-        w_meth_name = 'write_%s' % attr_name
-        if hasattr(self.__class__, w_meth_name):
-            delattr(self.__class__, w_meth_name)
-
-        allo_meth_name = 'is_%s_allowed' % attr_name
-        if hasattr(self.__class__, allo_meth_name):
-            delattr(self.__class__, allo_meth_name)
-        cl.dyn_att_added_methods.remove(attr_name)
 
 
 def __DeviceImpl__add_command(self, cmd, device_level=True):
@@ -507,22 +459,13 @@ def __DeviceImpl__add_command(self, cmd, device_level=True):
 
         :raises DevFailed:
     """
-    add_name_in_list = False      # This flag is always False, what use is it?
-    try:
-        config = dict(cmd.__tango_command__[1][2])
-        if config and ("Display level" in config):
-            disp_level = config["Display level"]
-        else:
-            disp_level = DispLevel.OPERATOR
-        self._add_command(cmd.__name__, cmd.__tango_command__[1], disp_level,
-                          device_level)
-        if add_name_in_list:
-            cl = self.get_device_class()
-            cl.dyn_cmd_added_methods.append(cmd.__name__)
-    except:
-        if add_name_in_list:
-            self._remove_cmd(cmd.__name__)
-        raise
+    config = dict(cmd.__tango_command__[1][2])
+    if config and ("Display level" in config):
+        disp_level = config["Display level"]
+    else:
+        disp_level = DispLevel.OPERATOR
+    self._add_command(cmd.__name__, cmd.__tango_command__[1], disp_level,
+                      device_level)
     return cmd
 
 
@@ -541,16 +484,6 @@ def __DeviceImpl__remove_command(self, cmd_name, free_it=False, clean_db=True):
 
         :raises DevFailed:
     """
-    try:
-        # Call this method in a try/except in case remove
-        # is called during the DS shutdown sequence
-        cl = self.get_device_class()
-    except:
-        return
-
-    if cl.dyn_cmd_added_methods.count(cmd_name) != 0:
-        cl.dyn_cmd_added_methods.remove(cmd_name)
-
     self._remove_command(cmd_name, free_it, clean_db)
 
 
@@ -679,7 +612,6 @@ def __init_DeviceImpl():
     DeviceImpl.get_device_properties = __DeviceImpl__get_device_properties
     DeviceImpl.add_attribute = __DeviceImpl__add_attribute
     DeviceImpl.remove_attribute = __DeviceImpl__remove_attribute
-    DeviceImpl._remove_attr_meth = __DeviceImpl___remove_attr_meth
     DeviceImpl.add_command = __DeviceImpl__add_command
     DeviceImpl.remove_command = __DeviceImpl__remove_command
     DeviceImpl.__str__ = __DeviceImpl__str
