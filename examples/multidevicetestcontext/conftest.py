@@ -21,27 +21,13 @@ def tango_context(mocker, devices_info):
     Creates and returns a TANGO MultiDeviceTestContext object, with
     tango.DeviceProxy patched to work around a name-resolving issue.
     """
-    
-    def _get_open_port():
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind(("", 0))
-        s.listen(1)
-        port = s.getsockname()[1]
-        s.close()
-        return port
-
-    HOST = get_host_ip()
-    PORT = _get_open_port()
-
+    context_manager = MultiDeviceTestContext(devices_info, process=True)
     _DeviceProxy = tango.DeviceProxy
     mocker.patch(
         'tango.DeviceProxy',
         wraps=lambda fqdn, *args, **kwargs: _DeviceProxy(
-            "tango://{0}:{1}/{2}#dbase=no".format(HOST, PORT, fqdn),
-            *args,
-            **kwargs
+            context_manager.get_device_access(fqdn), *args, **kwargs
         )
     )
-
-    with MultiDeviceTestContext(devices_info, host=HOST, port=PORT, process=True) as context:
+    with context_manager as context:
         yield context
