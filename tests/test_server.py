@@ -719,51 +719,6 @@ def test_dynamic_attribute_with_non_device_method_fails(server_green_mode):
         with pytest.raises(DevFailed, match="method not found"):
             _ = proxy.dyn_attr2
 
-def test_unbound_read_write_dynamic_attribute(server_green_mode):
-
-    class TestDevice(Device):
-        green_mode = server_green_mode
-
-        def __init__(self, *args, **kwargs):
-            super(TestDevice, self).__init__(*args, **kwargs)
-            self._is_test_attr_allowed = True
-
-        def initialize_dynamic_attributes(self):
-            attr = attribute(
-                name="dyn_attr",
-                dtype=int,
-                max_dim_x=10,
-                access=AttrWriteType.READ_WRITE,
-                fget=TestDevice.read_attr,
-                fset=TestDevice.write_attr,
-                fisallowed=TestDevice.is_attr_allowed,
-            )
-            self.add_attribute(attr)
-
-        def read_attr(self, attr):
-            attr.set_value(self.attr_value)
-
-        def write_attr(self, attr):
-            self.attr_value = attr.get_write_value()
-
-        def is_attr_allowed(self, req_type):
-            return self._is_test_attr_allowed
-
-        @command(dtype_in=bool)
-        def make_allowed(self, yesno):
-            self._is_test_attr_allowed = yesno
-
-    # in Synchronous mode unbound methods are allowed, only warning is showed
-    if server_green_mode == GreenMode.Synchronous:
-        with DeviceTestContext(TestDevice):
-            pass
-    # in all async modes unbound methods are not allowed
-    else:
-        with pytest.raises(DevFailed):
-            with DeviceTestContext(TestDevice):
-                pass
-
-
 # Test properties
 
 def test_device_property_no_default(typed_values, server_green_mode):

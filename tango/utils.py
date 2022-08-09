@@ -262,15 +262,6 @@ def __requires(package_name, min_version=None, conflicts=(),
     return True
 
 
-# check if method is unbound
-def check_method_is_unbound(method):
-    if sys.version_info >= (3,):
-        bound_method = hasattr(method, '__self__')
-    else:
-        bound_method = hasattr(method, '__self__') and getattr(method, '__self__') is not None
-    return not (bound_method | hasattr(method, 'wrapped_with_executor'))
-
-
 def requires_pytango(min_version=None, conflicts=(),
                      software_name="Software"):
     """
