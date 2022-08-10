@@ -1115,6 +1115,18 @@ def __doc_DeviceImpl():
         :raises DevFailed: If the attribute data type is not coherent.
     """)
 
+    document_method("set_data_ready_event", """
+    set_data_ready_event(self, attr_name, implemented)
+
+        Set an implemented flag for the attribute to indicate that the server fires
+        data ready events manually, without the polling to be started.
+
+        :param attr_name: attribute name
+        :type attr_name: str
+        :param implemented: True when the server fires change events manually.
+        :type implemented: bool
+    """)
+
     document_method("push_data_ready_event", """
     push_data_ready_event(self, attr_name, counter = 0)
 

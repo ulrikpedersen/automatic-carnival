@@ -1504,6 +1504,7 @@ void export_device_impl()
         .def("set_archive_event",
             &Tango::DeviceImpl::set_archive_event,
             set_archive_event_overload())
+        .def("set_data_ready_event", &Tango::DeviceImpl::set_data_ready_event)
         .def("_add_attribute", &PyDeviceImpl::add_attribute)
         .def("_remove_attribute", &PyDeviceImpl::remove_attribute,
             remove_attribute_overload())
