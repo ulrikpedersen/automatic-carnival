@@ -5,6 +5,9 @@ PyTango server API from version 9.2.0 supports two green modes:
 :obj:`~tango.GreenMode.Gevent` and :obj:`~tango.GreenMode.Asyncio`.
 Both can be used in writing new device servers in an asynchronous way.
 
+.. note:: If your device server has multiple devices they must all use
+          the same green mode.
+
 gevent mode
 ~~~~~~~~~~~
 

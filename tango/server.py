@@ -1302,11 +1302,40 @@ def _add_classes(util, classes):
         util.add_class(*class_info)
 
 
+def _get_green_mode_from_classes_or_global_setting(classes):
+    green_modes = set()
+    global_green_mode = get_green_mode()
+    for _, klass, _ in _to_classes(classes):
+        device_green_mode = getattr(klass, 'green_mode', None)
+        if device_green_mode is None:
+            device_green_mode = global_green_mode
+        green_modes.add(device_green_mode)
+    if len(green_modes) > 1:
+        raise ValueError(
+            "Devices with mixed green modes cannot be run in the same device "
+            "server process. Modes: {}. Classes: {}.".format(green_modes, classes)
+        )
+    elif len(green_modes) == 0:
+        raise ValueError("No device classes specified - cannot run device server " 
+                         "process with no classes.")
+    unanimous_green_mode = green_modes.pop()
+    return unanimous_green_mode
+
+
 def __server_run(classes, args=None, msg_stream=sys.stdout, util=None,
                  event_loop=None, post_init_callback=None,
                  green_mode=None):
+    device_green_mode = _get_green_mode_from_classes_or_global_setting(classes)
     if green_mode is None:
-        green_mode = get_green_mode()
+        green_mode = device_green_mode
+    else:
+        if device_green_mode != green_mode:
+            raise ValueError(
+                "Invalid request for mixed green mode in the same "
+                "device server process. Device's mode: {} != kwarg mode: {}.".format(
+                    device_green_mode, green_mode
+                )
+            )
 
     write = msg_stream.write if msg_stream else lambda msg: None
 
@@ -1387,7 +1416,7 @@ def run(classes, args=None, msg_stream=sys.stdout,
     Example 1: registering and running a PowerSupply inheriting from
     :class:`~tango.server.Device`::
 
-        from tango.server import Device, DeviceMeta, run
+        from tango.server import Device, run
 
         class PowerSupply(Device):
             pass
@@ -1412,7 +1441,7 @@ def run(classes, args=None, msg_stream=sys.stdout,
     classes `MyServerClass` and `MyServer`::
 
         from tango import Device_4Impl, DeviceClass
-        from tango.server import Device, DeviceMeta, run
+        from tango.server import Device, run
 
         class PowerSupply(Device):
             pass

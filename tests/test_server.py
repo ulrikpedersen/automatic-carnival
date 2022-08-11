@@ -981,6 +981,7 @@ def test_logging(server_green_mode):
             return self._last_log_time
 
     class LogConsumerDevice(Device):
+        green_mode = server_green_mode
         _last_log_data = []
 
         @command(dtype_in=('str',))
