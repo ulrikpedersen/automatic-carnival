@@ -52,12 +52,15 @@ class EventDevice(Device):
         return 0.
 
     @command
-    def send_events(self):
+    def send_change_event(self):
         self.push_change_event("attr", 1.)
+
+    @command
+    def send_data_ready_event(self):
         self.push_data_ready_event("attr", 2)
 
     @command
-    def send_event_with_timestamp(self):
+    def send_change_event_with_timestamp(self):
         self.push_change_event("attr", 2., 3., AttrQuality.ATTR_WARNING)
 
     @command(dtype_in=str)
@@ -106,7 +109,7 @@ def test_subscribe_change_event(event_device):
     assert eid_change == 1
 
     # Trigger an event
-    event_device.command_inout("send_events", wait=True)
+    event_device.command_inout("send_change_event", wait=True)
     # Wait for tango event
     retries = 20
     for _ in range(retries):
@@ -119,8 +122,9 @@ def test_subscribe_change_event(event_device):
     # Unsubscribe
     event_device.unsubscribe_event(eid_change)
 
+
 def test_subscribe_data_ready_event(event_device):
-    results_data_ready_event =[]
+    results_data_ready_event = []
 
     def callback_data_ready(evt):
         results_data_ready_event.append(evt.ctr)
@@ -130,7 +134,7 @@ def test_subscribe_data_ready_event(event_device):
         "attr", EventType.DATA_READY_EVENT, callback_data_ready, wait=True)
     assert eid_data_ready == 1
     # Trigger an event
-    event_device.command_inout("send_events", wait=True)
+    event_device.command_inout("send_data_ready_event", wait=True)
     # Wait for tango event
     retries = 20
     for _ in range(retries):
@@ -176,21 +180,21 @@ def test_subscribe_interface_event(event_device):
     assert set(cmd.cmd_name for cmd in results[0].cmd_list) == \
         {'Init', 'State', 'Status',
          'add_dyn_attr', 'delete_dyn_attr',
-         'send_events', 'send_event_with_timestamp'}
+         'send_change_event', 'send_data_ready_event', 'send_change_event_with_timestamp'}
     assert set(att.name for att in results[0].att_list) == \
         {'attr', 'State', 'Status'}
     # Test the second event value
     assert set(cmd.cmd_name for cmd in results[1].cmd_list) == \
         {'Init', 'State', 'Status',
          'add_dyn_attr', 'delete_dyn_attr',
-         'send_events', 'send_event_with_timestamp'}
+         'send_change_event', 'send_data_ready_event', 'send_change_event_with_timestamp'}
     assert set(att.name for att in results[1].att_list) == \
         {'attr', 'State', 'Status', 'bla'}
     # Test the third event value
     assert set(cmd.cmd_name for cmd in results[2].cmd_list) == \
         {'Init', 'State', 'Status',
          'add_dyn_attr', 'delete_dyn_attr',
-         'send_events', 'send_event_with_timestamp'}
+         'send_change_event', 'send_data_ready_event', 'send_change_event_with_timestamp'}
     assert set(att.name for att in results[2].att_list) == \
         {'attr', 'State', 'Status'}
     # Unsubscribe
@@ -205,7 +209,7 @@ def test_push_event_with_timestamp(event_device):
         "attr", EventType.CHANGE_EVENT, ec, wait=True)
     assert eid == 1
     # Trigger an event
-    event_device.command_inout("send_event_with_timestamp", wait=True)
+    event_device.command_inout("send_change_event_with_timestamp", wait=True)
     # Wait for tango event
     retries = 20
     for _ in range(retries):
@@ -285,7 +289,7 @@ def test_subscribe_change_event_from_user_thread(event_device):
         if len(results) == 1:
             # Trigger an event (1 result means thread has completed subscription,
             # as that results in an initial callback)
-            event_device.command_inout("send_events", wait=True)
+            event_device.command_inout("send_change_event", wait=True)
         elif len(results) > 1:
             # At least 2 events means an event was received after subscription
             break

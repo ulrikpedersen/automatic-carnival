@@ -1119,7 +1119,7 @@ def __doc_DeviceImpl():
     set_data_ready_event(self, attr_name, implemented)
 
         Set an implemented flag for the attribute to indicate that the server fires
-        data ready events manually, without the polling to be started.
+        data ready events manually.
 
         :param attr_name: attribute name
         :type attr_name: str
