@@ -818,55 +818,153 @@ Create attributes dynamically
 -----------------------------
 
 It is also possible to create dynamic attributes within a Python device server.
-There are several ways to create dynamic attributes. One of the way, is to
+There are several ways to create dynamic attributes. One of the ways, is to
 create all the devices within a loop, then to create the dynamic attributes and
-finally to make all the devices available for the external world. In C++ device
+finally to make all the devices available for the external world. In a C++ device
 server, this is typically done within the <Device>Class::device_factory() method.
 In Python device server, this method is generic and the user does not have one.
-Nevertheless, this generic device_factory method calls a method named dyn_attr()
-allowing the user to create his dynamic attributes. It is simply necessary to
-re-define this method within your <Device>Class and to create the dynamic
-attribute within this method:
+Nevertheless, this generic device_factory provides the user with a way to create
+dynamic attributes.
 
-    ``dyn_attr(self, dev_list)``
+Using the high-level API, you can re-define a method called
+:meth:`~tango.server.Device.initialize_dynamic_attributes`
+on each <Device>. This method will be called automatically by the device_factory for
+each device. Within this method you create all the dynamic attributes.
 
-    where dev_list is a list containing all the devices created by the
-    generic device_factory() method.
+If you are still using the low-level API with a <Device>Class instead of just a <Device>,
+then you can use the generic device_factory's call to the
+:meth:`~tango.DeviceClass.dyn_attr` method.
+It is simply necessary to re-define this method within your <Device>Class and to create
+the dynamic attributes within this method.
 
-There is another point to be noted regarding dynamic attribute within Python
+Internally, the high-level API re-defines dyn_attr() to call initialize_dynamic_attributes()
+for each device.
+
+.. note:: The dyn_attr() (and initialize_dynamic_attributes() for high-level API) methods
+          are only called once when the device server starts, since the Python device_factory
+          method is only called once. Within the device_factory method, init_device() is
+          called for all devices and only after that is dyn_attr() called for all devices.
+          If the Init command is executed on a device it will not call the dyn_attr() method
+          again.
+
+There is another point to be noted regarding dynamic attributes within a Python
 device server. The Tango Python device server core checks that for each
-attribute it exists methods named <attribute_name>_read and/or
+static attribute there exists methods named <attribute_name>_read and/or
 <attribute_name>_write and/or is_<attribute_name>_allowed. Using dynamic
-attribute, it is not possible to define these methods because attributes name
+attributes, it is not possible to define these methods because attribute names
 and number are known only at run-time.
-To address this issue, the Device_3Impl::add_attribute() method has a diferent
-signature for Python device server which is:
+To address this issue, you need to provide references to these methods when
+calling :meth:`~tango.server.Device.add_attribute`.
 
-    ``add_attribute(self, attr, r_meth = None, w_meth = None, is_allo_meth = None)``
+The recommended approach with the high-level API is to reference these methods when
+instantiating a :class:`tango.server.attribute` object using the fget, fset and/or
+fisallowed kwargs (see example below).  Where fget is the method which has to be
+executed when the attribute is read, fset is the method to be executed
+when the attribute is written and fisallowed is the method to be executed
+to implement the attribute state machine.  This :class:`tango.server.attribute` object
+is then passed to the :meth:`~tango.server.Device.add_attribute` method.
 
-attr is an instance of the Attr class, r_meth is the method which has to be
-executed with the attribute is read, w_meth is the method to be executed
+.. note:: The methods used for fget, fset and fisallowed must be methods that exist
+          on your Device class.  They cannot be plain functions, nor belong to a
+          different class.  You can pass a reference to the bound or unbound method,
+          but during execution the bound method will be used.
+
+Which arguments you have to provide depends on the type of the attribute.  For example,
+a WRITE attribute does not need a read method.
+
+Here is an example of a device which creates a dynamic attribute on startup::
+
+    from tango import AttrWriteType
+    from tango.server import Device, attribute
+
+    class MyDevice(Device):
+
+        def initialize_dynamic_attributes(self):
+            self._values = {"dyn_attr": 0}
+            attr = attribute(
+                name="dyn_attr",
+                dtype=int,
+                access=AttrWriteType.READ_WRITE,
+                fget=self.generic_read,
+                fset=self.generic_write,
+                fisallowed=self.generic_is_allowed,
+            )
+            self.add_attribute(attr)
+
+        def generic_read(self, attr):
+            value = self._values[attr.get_name()]
+            # unlike a normal static attribute read, we have to modify the value
+            # inside this attr object, rather than just returning the value
+            attr.set_value(value)
+
+        def generic_write(self, attr):
+            self._values[attr.get_name()] = attr.get_write_value()
+
+        def generic_is_allowed(self, req_type):
+            # note: we don't know which attribute is being read!
+            # req_type will be either AttReqType.READ_REQ or AttReqType.WRITE_REQ
+            return True
+
+
+Another way to create dynamic attributes is to do it some time after the device has
+started.  For example, using a command.  In this case, we just call the
+:meth:`~tango.server.Device.add_attribute` method when necessary.
+
+Here is an example of a device which has a TANGO command called
+*CreateFloatAttribute*. When called, this command creates a new scalar floating
+point attribute with the specified name::
+
+    from tango import AttrWriteType
+    from tango.server import Device, attribute, command
+
+    class MyDevice(Device):
+
+        def init_device(self):
+            super(MyDevice, self).init_device()
+            self._values = {}
+
+        @command(dtype_in=str)
+        def CreateFloatAttribute(self, attr_name):
+            if attr_name not in self._values:
+                self._values[attr_name] = 0.0
+                attr = attribute(
+                    name=attr_name,
+                    dtype=float,
+                    access=AttrWriteType.READ_WRITE,
+                    fget=self.generic_read,
+                    fset=self.generic_write,
+                )
+                self.add_attribute(attr)
+                self.info_stream("Added dynamic attribute %r", attr_name)
+            else:
+                raise ValueError("Already have an attribute called {!r}".format(attr_name))
+
+        def generic_read(self, attr):
+            self.info_stream("Reading attribute %s", attr.get_name())
+            value = self._values[attr.get_name()]
+            attr.set_value(value)
+
+        def generic_write(self, attr):
+            self.info_stream("Writing attribute %s - value %s", attr.get_name(), attr.get_write_value())
+            self._values[attr.get_name()] = attr.get_write_value()
+
+An approach more in line with the low-level API is also possible, but not recommended for
+new devices. The Device_3Impl::add_attribute() method has the following
+signature:
+
+    ``add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_meth=None)``
+
+attr is an instance of the :class:`tango.Attr` class, r_meth is the method which has to be
+executed when the attribute is read, w_meth is the method to be executed
 when the attribute is written and is_allo_meth is the method to be executed
 to implement the attribute state machine.
 
-NOTE: the method passed here as argument has to be bound methods.
+Old example::
 
-Which argument you have to use
-depends on the type of the attribute (A WRITE attribute does not need a
-read method). Note, that depending on the number of argument you pass to this
-method, you may have to use Python keyword argument. The necessary methods
-required by the Tango Python device server core will be created automatically
-as a forward to the methods given as arguments.
-
-Here is an example of a device which has a TANGO command called
-*createFloatAttribute*. When called, this command creates a new scalar floating
-point attribute with the specified name::
-
-
-    from tango import Util, Attr, AttrWriteType
+    from tango import Attr, AttrWriteType
     from tango.server import Device, command
 
-    class MyDevice(Device):
+    class MyOldDevice(Device):
 
         @command(dtype_in=str)
         def CreateFloatAttribute(self, attr_name):
@@ -878,7 +976,7 @@ point attribute with the specified name::
             attr.set_value(99.99)
 
         def write_General(self, attr):
-            self.info_stream("Writting attribute %s", attr.get_name())
+            self.info_stream("Writing attribute %s - value %s", attr.get_name(), attr.get_write_value())
 
 
 Create/Delete devices dynamically

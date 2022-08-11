@@ -348,14 +348,20 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
         same class created after this attribute addition will also have this attribute.
 
         :param attr: the new attribute to be added to the list.
-        :type attr: Attr or AttrData
+        :type attr: server.attribute or Attr or AttrData
         :param r_meth: the read method to be called on a read request
+                       (if attr is of type server.attribute, then use the
+                       fget field in the attr object instead)
         :type r_meth: callable
         :param w_meth: the write method to be called on a write request
                        (if attr is writable)
+                       (if attr is of type server.attribute, then use the
+                       fset field in the attr object instead)
         :type w_meth: callable
         :param is_allo_meth: the method that is called to check if it
                              is possible to access the attribute or not
+                             (if attr is of type server.attribute, then use the
+                             fisallowed field in the attr object instead)
         :type is_allo_meth: callable
 
         :returns: the newly created attribute.
