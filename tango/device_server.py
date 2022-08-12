@@ -56,11 +56,15 @@ def get_worker():
 # patcher for dynamic attribute
 
 def __run_in_executor(fn):
-    @functools.wraps(fn)
-    def wrapper(*args, **kwargs):
-        return get_worker().execute(fn, *args, **kwargs)
-    return wrapper
-
+    if not hasattr(fn, 'wrapped_with_executor'):
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            return get_worker().execute(fn, *args, **kwargs)
+        # to avoid double wrapping we add an empty field, and then use it to check, whether function is already wrapped
+        wrapper.wrapped_with_executor = True
+        return wrapper
+    else:
+        return fn
 
 class LatestDeviceImpl(get_latest_device_class()):
     __doc__ = """\
@@ -344,14 +348,20 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
         same class created after this attribute addition will also have this attribute.
 
         :param attr: the new attribute to be added to the list.
-        :type attr: Attr or AttrData
+        :type attr: server.attribute or Attr or AttrData
         :param r_meth: the read method to be called on a read request
+                       (if attr is of type server.attribute, then use the
+                       fget field in the attr object instead)
         :type r_meth: callable
         :param w_meth: the write method to be called on a write request
                        (if attr is writable)
+                       (if attr is of type server.attribute, then use the
+                       fset field in the attr object instead)
         :type w_meth: callable
         :param is_allo_meth: the method that is called to check if it
                              is possible to access the attribute or not
+                             (if attr is of type server.attribute, then use the
+                             fisallowed field in the attr object instead)
         :type is_allo_meth: callable
 
         :returns: the newly created attribute.
@@ -367,8 +377,6 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
 
     att_name = attr.get_name()
 
-    add_name_in_list = False
-
     r_name = 'read_%s' % att_name
     if r_meth is None:
         if attr_data is not None:
@@ -377,9 +385,7 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
             r_meth = getattr(self, r_name)
     else:
         r_name = r_meth.__name__
-
-    if r_meth is not None:
-        setattr(self, r_name, __run_in_executor(r_meth))
+    _ensure_user_method_executable(self, r_name, r_meth)
 
     w_name = 'write_%s' % att_name
     if w_meth is None:
@@ -389,9 +395,7 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
             w_meth = getattr(self, w_name)
     else:
         w_name = w_meth.__name__
-
-    if w_meth is not None:
-        setattr(self, w_name, __run_in_executor(w_meth))
+    _ensure_user_method_executable(self, w_name, w_meth)
 
     ia_name = 'is_%s_allowed' % att_name
     if is_allo_meth is None:
@@ -400,21 +404,40 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
         if hasattr(self, ia_name):
             is_allo_meth = getattr(self, ia_name)
     else:
-        ia_name = is_allo_meth.__name__
+            ia_name = is_allo_meth.__name__
+    _ensure_user_method_executable(self, ia_name, is_allo_meth)
 
-    if is_allo_meth is not None:
-        setattr(self, ia_name, __run_in_executor(is_allo_meth))
-
-    try:
-        self._add_attribute(attr, r_name, w_name, ia_name)
-        if add_name_in_list:
-            cl = self.get_device_class()
-            cl.dyn_att_added_methods.append(att_name)
-    except:
-        if add_name_in_list:
-            self._remove_attr_meth(att_name)
-        raise
+    self._add_attribute(attr, r_name, w_name, ia_name)
     return attr
+
+
+def _ensure_user_method_executable(obj, name, user_method):
+    if user_method is not None:
+        assert name == user_method.__name__, (
+                "Sanity check failed. PyTango bug? The names must match. "
+                "{} != {} on {}".format(name, user_method.__name__, obj)
+            )
+        is_bound = (
+            hasattr(user_method, "__self__")
+            and getattr(user_method, "__self__") is not None
+        )
+        if not is_bound:
+            bound_user_method = getattr(obj, user_method.__name__, None)
+            if bound_user_method is None:
+                raise ValueError(
+                    "User-supplied method for attributes must be "
+                    "available as a bound method on the Device class. "
+                    "When accessing Tango attributes, the PyTango extension "
+                    "code, PyAttr::read, uses the name of the method "
+                    "to get a reference to it from the Device object. "
+                    "{} was not found on {} (name {}).".format(user_method, obj, name)
+                )
+            user_method = bound_user_method
+        user_method_cannot_be_run_directly = get_worker().asynchronous
+        if user_method_cannot_be_run_directly:
+            setattr(obj, name, __run_in_executor(user_method))
+    # else user hasn't provided a method, which may be OK (e.g., using named lookup, or
+    # unnecessary method like a write for a read-only attribute).
 
 
 def __DeviceImpl__remove_attribute(self, attr_name):
@@ -428,45 +451,7 @@ def __DeviceImpl__remove_attribute(self, attr_name):
 
         :raises DevFailed:
     """
-    try:
-        # Call this method in a try/except in case remove_attribute
-        # is called during the DS shutdown sequence
-        cl = self.get_device_class()
-    except:
-        return
-
-    dev_list = cl.get_device_list()
-    nb_dev = len(dev_list)
-    if nb_dev == 1:
-        self._remove_attr_meth(attr_name)
-    else:
-        nb_except = 0
-        for dev in dev_list:
-            try:
-                dev.get_device_attr().get_attr_by_name(attr_name)
-            except:
-                nb_except += 1
-        if nb_except == nb_dev - 1:
-            self._remove_attr_meth(attr_name)
     self._remove_attribute(attr_name)
-
-
-def __DeviceImpl___remove_attr_meth(self, attr_name):
-    """for internal usage only"""
-    cl = self.get_device_class()
-    if cl.dyn_att_added_methods.count(attr_name) != 0:
-        r_meth_name = 'read_%s' % attr_name
-        if hasattr(self.__class__, r_meth_name):
-            delattr(self.__class__, r_meth_name)
-
-        w_meth_name = 'write_%s' % attr_name
-        if hasattr(self.__class__, w_meth_name):
-            delattr(self.__class__, w_meth_name)
-
-        allo_meth_name = 'is_%s_allowed' % attr_name
-        if hasattr(self.__class__, allo_meth_name):
-            delattr(self.__class__, allo_meth_name)
-        cl.dyn_att_added_methods.remove(attr_name)
 
 
 def __DeviceImpl__add_command(self, cmd, device_level=True):
@@ -484,22 +469,13 @@ def __DeviceImpl__add_command(self, cmd, device_level=True):
 
         :raises DevFailed:
     """
-    add_name_in_list = False      # This flag is always False, what use is it?
-    try:
-        config = dict(cmd.__tango_command__[1][2])
-        if config and ("Display level" in config):
-            disp_level = config["Display level"]
-        else:
-            disp_level = DispLevel.OPERATOR
-        self._add_command(cmd.__name__, cmd.__tango_command__[1], disp_level,
-                          device_level)
-        if add_name_in_list:
-            cl = self.get_device_class()
-            cl.dyn_cmd_added_methods.append(cmd.__name__)
-    except:
-        if add_name_in_list:
-            self._remove_cmd(cmd.__name__)
-        raise
+    config = dict(cmd.__tango_command__[1][2])
+    if config and ("Display level" in config):
+        disp_level = config["Display level"]
+    else:
+        disp_level = DispLevel.OPERATOR
+    self._add_command(cmd.__name__, cmd.__tango_command__[1], disp_level,
+                      device_level)
     return cmd
 
 
@@ -518,16 +494,6 @@ def __DeviceImpl__remove_command(self, cmd_name, free_it=False, clean_db=True):
 
         :raises DevFailed:
     """
-    try:
-        # Call this method in a try/except in case remove
-        # is called during the DS shutdown sequence
-        cl = self.get_device_class()
-    except:
-        return
-
-    if cl.dyn_cmd_added_methods.count(cmd_name) != 0:
-        cl.dyn_cmd_added_methods.remove(cmd_name)
-
     self._remove_command(cmd_name, free_it, clean_db)
 
 
@@ -656,7 +622,6 @@ def __init_DeviceImpl():
     DeviceImpl.get_device_properties = __DeviceImpl__get_device_properties
     DeviceImpl.add_attribute = __DeviceImpl__add_attribute
     DeviceImpl.remove_attribute = __DeviceImpl__remove_attribute
-    DeviceImpl._remove_attr_meth = __DeviceImpl___remove_attr_meth
     DeviceImpl.add_command = __DeviceImpl__add_command
     DeviceImpl.remove_command = __DeviceImpl__remove_command
     DeviceImpl.__str__ = __DeviceImpl__str

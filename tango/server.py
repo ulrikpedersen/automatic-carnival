@@ -414,9 +414,10 @@ class _DeviceClass(DeviceClass):
             if init_dyn_attrs and callable(init_dyn_attrs):
                 try:
                     init_dyn_attrs()
-                except Exception:
+                except Exception as ex:
                     dev.warn_stream("Failed to initialize dynamic attributes")
                     dev.debug_stream("Details: " + traceback.format_exc())
+                    raise Exception(repr(ex))
 
 
 def __create_tango_deviceclass_klass(tango_device_klass, attrs=None):
