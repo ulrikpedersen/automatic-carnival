@@ -36,7 +36,7 @@ struct LogToStreamImpl
     static void log(Stream& stream,
         const std::string& /*file*/, int /*line*/, const std::string& msg)
     {
-        stream << log4tango::LogInitiator::_begin_log << msg;
+        stream << log4tango::_begin_log << msg;
     }
 };
 
@@ -48,7 +48,7 @@ struct LogToStreamImpl<Stream,
         const std::string& file, int line, const std::string& msg)
     {
         typename Stream::SourceLocation location = {file.c_str(), line};
-        stream << log4tango::LogInitiator::_begin_log << location << msg;
+        stream << log4tango::_begin_log << location << msg;
     }
 };
 
