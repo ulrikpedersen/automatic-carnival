@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import textwrap
 import sys
 
@@ -24,6 +25,7 @@ from tango.test_utils import (
 
 
 ASYNC_AWAIT_AVAILABLE = sys.version_info >= (3, 5)
+WINDOWS = "nt" in os.name
 
 
 class Device1(Device):
@@ -262,6 +264,10 @@ def test_multi_with_mixed_device_green_modes(first_type, second_type, exception_
 def test_device_and_global_green_modes(
     device_type, global_mode, exception_type, executor_type
 ):
+    if WINDOWS and exception_type is not None:
+        pytest.skip("Skip test that hangs on Windows")
+        return
+
     old_green_mode = tango.get_green_mode()
     try:
         tango.set_green_mode(global_mode)
