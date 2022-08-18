@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import textwrap
 import sys
 
@@ -7,7 +8,12 @@ import pytest
 
 import tango
 
-from tango.server import AttrWriteType, Device
+from tango import AttrWriteType, GreenMode
+from tango.asyncio_executor import AsyncioExecutor
+from tango.device_server import get_worker
+from tango.gevent_executor import GeventExecutor
+from tango.green import SynchronousExecutor
+from tango.server import Device
 from tango.server import command, attribute, device_property
 from tango.test_utils import (
     DeviceTestContext,
@@ -19,6 +25,7 @@ from tango.test_utils import (
 
 
 ASYNC_AWAIT_AVAILABLE = sys.version_info >= (3, 5)
+WINDOWS = "nt" in os.name
 
 
 class Device1(Device):
@@ -45,18 +52,42 @@ class Device2(Device):
         return self._attr2
 
 
+class Device1GreenModeUnspecified(Device1):
+    pass
+
+
 class Device1Synchronous(Device1):
-    green_mode = tango.GreenMode.Synchronous
+    green_mode = GreenMode.Synchronous
 
 
-class Device1Futures(Device1):
-    green_mode = tango.GreenMode.Futures
+class Device1Gevent(Device1):
+    green_mode = GreenMode.Gevent
+
+
+class Device1Asyncio(Device1):
+    green_mode = GreenMode.Asyncio
+
+
+class Device2GreenModeUnspecified(Device2):
+    pass
+
+
+class Device2Synchronous(Device2):
+    green_mode = GreenMode.Synchronous
+
+
+class Device2Gevent(Device2):
+    green_mode = GreenMode.Gevent
+
+
+class Device2Asyncio(Device2):
+    green_mode = GreenMode.Asyncio
 
 
 if ASYNC_AWAIT_AVAILABLE:
     code = textwrap.dedent("""
         class Device1AsyncInit(Device1):
-            green_mode = tango.GreenMode.Asyncio
+            green_mode = GreenMode.Asyncio
 
             async def init_device(self):
                 await super().init_device()
@@ -166,10 +197,99 @@ def test_multi_with_two_devices(server_green_mode):
 
 
 @pytest.mark.skipif(not ASYNC_AWAIT_AVAILABLE, reason="async/await only in Python 3.5+")
+@pytest.mark.parametrize(
+    "first_type, second_type, exception_type",
+    [
+        (Device1GreenModeUnspecified, Device2GreenModeUnspecified, None),
+        (Device1GreenModeUnspecified, Device2Synchronous, None),
+        (Device1GreenModeUnspecified, Device2Gevent, ValueError),
+        (Device1GreenModeUnspecified, Device2Asyncio, ValueError),
+        (Device1Synchronous, Device2GreenModeUnspecified, None),
+        (Device1Synchronous, Device2Synchronous, None),
+        (Device1Synchronous, Device2Gevent, ValueError),
+        (Device1Synchronous, Device2Asyncio, ValueError),
+        (Device1Asyncio, Device2GreenModeUnspecified, ValueError),
+        (Device1Asyncio, Device2Synchronous, ValueError),
+        (Device1Asyncio, Device2Gevent, ValueError),
+        (Device1Asyncio, Device2Asyncio, None),
+        (Device1Gevent, Device2GreenModeUnspecified, ValueError),
+        (Device1Gevent, Device2Synchronous, ValueError),
+        (Device1Gevent, Device2Gevent, None),
+        (Device1Gevent, Device2Asyncio, ValueError),
+    ]
+)
+def test_multi_with_mixed_device_green_modes(first_type, second_type, exception_type):
+
+    devices_info = (
+        {"class": first_type, "devices": [{"name": "test/device1/1"}]},
+        {"class": second_type, "devices": [{"name": "test/device2/1"}]},
+    )
+
+    if exception_type is None:
+        with MultiDeviceTestContext(devices_info):
+            pass
+    else:
+        with pytest.raises(exception_type, match=r"mixed green mode"):
+            with MultiDeviceTestContext(devices_info):
+                pass
+
+
+@pytest.mark.skipif(not ASYNC_AWAIT_AVAILABLE, reason="async/await only in Python 3.5+")
+@pytest.mark.parametrize(
+    "device_type, global_mode, exception_type, executor_type",
+    [
+        # If a device specifies its green mode explicitly, then the
+        # global green mode is ignored. The device must use its specified mode.
+        (Device1Synchronous, GreenMode.Synchronous, None, SynchronousExecutor),
+        (Device1Synchronous, GreenMode.Asyncio, None, SynchronousExecutor),
+        (Device1Synchronous, GreenMode.Gevent, None, SynchronousExecutor),
+        (Device1Asyncio, GreenMode.Synchronous, None, AsyncioExecutor),
+        (Device1Asyncio, GreenMode.Gevent, None, AsyncioExecutor),
+        (Device1Gevent, GreenMode.Synchronous, None, GeventExecutor),
+        (Device1Gevent, GreenMode.Asyncio, None, GeventExecutor),
+
+        # If device doesn't specify its green mode explicitly, then use
+        # global mode instead.
+        # (currently only works for synchronous mode - see unsupported modes below)
+        (Device1GreenModeUnspecified, GreenMode.Synchronous, None, SynchronousExecutor),
+
+        # Unsupported modes - device servers with the following combinations
+        # fail to start up. The cause is unknown. This could be fixed in the future.
+        (Device1GreenModeUnspecified, GreenMode.Asyncio, RuntimeError, AsyncioExecutor),
+        (Device1GreenModeUnspecified, GreenMode.Gevent, RuntimeError, GeventExecutor),
+        (Device1Asyncio, GreenMode.Asyncio, RuntimeError, AsyncioExecutor),
+        (Device1Gevent, GreenMode.Gevent, RuntimeError, GeventExecutor),
+    ]
+)
+def test_device_and_global_green_modes(
+    device_type, global_mode, exception_type, executor_type
+):
+    if WINDOWS and exception_type is not None:
+        pytest.skip("Skip test that hangs on Windows")
+        return
+
+    old_green_mode = tango.get_green_mode()
+    try:
+        tango.set_green_mode(global_mode)
+
+        if exception_type is None:
+            with DeviceTestContext(device_type):
+                pass
+            assert type(get_worker()) == executor_type
+        else:
+            with pytest.raises(exception_type, match=r"stuck at init"):
+                with DeviceTestContext(device_type, timeout=0.5):
+                    pass
+
+    finally:
+        tango.set_green_mode(old_green_mode)
+
+
+@pytest.mark.skipif(not ASYNC_AWAIT_AVAILABLE, reason="async/await only in Python 3.5+")
 def test_multi_with_async_devices_initialised():
 
     class TestDevice2Async(Device2):
-        green_mode = tango.GreenMode.Asyncio
+        green_mode = GreenMode.Asyncio
 
     devices_info = (
         {"class": Device1AsyncInit, "devices": [{"name": "test/device1/1"}]},
@@ -284,7 +404,7 @@ def test_multi_with_two_devices_with_properties(server_green_mode):
         [
             (
                 {"class": Device1Synchronous, "devices": [{"name": "test/device1/1"}]},
-                {"class": Device1Futures, "devices": [{"name": "test/device1/2"}]},
+                {"class": Device1Gevent, "devices": [{"name": "test/device1/2"}]},
             ),
             ValueError,
         ],
