@@ -35,7 +35,7 @@ cache:
     DEBIAN_FRONTEND: "noninteractive"
   before_script:
     - apt-get update -y --allow-releaseinfo-change-suite
-    - apt-get -y install make pkg-config rsync build-essential cmake git libcos4-dev libomniorb4-dev libomnithread4-dev libzmq3-dev omniidl
+    - apt-get -y install make pkg-config rsync
     - conda init bash
     - source ~/.bashrc
     - conda activate ./envs/$PYTHON_VERSION || conda create --prefix ./envs/$PYTHON_VERSION --yes python=$PYTHON_VERSION
