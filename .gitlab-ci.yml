@@ -154,13 +154,13 @@ test_py3.5:
   script:
     - python setup.py test
 
-# test_py2.7:
-#   extends: .base_build
-#   variables:
-#     PYTHON_VERSION: '2.7'
-#     BOOST_PYTHON: '27'
-#   script:
-#     - python setup.py test
+test_py2.7:
+  extends: .base_build
+  variables:
+    PYTHON_VERSION: '2.7'
+    BOOST_PYTHON: '27'
+  script:
+    - python setup.py test
 
 release-pypi-package:
   stage: release
