@@ -35,7 +35,7 @@ cache:
     DEBIAN_FRONTEND: "noninteractive"
   before_script:
     - apt-get update -y --allow-releaseinfo-change-suite
-    - apt-get -y install make pkg-config rsync
+    - apt-get -y install make pkg-config rsync build-essential cmake git libcos4-dev libomniorb4-dev libomnithread4-dev libzmq3-dev omniidl
     - conda init bash
     - source ~/.bashrc
     - conda activate ./envs/$PYTHON_VERSION || conda create --prefix ./envs/$PYTHON_VERSION --yes python=$PYTHON_VERSION
@@ -106,29 +106,29 @@ build-docker-image-py38:
   variables:
     PYTHON_VERSION: "3.8"
 
-test_py3.10:
-  extends: .base_build
-  variables:
-    PYTHON_VERSION: '3.10'
-    BOOST_PYTHON: '310'
-  script:
-    - python setup.py test
+# test_py3.10:
+#   extends: .base_build
+#   variables:
+#     PYTHON_VERSION: '3.10'
+#     BOOST_PYTHON: '310'
+#   script:
+#     - python setup.py test
 
-test_py3.9:
-  extends: .base_build
-  variables:
-    PYTHON_VERSION: '3.9'
-    BOOST_PYTHON: '39'
-  script:
-    - python setup.py test
+# test_py3.9:
+#   extends: .base_build
+#   variables:
+#     PYTHON_VERSION: '3.9'
+#     BOOST_PYTHON: '39'
+#   script:
+#     - python setup.py test
 
-test_py3.8:
-  extends: .base_build
-  variables:
-    PYTHON_VERSION: '3.8'
-    BOOST_PYTHON: '38'
-  script:
-    - python setup.py test
+# test_py3.8:
+#   extends: .base_build
+#   variables:
+#     PYTHON_VERSION: '3.8'
+#     BOOST_PYTHON: '38'
+#   script:
+#     - python setup.py test
 
 test_py3.7:
   extends: .base_build
@@ -138,29 +138,29 @@ test_py3.7:
   script:
     - python setup.py test
 
-test_py3.6:
-  extends: .base_build
-  variables:
-    PYTHON_VERSION: '3.6'
-    BOOST_PYTHON: '36'
-  script:
-    - python setup.py test
+# test_py3.6:
+#   extends: .base_build
+#   variables:
+#     PYTHON_VERSION: '3.6'
+#     BOOST_PYTHON: '36'
+#   script:
+#     - python setup.py test
 
-test_py3.5:
-  extends: .base_build
-  variables:
-    PYTHON_VERSION: '3.5'
-    BOOST_PYTHON: '35'
-  script:
-    - python setup.py test
+# test_py3.5:
+#   extends: .base_build
+#   variables:
+#     PYTHON_VERSION: '3.5'
+#     BOOST_PYTHON: '35'
+#   script:
+#     - python setup.py test
 
-test_py2.7:
-  extends: .base_build
-  variables:
-    PYTHON_VERSION: '2.7'
-    BOOST_PYTHON: '27'
-  script:
-    - python setup.py test
+# test_py2.7:
+#   extends: .base_build
+#   variables:
+#     PYTHON_VERSION: '2.7'
+#     BOOST_PYTHON: '27'
+#   script:
+#     - python setup.py test
 
 release-pypi-package:
   stage: release
