@@ -106,29 +106,29 @@ build-docker-image-py38:
   variables:
     PYTHON_VERSION: "3.8"
 
-# test_py3.10:
-#   extends: .base_build
-#   variables:
-#     PYTHON_VERSION: '3.10'
-#     BOOST_PYTHON: '310'
-#   script:
-#     - python setup.py test
+test_py3.10:
+  extends: .base_build
+  variables:
+    PYTHON_VERSION: '3.10'
+    BOOST_PYTHON: '310'
+  script:
+    - python setup.py test
 
-# test_py3.9:
-#   extends: .base_build
-#   variables:
-#     PYTHON_VERSION: '3.9'
-#     BOOST_PYTHON: '39'
-#   script:
-#     - python setup.py test
+test_py3.9:
+  extends: .base_build
+  variables:
+    PYTHON_VERSION: '3.9'
+    BOOST_PYTHON: '39'
+  script:
+    - python setup.py test
 
-# test_py3.8:
-#   extends: .base_build
-#   variables:
-#     PYTHON_VERSION: '3.8'
-#     BOOST_PYTHON: '38'
-#   script:
-#     - python setup.py test
+test_py3.8:
+  extends: .base_build
+  variables:
+    PYTHON_VERSION: '3.8'
+    BOOST_PYTHON: '38'
+  script:
+    - python setup.py test
 
 test_py3.7:
   extends: .base_build
@@ -138,21 +138,21 @@ test_py3.7:
   script:
     - python setup.py test
 
-# test_py3.6:
-#   extends: .base_build
-#   variables:
-#     PYTHON_VERSION: '3.6'
-#     BOOST_PYTHON: '36'
-#   script:
-#     - python setup.py test
+test_py3.6:
+  extends: .base_build
+  variables:
+    PYTHON_VERSION: '3.6'
+    BOOST_PYTHON: '36'
+  script:
+    - python setup.py test
 
-# test_py3.5:
-#   extends: .base_build
-#   variables:
-#     PYTHON_VERSION: '3.5'
-#     BOOST_PYTHON: '35'
-#   script:
-#     - python setup.py test
+test_py3.5:
+  extends: .base_build
+  variables:
+    PYTHON_VERSION: '3.5'
+    BOOST_PYTHON: '35'
+  script:
+    - python setup.py test
 
 # test_py2.7:
 #   extends: .base_build
