@@ -1,3 +1,6 @@
+# Partly based on https://medium.com/@chadlagore/conda-environments-with-docker-82cdc9d25754
+# Source for base image:  https://github.com/ContinuumIO/docker-images/blob/master/miniconda3/debian/Dockerfile
+
 FROM continuumio/miniconda3:4.9.2
 
 ARG PYTHON_VERSION=3.7
@@ -32,7 +35,11 @@ RUN conda init bash; \
 
 # install cpptango and main requirements to conda
 RUN conda install --yes -c conda-forge -c defaults boost gxx_linux-64 cppzmq numpy; \
-    conda install -c tango-controls/label/dev -c tango-controls -c conda-forge -c defaults cpptango=="$CPP_TANGO_VERSION"
+    if [[ "${CPP_TANGO_VERSION}" = *"dev"* ]]; then \
+      conda install -c tango-controls/label/dev -c tango-controls -c conda-forge -c defaults cpptango=="$CPP_TANGO_VERSION"; \
+    else \
+      conda install -c tango-controls -c conda-forge -c defaults cpptango=="$CPP_TANGO_VERSION"; \
+    fi
 
 # depending on Python we install different test utilities
 RUN if [[ "${PYTHON_VERSION}" = "2."* ]]; then \
@@ -48,7 +55,7 @@ RUN if [[ "${CPP_TANGO_VERSION}" = *"dev"* ]]; then \
       make -C /tangotest/build install; \
 # else just install it
     else \
-        conda install -c tango-controls/label/dev -c tango-controls -c conda-forge -c defaults tango-test; \
+        conda install -c tango-controls -c conda-forge -c defaults tango-test; \
     fi
 
 # clean up
