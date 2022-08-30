@@ -25,7 +25,7 @@ https://anaconda.org/tango-controls/cpptango/files
 Run an instance of the container, volume mounting an external PyTango repo into the container.  For example:
 
 ```shell script
-docker run -it --rm -v ~/tango-src/pytango:/opt/pytango pytango-dev:py3.7-tango9.3.2 /bin/bash
+docker run -it --rm -v ~/tango-src/pytango:/opt/pytango pytango-dev:py3.7-tango9.3.2
 ```
 
 Inside the container:
@@ -35,38 +35,6 @@ cd /opt/pytango
 python setup.py build
 python setup.py test
 ```
-
-## Creating/updating Conda environment files
-
-The `environment-*.yml` files are created and can be updated using the commands below.
-It is convenient to do this in a container:
-
- ```shell script
-$ docker run -it --rm -v $PWD:/opt/current continuumio/miniconda3 /bin/bash
-```
-
-Then run the commands inside that container - here's an example for a specific version of Python and Tango.
-Due to the volume mount above, the last line will output the environment file to your host's current folder.
-
-```shell script
-export PYTHON_VERSION=3.7
-export CPP_TANGO_VERSION=9.3.4
-conda create --yes --name env-py${PYTHON_VERSION}-tango${CPP_TANGO_VERSION} python=${PYTHON_VERSION}
-conda activate env-py${PYTHON_VERSION}-tango${CPP_TANGO_VERSION}
-conda install --yes -c main -c conda-forge boost gxx_linux-64 cppzmq numpy
-conda install --yes -c main -c conda-forge -c tango-controls cpptango==${CPP_TANGO_VERSION} tango-test
-conda install --yes pytest pytest-xdist 'gevent != 1.5a1' psutil
-conda env export > /opt/current/environment-py${PYTHON_VERSION}-tango${CPP_TANGO_VERSION}.yml
-```
-
-For Python 2.7, the requirements are slightly different, so replace the line with `pytest` with:
-
-```shell script
-conda install --yes trollius futures 'pyparsing < 3' 'pytest < 5' 'pytest-xdist < 2' 'gevent != 1.5a1' psutil enum34
-```
-
-Note:  the packages lists were taken from `.travis.yml` and `setup.py` - these will need
-to be kept in sync manually.
 
 ## Using a container with an IDE
 
@@ -82,7 +50,6 @@ Add a new interpreter:
 - Open the _Add Interpreter..._ dialog
 - Select _Docker_
 - Pick the image to use, e.g., `pytango-dev:py3.7-tango9.3.2`
-- Change the Python interpreter path to `/usr/local/bin/run-conda-python.sh`
 
 Running tests:
 
