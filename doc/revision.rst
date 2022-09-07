@@ -113,6 +113,8 @@ Document revisions
 +----------+----------------------------------------------------------------------------------+-----------------------------------------------------+-----------------------------------+
 | 14/06/22 | `9.3.4 <http://pytango.readthedocs.io/en/v9.3.4>`_                               | 9.3.4 Release                                       | A\. Joubert                       |
 +----------+----------------------------------------------------------------------------------+-----------------------------------------------------+-----------------------------------+
+| 07/09/22 | `9.3.5 <http://pytango.readthedocs.io/en/v9.3.5>`_                               | 9.3.5 Release                                       | Y\. Matveev                       |
++----------+----------------------------------------------------------------------------------+-----------------------------------------------------+-----------------------------------+
 
 .. _pytango-version-history:
 
@@ -122,6 +124,28 @@ Version history
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Version  | Changes                                                                                                                                                                             |
 +==========+=====================================================================================================================================================================================+
+| 9.3.5    | 9.3.5 release.                                                                                                                                                                      |
+|          |                                                                                                                                                                                     |
+|          | Features:                                                                                                                                                                           |
+|          |     - `Pull Request #470: Add set_data_ready_event method to Device <https://gitlab.com/tango-controls/pytango/-/merge_requests/470>`_                                              |
+|          |                                                                                                                                                                                     |
+|          | Changes:                                                                                                                                                                            |
+|          |     - `Pull Request #471: Fail if mixed green modes used in device server <https://gitlab.com/tango-controls/pytango/-/merge_requests/471>`_                                        |
+|          |                                                                                                                                                                                     |
+|          | Bug fixes:                                                                                                                                                                          |
+|          |     - `Pull Request #461: Fix handling of -ORBEndPointX command line options <https://gitlab.com/tango-controls/pytango/-/merge_requests/461>`_                                     |
+|          |     - `Pull Request #462: Ensure PYTANGO_NUMPY_VERSION is stringized to support newer C++ compilers <https://gitlab.com/tango-controls/pytango/-/merge_requests/462>`_              |
+|          |     - `Pull Request #465: Restore dynamic attribute functionality with unbound methods <https://gitlab.com/tango-controls/pytango/-/merge_requests/465>`_                           |
+|          |     - `Pull Request #466: Explicit boost::python::optional template usage to fix compilation with gcc>10 <https://gitlab.com/tango-controls/pytango/-/merge_requests/466>`_         |
+|          |                                                                                                                                                                                     |
+|          | Doc fixes:                                                                                                                                                                          |
+|          |     - `Pull Request #467: Better MultiDeviceTestContext workaround <https://gitlab.com/tango-controls/pytango/-/merge_requests/467>`_                                               |
+|          |     - `Pull Request #474: Update documentation for tango.Database <https://gitlab.com/tango-controls/pytango/-/merge_requests/474>`_                                                |
+|          |                                                                                                                                                                                     |
+|          | DevOps features:                                                                                                                                                                    |
+|          |     - `Pull Request #473: Make universal dockerfile <https://gitlab.com/tango-controls/pytango/-/merge_requests/473>`_                                                              |
+|          |                                                                                                                                                                                     |
++----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | 9.3.4    | 9.3.4 release.                                                                                                                                                                      |
 |          |                                                                                                                                                                                     |
 |          | Changes:                                                                                                                                                                            |
