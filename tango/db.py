@@ -1018,7 +1018,21 @@ def __doc_Database():
         db = Database()
 
     The constructor uses the TANGO_HOST env. variable to determine which
-    instance of the Database to connect to."""
+    instance of the Database to connect to.
+    
+    If TANGO_HOST env is not set, or you want to connect to a specific database, you can provide host and port to constructor:
+    
+         db = Database(host: str, port: int)
+             
+         or:
+             
+         db = Database(host: str, port: str)
+         
+    Alternatively, it is possible to start Database using file instead of a real database:
+    
+        db = Database(filename: str)
+        
+    """
 
     document_method("write_filedatabase", """
     write_filedatabase(self) -> None
