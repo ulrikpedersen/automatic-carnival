@@ -130,7 +130,6 @@ Version history
 |          |     - `Pull Request #470: Add set_data_ready_event method to Device <https://gitlab.com/tango-controls/pytango/-/merge_requests/470>`_                                              |
 |          |                                                                                                                                                                                     |
 |          | Changes:                                                                                                                                                                            |
-|          |     - `Pull Request #467: Better MultiDeviceTestContext workaround <https://gitlab.com/tango-controls/pytango/-/merge_requests/467>`_                                               |
 |          |     - `Pull Request #471: Fail if mixed green modes used in device server <https://gitlab.com/tango-controls/pytango/-/merge_requests/471>`_                                        |
 |          |                                                                                                                                                                                     |
 |          | Bug fixes:                                                                                                                                                                          |
@@ -140,6 +139,7 @@ Version history
 |          |     - `Pull Request #466: Explicit boost::python::optional template usage to fix compilation with gcc>10 <https://gitlab.com/tango-controls/pytango/-/merge_requests/466>`_         |
 |          |                                                                                                                                                                                     |
 |          | Doc fixes:                                                                                                                                                                          |
+|          |     - `Pull Request #467: Better MultiDeviceTestContext workaround <https://gitlab.com/tango-controls/pytango/-/merge_requests/467>`_                                               |
 |          |     - `Pull Request #474: Update documentation for tango.Database <https://gitlab.com/tango-controls/pytango/-/merge_requests/474>`_                                                |
 |          |                                                                                                                                                                                     |
 |          | DevOps features:                                                                                                                                                                    |
