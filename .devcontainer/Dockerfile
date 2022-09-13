@@ -41,6 +41,8 @@ RUN conda install --yes -c conda-forge -c defaults boost gxx_linux-64 cppzmq num
       conda install -c tango-controls -c conda-forge -c defaults cpptango=="$CPP_TANGO_VERSION"; \
     fi
 
+RUN conda install -c conda-forge -c defaults six
+
 # depending on Python we install different test utilities
 RUN if [[ "${PYTHON_VERSION}" = "2."* ]]; then \
       conda install --yes -c conda-forge -c defaults trollius futures 'pyparsing < 3' 'pytest < 5' 'pytest-xdist < 2' 'gevent != 1.5a1' psutil enum34; \
