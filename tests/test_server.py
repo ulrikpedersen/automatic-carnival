@@ -566,7 +566,7 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(
     
             def is_dyn_attr6_allowed(self, req_type):
                 return self._is_test_attr_allowed
-            """).format(**globals())
+            """)
 
         if ASYNC_AWAIT_AVAILABLE:
             asynchronous_code = synchronous_code.replace("def ", "async def ")
@@ -727,7 +727,7 @@ def test_dynamic_attribute_with_non_device_method_patched(server_green_mode):
     synchronous_code = textwrap.dedent("""\
         def read_function_outside_of_any_class(attr):
             attr.set_value(123)
-        """).format(**globals())
+        """)
 
     if server_green_mode == GreenMode.Asyncio:
         if ASYNC_AWAIT_AVAILABLE:
@@ -762,8 +762,8 @@ def test_dynamic_attribute_with_non_device_method_patched(server_green_mode):
             self.add_attribute(attr)
 
     with DeviceTestContext(TestDevice) as proxy:
-        _ = proxy.dyn_attr1
-        _ = proxy.dyn_attr2
+        assert proxy.dyn_attr1 == 123
+        assert proxy.dyn_attr2 == 123
 
 
 # Test properties
@@ -907,7 +907,7 @@ def test_inheritance(server_green_mode):
                         coro = super(type(self), self).dev_status()
                         result = await coro
                         return 3*result
-                """).format(**globals())
+                """)
             else:
                 code = textwrap.dedent("""\
                     @asyncio.coroutine
@@ -915,7 +915,7 @@ def test_inheritance(server_green_mode):
                         coro = super(type(self), self).dev_status()
                         result = yield asyncio.From(coro)
                         raise asyncio.Return(3*result)
-                """).format(**globals())
+                """)
             exec(code)
 
     with DeviceTestContext(B) as proxy:

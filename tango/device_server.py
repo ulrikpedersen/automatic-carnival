@@ -434,7 +434,7 @@ def _ensure_user_method_can_be_called(obj, name, user_method):
                     "When accessing Tango attributes, the PyTango extension "
                     "code, PyAttr::read, uses the name of the method "
                     "to get a reference to it from the Device object. "
-                    "{} was not found on {} (name {}).".format(user_method, obj, name)
+                    "{} was not found on {}.".format(name, obj)
                 )
             user_method = bound_user_method
 
