@@ -426,7 +426,7 @@ def _ensure_user_method_can_be_called(obj, name, user_method):
 
         if not is_device_method:
             # in case user gave us class method, we are trying to find it in device:
-            bound_user_method = getattr(obj, user_method.__name__, None)
+            bound_user_method = getattr(obj, name, None)
             if bound_user_method is None:
                 raise ValueError(
                     "User-supplied method for attributes must be "
