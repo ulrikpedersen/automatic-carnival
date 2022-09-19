@@ -566,7 +566,7 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(
     
             def is_dyn_attr6_allowed(self, req_type):
                 return self._is_test_attr_allowed
-            """).format(**globals())
+            """)
 
         if ASYNC_AWAIT_AVAILABLE:
             asynchronous_code = synchronous_code.replace("def ", "async def ")
@@ -687,7 +687,7 @@ def test_dynamic_attribute_using_classic_api_like_sardana(device_impl_class):
 
 def test_dynamic_attribute_with_non_device_method_fails(server_green_mode):
 
-    def read_function_outside_of_any_class(dummy, attr):
+    def read_function_outside_of_any_class(attr):
         attr.set_value(123)
 
     class NonDeviceClass(object):
@@ -713,11 +713,58 @@ def test_dynamic_attribute_with_non_device_method_fails(server_green_mode):
             )
             self.add_attribute(attr)
 
+    # typically devices with non method class cannot work
+    with pytest.raises(DevFailed):
+        with DeviceTestContext(TestDevice):
+            pass
+
+
+def test_dynamic_attribute_with_non_device_method_patched(server_green_mode):
+
+    def read_function_outside_of_any_class(attr):
+        attr.set_value(123)
+
+    synchronous_code = textwrap.dedent("""\
+        def read_function_outside_of_any_class(attr):
+            attr.set_value(123)
+        """)
+
+    if server_green_mode == GreenMode.Asyncio:
+        if ASYNC_AWAIT_AVAILABLE:
+            asynchronous_code = synchronous_code.replace("def ", "async def ")
+        else:
+            asynchronous_code = synchronous_code.replace(
+                "def ",
+                "@asyncio.coroutine\ndef "
+            )
+
+        exec(asynchronous_code) in globals(), locals()
+
+    class TestDevice(Device):
+        green_mode = server_green_mode
+
+        def initialize_dynamic_attributes(self):
+            # trick to run server with non device method: patch __dict__
+            self.__dict__['read_dyn_attr1'] = read_function_outside_of_any_class
+            attr = attribute(
+                name="dyn_attr1",
+                dtype=int,
+                access=AttrWriteType.READ,
+            )
+            self.add_attribute(attr)
+
+            setattr(self, 'read_dyn_attr2', read_function_outside_of_any_class)
+            attr = attribute(
+                name="dyn_attr2",
+                dtype=int,
+                access=AttrWriteType.READ,
+            )
+            self.add_attribute(attr)
+
     with DeviceTestContext(TestDevice) as proxy:
-        with pytest.raises(DevFailed, match="method not found"):
-            _ = proxy.dyn_attr1
-        with pytest.raises(DevFailed, match="method not found"):
-            _ = proxy.dyn_attr2
+        assert proxy.dyn_attr1 == 123
+        assert proxy.dyn_attr2 == 123
+
 
 # Test properties
 
@@ -860,7 +907,7 @@ def test_inheritance(server_green_mode):
                         coro = super(type(self), self).dev_status()
                         result = await coro
                         return 3*result
-                """).format(**globals())
+                """)
             else:
                 code = textwrap.dedent("""\
                     @asyncio.coroutine
@@ -868,7 +915,7 @@ def test_inheritance(server_green_mode):
                         coro = super(type(self), self).dev_status()
                         result = yield asyncio.From(coro)
                         raise asyncio.Return(3*result)
-                """).format(**globals())
+                """)
             exec(code)
 
     with DeviceTestContext(B) as proxy:

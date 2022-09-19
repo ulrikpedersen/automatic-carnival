@@ -381,48 +381,52 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
     if r_meth is None:
         if attr_data is not None:
             r_name = attr_data.read_method_name
-        if hasattr(self, r_name):
+        if hasattr(attr_data, 'fget'):
+            r_meth = attr_data.fget
+        elif hasattr(self, r_name):
             r_meth = getattr(self, r_name)
     else:
         r_name = r_meth.__name__
-    _ensure_user_method_executable(self, r_name, r_meth)
+    _ensure_user_method_can_be_called(self, r_name, r_meth)
 
     w_name = 'write_%s' % att_name
     if w_meth is None:
         if attr_data is not None:
             w_name = attr_data.write_method_name
-        if hasattr(self, w_name):
+        if hasattr(attr_data, 'fset'):
+            w_meth = attr_data.fset
+        elif hasattr(self, w_name):
             w_meth = getattr(self, w_name)
     else:
         w_name = w_meth.__name__
-    _ensure_user_method_executable(self, w_name, w_meth)
+    _ensure_user_method_can_be_called(self, w_name, w_meth)
 
     ia_name = 'is_%s_allowed' % att_name
     if is_allo_meth is None:
         if attr_data is not None:
             ia_name = attr_data.is_allowed_name
-        if hasattr(self, ia_name):
+        if hasattr(attr_data, 'fisallowed'):
+            is_allo_meth = attr_data.fisallowed
+        elif hasattr(self, ia_name):
             is_allo_meth = getattr(self, ia_name)
     else:
             ia_name = is_allo_meth.__name__
-    _ensure_user_method_executable(self, ia_name, is_allo_meth)
+    _ensure_user_method_can_be_called(self, ia_name, is_allo_meth)
 
     self._add_attribute(attr, r_name, w_name, ia_name)
     return attr
 
 
-def _ensure_user_method_executable(obj, name, user_method):
+def _ensure_user_method_can_be_called(obj, name, user_method):
     if user_method is not None:
-        assert name == user_method.__name__, (
-                "Sanity check failed. PyTango bug? The names must match. "
-                "{} != {} on {}".format(name, user_method.__name__, obj)
-            )
-        is_bound = (
-            hasattr(user_method, "__self__")
-            and getattr(user_method, "__self__") is not None
-        )
-        if not is_bound:
-            bound_user_method = getattr(obj, user_method.__name__, None)
+
+        # we have to check that user provided us with the device method,
+        # otherwise method won't be found during call
+        is_device_method = getattr(obj, name, None) == user_method
+
+        if not is_device_method:
+            # in case user gave us class method, we are trying to find it in device:
+            bound_user_method = getattr(obj, name, None)
             if bound_user_method is None:
                 raise ValueError(
                     "User-supplied method for attributes must be "
@@ -430,12 +434,15 @@ def _ensure_user_method_executable(obj, name, user_method):
                     "When accessing Tango attributes, the PyTango extension "
                     "code, PyAttr::read, uses the name of the method "
                     "to get a reference to it from the Device object. "
-                    "{} was not found on {} (name {}).".format(user_method, obj, name)
+                    "{} was not found on {}.".format(name, obj)
                 )
             user_method = bound_user_method
+
+        # If server run in async mode, all calls must be wrapped with async executor:
         user_method_cannot_be_run_directly = get_worker().asynchronous
         if user_method_cannot_be_run_directly:
             setattr(obj, name, __run_in_executor(user_method))
+
     # else user hasn't provided a method, which may be OK (e.g., using named lookup, or
     # unnecessary method like a write for a read-only attribute).
 
