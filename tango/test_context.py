@@ -317,7 +317,7 @@ class MultiDeviceTestContext(object):
         if class_list:
             runserver = partial(run, class_list, cmd_args, green_mode=green_mode)
         elif len(device_list) == 1 and hasattr(device_list[0], "run_server"):
-            runserver = partial(device.run_server, cmd_args)
+            runserver = partial(device.run_server, cmd_args, green_mode=green_mode)
         elif device_list:
             runserver = partial(run, device_list, cmd_args, green_mode=green_mode)
         else:

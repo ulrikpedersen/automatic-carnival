@@ -236,33 +236,41 @@ def test_multi_with_mixed_device_green_modes(first_type, second_type, exception_
 
 @pytest.mark.skipif(not ASYNC_AWAIT_AVAILABLE, reason="async/await only in Python 3.5+")
 @pytest.mark.parametrize(
-    "device_type, global_mode, exception_type, executor_type",
+    "device_type, green_mode, global_mode, exception_type, executor_type",
     [
-        # If a device specifies its green mode explicitly, then the
-        # global green mode is ignored. The device must use its specified mode.
-        (Device1Synchronous, GreenMode.Synchronous, None, SynchronousExecutor),
-        (Device1Synchronous, GreenMode.Asyncio, None, SynchronousExecutor),
-        (Device1Synchronous, GreenMode.Gevent, None, SynchronousExecutor),
-        (Device1Asyncio, GreenMode.Synchronous, None, AsyncioExecutor),
-        (Device1Asyncio, GreenMode.Gevent, None, AsyncioExecutor),
-        (Device1Gevent, GreenMode.Synchronous, None, GeventExecutor),
-        (Device1Gevent, GreenMode.Asyncio, None, GeventExecutor),
+        # If a device specifies its green mode explicitly, then both
+        # green_mode kwarg and global green mode are ignored. The device must use its specified mode.
+        (Device1Synchronous, GreenMode.Asyncio, GreenMode.Asyncio, None, SynchronousExecutor),
+        (Device1Synchronous, GreenMode.Gevent, GreenMode.Gevent, None, SynchronousExecutor),
+        (Device1Asyncio, GreenMode.Synchronous, GreenMode.Synchronous, None, AsyncioExecutor),
+        (Device1Asyncio, GreenMode.Gevent, GreenMode.Gevent, None, AsyncioExecutor),
+        (Device1Gevent, GreenMode.Synchronous, GreenMode.Synchronous, None, GeventExecutor),
+        (Device1Gevent, GreenMode.Asyncio, GreenMode.Asyncio, None, GeventExecutor),
 
-        # If device doesn't specify its green mode explicitly, then use
-        # global mode instead.
+        # If device doesn't specify its green mode, but green_mode kwarg is provided,
+        # then we use green_mode kwarg
+        (Device1GreenModeUnspecified, GreenMode.Synchronous, GreenMode.Asyncio, None, SynchronousExecutor),
+        (Device1GreenModeUnspecified, GreenMode.Synchronous, GreenMode.Asyncio, None, SynchronousExecutor),
+        (Device1GreenModeUnspecified, GreenMode.Asyncio, GreenMode.Synchronous, None, AsyncioExecutor),
+        (Device1GreenModeUnspecified, GreenMode.Asyncio, GreenMode.Gevent, None, AsyncioExecutor),
+        (Device1GreenModeUnspecified, GreenMode.Gevent, GreenMode.Synchronous, None, GeventExecutor),
+        (Device1GreenModeUnspecified, GreenMode.Gevent, GreenMode.Asyncio, None, GeventExecutor),
+
+        # Finnaly, if neither device doesn't specify its green mode and green_mode kwarg is None,
+        # then use global mode instead.
         # (currently only works for synchronous mode - see unsupported modes below)
-        (Device1GreenModeUnspecified, GreenMode.Synchronous, None, SynchronousExecutor),
+        (Device1GreenModeUnspecified, None, GreenMode.Synchronous, None, SynchronousExecutor),
 
         # Unsupported modes - device servers with the following combinations
         # fail to start up. The cause is unknown. This could be fixed in the future.
-        (Device1GreenModeUnspecified, GreenMode.Asyncio, RuntimeError, AsyncioExecutor),
-        (Device1GreenModeUnspecified, GreenMode.Gevent, RuntimeError, GeventExecutor),
-        (Device1Asyncio, GreenMode.Asyncio, RuntimeError, AsyncioExecutor),
-        (Device1Gevent, GreenMode.Gevent, RuntimeError, GeventExecutor),
+        (Device1GreenModeUnspecified, None, GreenMode.Asyncio, RuntimeError, AsyncioExecutor),
+        (Device1GreenModeUnspecified, None, GreenMode.Gevent, RuntimeError, GeventExecutor),
+        (Device1Asyncio, None,  GreenMode.Asyncio, RuntimeError, AsyncioExecutor),
+        (Device1Gevent, None, GreenMode.Gevent, RuntimeError, GeventExecutor),
     ]
 )
-def test_device_and_global_green_modes(
-    device_type, global_mode, exception_type, executor_type
+def test_green_modes_in_device_kwarg_and_global(
+    device_type, green_mode, global_mode, exception_type, executor_type
 ):
     if WINDOWS and exception_type is not None:
         pytest.skip("Skip test that hangs on Windows")
@@ -273,12 +281,12 @@ def test_device_and_global_green_modes(
         tango.set_green_mode(global_mode)
 
         if exception_type is None:
-            with DeviceTestContext(device_type):
+            with DeviceTestContext(device_type, green_mode=green_mode):
                 pass
             assert type(get_worker()) == executor_type
         else:
             with pytest.raises(exception_type, match=r"stuck at init"):
-                with DeviceTestContext(device_type, timeout=0.5):
+                with DeviceTestContext(device_type, green_mode=green_mode, timeout=0.5):
                     pass
 
     finally:
