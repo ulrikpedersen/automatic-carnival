@@ -20,7 +20,7 @@ import functools
 
 from ._tango import (
     DeviceImpl, Device_3Impl, Device_4Impl, Device_5Impl,
-    DevFailed, Attribute, WAttribute,
+    DevFailed, Attribute, WAttribute, AttrWriteType,
     MultiAttribute, MultiClassAttribute,
     Attr, Logger, AttrWriteType, AttrDataFormat,
     DispLevel, UserDefaultAttrProp, StdStringVector)
@@ -387,7 +387,12 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
             r_meth = getattr(self, r_name)
     else:
         r_name = r_meth.__name__
-    _ensure_user_method_can_be_called(self, r_name, r_meth)
+
+    if attr.get_writable() in (AttrWriteType.READ,
+                               AttrWriteType.READ_WRITE,
+                               AttrWriteType.READ_WITH_WRITE,
+                               ):
+        _ensure_user_method_can_be_called(self, r_name, r_meth)
 
     w_name = 'write_%s' % att_name
     if w_meth is None:
@@ -399,7 +404,12 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
             w_meth = getattr(self, w_name)
     else:
         w_name = w_meth.__name__
-    _ensure_user_method_can_be_called(self, w_name, w_meth)
+
+    if attr.get_writable() in (AttrWriteType.WRITE,
+                               AttrWriteType.READ_WRITE,
+                               AttrWriteType.READ_WITH_WRITE,
+                               ):
+        _ensure_user_method_can_be_called(self, w_name, w_meth)
 
     ia_name = 'is_%s_allowed' % att_name
     if is_allo_meth is None:
