@@ -766,7 +766,7 @@ def test_dynamic_attribute_with_non_device_method_patched(server_green_mode):
         assert proxy.dyn_attr2 == 123
 
 
-def test_read_only_dynamic_attribute_with_dymmy_write_method(server_green_mode):
+def test_read_only_dynamic_attribute_with_dummy_write_method(server_green_mode):
 
     def dummy_write_method():
         return None
