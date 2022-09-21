@@ -250,14 +250,13 @@ def test_multi_with_mixed_device_green_modes(first_type, second_type, exception_
         # If device doesn't specify its green mode, but green_mode kwarg is provided,
         # then we use green_mode kwarg
         (Device1GreenModeUnspecified, GreenMode.Synchronous, GreenMode.Asyncio, None, SynchronousExecutor),
-        (Device1GreenModeUnspecified, GreenMode.Synchronous, GreenMode.Asyncio, None, SynchronousExecutor),
+        (Device1GreenModeUnspecified, GreenMode.Synchronous, GreenMode.Gevent, None, SynchronousExecutor),
         (Device1GreenModeUnspecified, GreenMode.Asyncio, GreenMode.Synchronous, None, AsyncioExecutor),
         (Device1GreenModeUnspecified, GreenMode.Asyncio, GreenMode.Gevent, None, AsyncioExecutor),
         (Device1GreenModeUnspecified, GreenMode.Gevent, GreenMode.Synchronous, None, GeventExecutor),
         (Device1GreenModeUnspecified, GreenMode.Gevent, GreenMode.Asyncio, None, GeventExecutor),
 
-        # Finnaly, if neither device doesn't specify its green mode and green_mode kwarg is None,
-        # then use global mode instead.
+        # Finally, if neither device green mode nor green_mode kwarg are specified, then use global mode instead.
         # (currently only works for synchronous mode - see unsupported modes below)
         (Device1GreenModeUnspecified, None, GreenMode.Synchronous, None, SynchronousExecutor),
 

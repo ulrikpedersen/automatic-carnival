@@ -1302,7 +1302,13 @@ def _add_classes(util, classes):
         util.add_class(*class_info)
 
 
-def _get_green_mode_from_classes(classes, default_green_mode):
+def _get_class_green_mode(classes, green_mode):
+
+    if green_mode is not None:
+        default_green_mode = green_mode
+    else:
+        default_green_mode = get_green_mode()
+
     green_modes = set()
     for _, klass, _ in _to_classes(classes):
         device_green_mode = getattr(klass, 'green_mode', None)
@@ -1324,11 +1330,8 @@ def _get_green_mode_from_classes(classes, default_green_mode):
 def __server_run(classes, args=None, msg_stream=sys.stdout, util=None,
                  event_loop=None, post_init_callback=None,
                  green_mode=None):
-    if green_mode is not None:
-        default_green_mode = green_mode
-    else:
-        default_green_mode = get_green_mode()
-    green_mode = _get_green_mode_from_classes(classes, default_green_mode)
+
+    green_mode = _get_class_green_mode(classes, green_mode)
 
     write = msg_stream.write if msg_stream else lambda msg: None
 
