@@ -241,6 +241,12 @@ class MultiDeviceTestContext(object):
       Optional.  Default differs for thread and process modes.
     :type timeout:
       :py:obj:`float`
+    :param green_mode:
+      Green mode to use for the device server.
+      Optional.  Default uses the Device specification (via green_mode class attribute),
+      or if that isn't specified the global green mode.
+    :type green_mode:
+      :obj:`~tango.GreenMode`
     """
     nodb = "dbase=no"
     command = "{0} {1} -ORBendPoint giop:tcp:{2}:{3} -file={4}"
@@ -250,7 +256,7 @@ class MultiDeviceTestContext(object):
 
     def __init__(self, devices_info, server_name=None, instance_name=None,
                  db=None, host=None, port=0, debug=3,
-                 process=False, daemon=False, timeout=None):
+                 process=False, daemon=False, timeout=None, green_mode=None):
         if not server_name:
             _, first_device = _device_class_from_field(devices_info[0]["class"])
             server_name = first_device.__name__
@@ -309,11 +315,11 @@ class MultiDeviceTestContext(object):
             raise ValueError("mixing HLAPI and classical API in devices_info "
                              "is not supported")
         if class_list:
-            runserver = partial(run, class_list, cmd_args)
+            runserver = partial(run, class_list, cmd_args, green_mode=green_mode)
         elif len(device_list) == 1 and hasattr(device_list[0], "run_server"):
-            runserver = partial(device.run_server, cmd_args)
+            runserver = partial(device.run_server, cmd_args, green_mode=green_mode)
         elif device_list:
-            runserver = partial(run, device_list, cmd_args)
+            runserver = partial(run, device_list, cmd_args, green_mode=green_mode)
         else:
             raise ValueError("Wrong format of devices_info")
 
@@ -520,7 +526,7 @@ class DeviceTestContext(MultiDeviceTestContext):
     def __init__(self, device, device_cls=None, server_name=None,
                  instance_name=None, device_name=None, properties=None,
                  db=None, host=None, port=0, debug=3, process=False,
-                 daemon=False, timeout=None, memorized=None):
+                 daemon=False, timeout=None, memorized=None, green_mode=None):
         # Argument
         if not server_name:
             server_name = device.__name__
@@ -554,7 +560,8 @@ class DeviceTestContext(MultiDeviceTestContext):
                                                 port=port, debug=debug,
                                                 process=process,
                                                 daemon=daemon,
-                                                timeout=timeout)
+                                                timeout=timeout,
+                                                green_mode=green_mode)
 
         self.device_name = device_name
         self.device = self.server = None

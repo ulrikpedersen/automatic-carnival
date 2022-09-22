@@ -1302,13 +1302,18 @@ def _add_classes(util, classes):
         util.add_class(*class_info)
 
 
-def _get_green_mode_from_classes_or_global_setting(classes):
+def _get_class_green_mode(classes, green_mode):
+
+    if green_mode is not None:
+        default_green_mode = green_mode
+    else:
+        default_green_mode = get_green_mode()
+
     green_modes = set()
-    global_green_mode = get_green_mode()
     for _, klass, _ in _to_classes(classes):
         device_green_mode = getattr(klass, 'green_mode', None)
         if device_green_mode is None:
-            device_green_mode = global_green_mode
+            device_green_mode = default_green_mode
         green_modes.add(device_green_mode)
     if len(green_modes) > 1:
         raise ValueError(
@@ -1325,17 +1330,8 @@ def _get_green_mode_from_classes_or_global_setting(classes):
 def __server_run(classes, args=None, msg_stream=sys.stdout, util=None,
                  event_loop=None, post_init_callback=None,
                  green_mode=None):
-    device_green_mode = _get_green_mode_from_classes_or_global_setting(classes)
-    if green_mode is None:
-        green_mode = device_green_mode
-    else:
-        if device_green_mode != green_mode:
-            raise ValueError(
-                "Invalid request for mixed green mode in the same "
-                "device server process. Device's mode: {} != kwarg mode: {}.".format(
-                    device_green_mode, green_mode
-                )
-            )
+
+    green_mode = _get_class_green_mode(classes, green_mode)
 
     write = msg_stream.write if msg_stream else lambda msg: None
 
