@@ -8,8 +8,8 @@ import time
 import pytest
 import enum
 
-from tango import AttrData, AttrDataFormat, AttReqType, AttrWriteType, \
-    DevBoolean, DevDouble, DevFailed, \
+from tango import AttrData, Attr, AttrDataFormat, AttReqType, AttrWriteType, \
+    DevBoolean, DevLong, DevDouble, DevFailed, \
     DevEncoded, DevEnum, DevState, DevVoid, \
     Device_4Impl, Device_5Impl, DeviceClass, \
     GreenMode, LatestDeviceImpl, READ_WRITE, SCALAR
@@ -764,6 +764,28 @@ def test_dynamic_attribute_with_non_device_method_patched(server_green_mode):
     with DeviceTestContext(TestDevice) as proxy:
         assert proxy.dyn_attr1 == 123
         assert proxy.dyn_attr2 == 123
+
+
+def test_read_only_dynamic_attribute_with_dummy_write_method(server_green_mode):
+
+    def dummy_write_method():
+        return None
+
+    class TestDevice(Device):
+        green_mode = server_green_mode
+
+        def read_attribute(self, attr):
+            attr.set_value(123)
+
+        def initialize_dynamic_attributes(self):
+            self.add_attribute(
+                Attr('dyn_attr', DevLong, AttrWriteType.READ),
+                r_meth=self.read_attribute,
+                w_meth=dummy_write_method,
+            )
+
+    with DeviceTestContext(TestDevice) as proxy:
+        assert proxy.dyn_attr == 123
 
 
 # Test properties
