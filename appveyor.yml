@@ -3,8 +3,6 @@ version: 9.3.6.dev0.{build}
 image: Visual Studio 2015
 
 environment:
-  cpptango_download_base: https://github.com/tango-controls/cppTango/releases/download/
-  cpptango_version: 9.3.4
   boost_download_base: https://github.com/tango-controls/boost-ci/releases/download/
   matrix:
     - platform: win32
@@ -13,6 +11,8 @@ environment:
       ARCH_PY: win32-msvc9-py27
       VC_VER: 9.0
       MSVCVERSION: v90
+      cpptango_version: 9.3.5
+      cpptango_download_link: https://gitlab.com/tango-controls/cppTango/-/package_files/43063723/download
       PYTHON_VER: 27
       PYTHON_ROOT: c:\Python27\
       CMAKE_GENERATOR: "Visual Studio 9 2008"
@@ -23,17 +23,20 @@ environment:
       ARCH_PY: x64-msvc9-py27
       VC_VER: 9.0
       MSVCVERSION: v90
+      cpptango_version: 9.3.4
+      cpptango_download_link: https://github.com/tango-controls/cppTango/releases/download/9.3.4/libtango_9.3.4_v90_x64.zip
       PYTHON_VER: 27
       PYTHON_ROOT: c:\Python27-x64\
       CMAKE_GENERATOR: "Visual Studio 9 2008 Win64"
       boost_version: 1.70.0  # last boost-ci release with Py2 support
-
     - platform: win32
       configuration: Release
       ARCH: win32-msvc14
       ARCH_PY: win32-msvc14-py36
       VC_VER: 14.0
       MSVCVERSION: v140
+      cpptango_version: 9.3.5
+      cpptango_download_link: https://gitlab.com/tango-controls/cppTango/-/package_files/43063588/download
       PYTHON_VER: 36
       PYTHON_ROOT: c:\Python36\
       CMAKE_GENERATOR: "Visual Studio 14 2015"
@@ -45,6 +48,8 @@ environment:
       ARCH_PY: x64-msvc14-py36
       VC_VER: 14.0
       MSVCVERSION: v140
+      cpptango_version: 9.3.5
+      cpptango_download_link: https://gitlab.com/tango-controls/cppTango/-/package_files/43063561/download
       PYTHON_VER: 36
       PYTHON_ROOT: c:\Python36-x64\
       CMAKE_GENERATOR: "Visual Studio 14 2015 Win64"
@@ -56,6 +61,8 @@ environment:
       ARCH_PY: win32-msvc14-py37
       VC_VER: 14.0
       MSVCVERSION: v140
+      cpptango_version: 9.3.5
+      cpptango_download_link: https://gitlab.com/tango-controls/cppTango/-/package_files/43063588/download
       PYTHON_VER: 37
       PYTHON_ROOT: c:\Python37\
       CMAKE_GENERATOR: "Visual Studio 14 2015"
@@ -67,6 +74,8 @@ environment:
       ARCH_PY: x64-msvc14-py37
       VC_VER: 14.0
       MSVCVERSION: v140
+      cpptango_version: 9.3.5
+      cpptango_download_link: https://gitlab.com/tango-controls/cppTango/-/package_files/43063561/download
       PYTHON_VER: 37
       PYTHON_ROOT: c:\Python37-x64\
       CMAKE_GENERATOR: "Visual Studio 14 2015 Win64"
@@ -78,6 +87,8 @@ environment:
       ARCH_PY: win32-msvc14-py38
       VC_VER: 14.0
       MSVCVERSION: v140
+      cpptango_version: 9.3.5
+      cpptango_download_link: https://gitlab.com/tango-controls/cppTango/-/package_files/43063588/download
       PYTHON_VER: 38
       PYTHON_ROOT: c:\Python38\
       CMAKE_GENERATOR: "Visual Studio 14 2015"
@@ -89,6 +100,8 @@ environment:
       ARCH_PY: x64-msvc14-py38
       VC_VER: 14.0
       MSVCVERSION: v140
+      cpptango_version: 9.3.5
+      cpptango_download_link: https://gitlab.com/tango-controls/cppTango/-/package_files/43063561/download
       PYTHON_VER: 38
       PYTHON_ROOT: c:\Python38-x64\
       CMAKE_GENERATOR: "Visual Studio 14 2015 Win64"
@@ -100,10 +113,14 @@ init:
   - cmd: cd "C:\projects\"
   - cmd: md libtango
   - cmd: cd "C:\projects\"
-  - if /I %platform%==win32 appveyor DownloadFile %cpptango_download_base%/%cpptango_version%/libtango_%cpptango_version%_%MSVCVERSION%_x86.zip
-  - if /I %platform%==x64 appveyor DownloadFile %cpptango_download_base%/%cpptango_version%/libtango_%cpptango_version%_%MSVCVERSION%_x64.zip
-  - cmd: if /I %platform%==win32 7z -y x libtango_%cpptango_version%_%MSVCVERSION%_x86.zip -oC:\projects\libtango\
-  - cmd: if /I %platform%==x64 7z -y x libtango_%cpptango_version%_%MSVCVERSION%_x64.zip -oC:\projects\libtango\
+  - appveyor DownloadFile %cpptango_download_link%
+  - cmd: if %cpptango_version%==9.3.5 (
+            7z -y x download -oC:\projects\libtango\
+         ) else (
+            7z -y x libtango_%cpptango_version%_%MSVCVERSION%_x64.zip -oC:\projects\libtango\
+         )
+  - cmd: if %cpptango_version%==9.3.4 move C:/projects/libtango/libtango_%cpptango_version%_%MSVCVERSION%_x64 C:/projects/libtango/libtango_%cpptango_version%_%MSVCVERSION%_x64_static_release
+
 
   # TangoTest
   - cmd: cd "C:\projects\"
@@ -139,8 +156,8 @@ install:
   # Prepare cmake
   - cmd: cd "C:\projects\pytango"
   - cmd: set BOOST_ROOT=c:/projects/Boost
-  - cmd: if /I %platform%==win32 set TANGO_ROOT=C:/projects/libtango/libtango_%cpptango_version%_%MSVCVERSION%_x86
-  - cmd: if /I %platform%==x64 set TANGO_ROOT=C:/projects/libtango/libtango_%cpptango_version%_%MSVCVERSION%_x64
+  - cmd: if /I %platform%==win32 set TANGO_ROOT=C:/projects/libtango/libtango_%cpptango_version%_%MSVCVERSION%_x86_static_release
+  - cmd: if /I %platform%==x64 set TANGO_ROOT=C:/projects/libtango/libtango_%cpptango_version%_%MSVCVERSION%_x64_static_release
   - cmd: echo TANGO_ROOT is "%TANGO_ROOT%"
   - cmd: echo CMAKE_GENERATOR is '%CMAKE_GENERATOR%'
   - cmd: echo PLATFORM is '%platform%'
@@ -157,8 +174,8 @@ build_script:
   - cmake --build ./ -j 4 --config Release
 
 test_script:
-  - "%PYTHON_ROOT%/Scripts/pip.exe install \"gevent!=1.5a1\" pytest psutil \"six>=1.10\" \"numpy>=1.1\"" 
-  - cmd: if %PYTHON_VER%==27 "%PYTHON_ROOT%/Scripts/pip.exe" install futures trollius "zipp>=0.5,<2" "pyparsing<3" "pytest<5"  
+  - "%PYTHON_ROOT%/Scripts/pip.exe install \"gevent!=1.5a1\" pytest psutil \"six>=1.10\" \"numpy>=1.1\""
+  - cmd: if %PYTHON_VER%==27 "%PYTHON_ROOT%/Scripts/pip.exe" install futures trollius "zipp>=0.5,<2" "pyparsing<3" "pytest<5"
   - cmd: if %PYTHON_VER% LSS 34 "%PYTHON_ROOT%/Scripts/pip.exe" install enum34
   - cmd: cd "C:\projects\pytango\tests"
   - cmd: nul > pytest_empty_config.txt
@@ -170,7 +187,7 @@ test_script:
   - cmd: powershell -command "$body = Get-Content summary.json -Raw; Invoke-Webrequest $env:API_URL -Method 'POST' -UseBasicParsing -ContentType 'application/json; charset=utf-8' -Body $body"
   - cmd: cd "C:\projects\pytango"
   - cmd: if "%GEVENT_NOT_SUPPORTED%"=="true" (%PYTHON_ROOT%python.exe setup.py check_tests_errors --summary-file="./tests/summary.json" --ignore-gevent-errors) else (%PYTHON_ROOT%python.exe setup.py check_tests_errors --summary-file="./tests/summary.json")
- 
+
 after_test:
   - cmd: cd C:/projects/pytango/dist
   - cmd: dir
@@ -180,13 +197,13 @@ after_test:
   - cmd: move .\dist\pytango*.whl C:/projects/pytango
 
 
-on_failure:
-  #RDP for failure
-  #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#on_failure:
+##  RDP for failure
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
-on_finish:
-  #RDP for finish
-  #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#on_finish:
+#  #RDP for finish
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 artifacts:
   - path: ./*.exe

@@ -191,8 +191,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC $ENV{TANGO_ROOT}/lib/libtango.lib
                                              $ENV{TANGO_ROOT}/lib/omniORB4.lib
                                              $ENV{TANGO_ROOT}/lib/omniDynamic4.lib
                                              $ENV{TANGO_ROOT}/lib/COS4.lib
-                                             $ENV{TANGO_ROOT}/lib/omnithread.lib
-                                             $ENV{TANGO_ROOT}/lib/msvcstub.lib)
+                                             $ENV{TANGO_ROOT}/lib/omnithread.lib)
 target_link_libraries(${PROJECT_NAME} PUBLIC ws2_32 mswsock advapi32 comctl32 odbc32)
 target_link_libraries(${PROJECT_NAME} PUBLIC $ENV{TANGO_ROOT}/lib/pthreadVC2.lib)
 target_link_libraries(${PROJECT_NAME} PUBLIC $ENV{TANGO_ROOT}/lib/libzmq-v${VCSTR}-mt-s-${ZMQ_VERSION_}.lib)
