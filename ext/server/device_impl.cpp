@@ -1492,16 +1492,7 @@ BOOST_PYTHON_FUNCTION_OVERLOADS(remove_attribute_overload,
 
 void export_device_impl()
 {
- 
-    // The following function declarations are necessary to be able to cast
-    // the function parameters from string& to const string&, otherwise python
-    // will not recognize the method calls
-    long (Tango::DeviceImpl::*get_cmd_poll_ring_depth_)(std::string &) =
-        &Tango::DeviceImpl::get_cmd_poll_ring_depth;
-    long (Tango::DeviceImpl::*get_attr_poll_ring_depth_)(std::string &) =
-        &Tango::DeviceImpl::get_attr_poll_ring_depth;
 
-    
     void (Tango::DeviceImpl::*stop_polling1)() = &Tango::DeviceImpl::stop_polling;
     void (Tango::DeviceImpl::*stop_polling2)(bool) = &Tango::DeviceImpl::stop_polling;
 
@@ -1570,10 +1561,10 @@ void export_device_impl()
         .def("get_dev_idl_version", &Tango::DeviceImpl::get_dev_idl_version)
         .def("get_cmd_poll_ring_depth",
             (long (Tango::DeviceImpl::*) (const std::string &))
-            get_cmd_poll_ring_depth_)
+            &Tango::DeviceImpl::get_cmd_poll_ring_depth)
         .def("get_attr_poll_ring_depth",
             (long (Tango::DeviceImpl::*) (const std::string &))
-            get_attr_poll_ring_depth_)
+            &Tango::DeviceImpl::get_attr_poll_ring_depth)
         .def("is_device_locked", &Tango::DeviceImpl::is_device_locked)
 
         .def("init_logger", &Tango::DeviceImpl::init_logger)

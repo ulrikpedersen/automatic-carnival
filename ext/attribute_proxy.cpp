@@ -54,12 +54,6 @@ void export_attribute_proxy()
     // the function parameters from string& to const string&, otherwise python
     // will not recognize the method calls
 
-    void (Tango::AttributeProxy::*get_property_)(std::string &, Tango::DbData &) =
-        &Tango::AttributeProxy::get_property;
-
-    void (Tango::AttributeProxy::*delete_property_)(std::string &) =
-        &Tango::AttributeProxy::delete_property;
-
     bopy::class_<Tango::AttributeProxy> AttributeProxy("__AttributeProxy",
         bopy::init<const Tango::AttributeProxy &>())
     ;
@@ -89,11 +83,11 @@ void export_attribute_proxy()
         //
         .def("_get_property",
             (void (Tango::AttributeProxy::*) (const std::string &, Tango::DbData &))
-            get_property_,
+            &Tango::AttributeProxy::get_property,
             ( arg_("self"), arg_("propname"), arg_("propdata") ) )
 
         .def("_get_property",
-            (void (Tango::AttributeProxy::*) (std::vector<std::string>&, Tango::DbData &))
+            (void (Tango::AttributeProxy::*) (const std::vector<std::string>&, Tango::DbData &))
             &Tango::AttributeProxy::get_property,
             ( arg_("self"), arg_("propnames"), arg_("propdata") ) )
 
@@ -106,14 +100,14 @@ void export_attribute_proxy()
             ( arg_("self"), arg_("propdata") ) )
 
         .def("_delete_property", (void (Tango::AttributeProxy::*) (const std::string &))
-            delete_property_,
+            &Tango::AttributeProxy::delete_property,
             ( arg_("self"), arg_("propname") ) )
 
-        .def("_delete_property", (void (Tango::AttributeProxy::*) (StdStringVector &))
+        .def("_delete_property", (void (Tango::AttributeProxy::*) (const StdStringVector &))
             &Tango::AttributeProxy::delete_property,
             ( arg_("self"), arg_("propnames") ) )
 
-        .def("_delete_property", (void (Tango::AttributeProxy::*) (Tango::DbData &))
+        .def("_delete_property", (void (Tango::AttributeProxy::*) (const Tango::DbData &))
             &Tango::AttributeProxy::delete_property,
             ( arg_("self"), arg_("propdata") ) )
     ;

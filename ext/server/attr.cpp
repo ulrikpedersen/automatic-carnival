@@ -197,8 +197,8 @@ void export_attr()
         .def("is_check_archive_criteria", &Tango::Attr::is_check_archive_criteria)
         .def("set_data_ready_event", &Tango::Attr::set_data_ready_event)
         .def("is_data_ready_event", &Tango::Attr::is_data_ready_event)
-        .def("get_name", &Tango::Attr::get_name,
-            return_value_policy<copy_non_const_reference>())
+        .def("get_name", static_cast< std::string const& (Tango::Attr::*) () const >(&Tango::Attr::get_name),
+            return_value_policy<copy_const_reference>())
         .def("get_format", &Tango::Attr::get_format)
         .def("get_writable", &Tango::Attr::get_writable)
         .def("get_type", &Tango::Attr::get_type)
@@ -252,10 +252,10 @@ void export_attr()
     class_<Tango::AttrProperty>("AttrProperty",
         init<const char *, const char *>())
         .def(init<const char *, long>())
-        .def("get_value", &Tango::AttrProperty::get_value,
-            return_value_policy<copy_non_const_reference>())
+        .def("get_value", static_cast< std::string const& (Tango::AttrProperty::*) () const >(&Tango::AttrProperty::get_value),
+            return_value_policy<copy_const_reference>())
         .def("get_lg_value", &Tango::AttrProperty::get_lg_value)
-        .def("get_name", &Tango::AttrProperty::get_name,
-            return_value_policy<copy_non_const_reference>())
+        .def("get_name", static_cast< std::string const& (Tango::AttrProperty::*) () const >(&Tango::AttrProperty::get_name),
+            return_value_policy<copy_const_reference>())
     ;
 }

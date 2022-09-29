@@ -219,9 +219,9 @@ namespace {
         // finishes then discard the event
         if (!Py_IsInitialized())
         {
-            cout4 << "Tango event (" << ev->event <<
-                  ") received for after python shutdown. "
-                  << "Event will be ignored" << std::endl;
+            TANGO_LOG_DEBUG << "Tango event (" << ev->event <<
+                               ") received for after python shutdown. "
+                               << "Event will be ignored" << std::endl;
             return;
         }
 

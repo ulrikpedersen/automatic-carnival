@@ -399,14 +399,6 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS (export_device_overload,
 
 void export_device_class()
 {
-    void (Tango::DeviceClass::*add_wiz_dev_prop_)(std::string &,std::string &) =
-        &Tango::DeviceClass::add_wiz_dev_prop;
-    void (Tango::DeviceClass::*add_wiz_dev_prop__)(std::string &,std::string &,std::string &) =
-        &Tango::DeviceClass::add_wiz_dev_prop;
-    void (Tango::DeviceClass::*add_wiz_class_prop_)(std::string &,std::string &) =
-        &Tango::DeviceClass::add_wiz_class_prop;
-    void (Tango::DeviceClass::*add_wiz_class_prop__)(std::string &,std::string &,std::string &) =
-        &Tango::DeviceClass::add_wiz_class_prop;
 
     class_<CppDeviceClass, std::auto_ptr<CppDeviceClassWrap>, boost::noncopyable>("DeviceClass",
         init<const std::string &>())
@@ -447,16 +439,16 @@ void export_device_class()
             &Tango::DeviceClass::set_type)
         .def("add_wiz_dev_prop",
             (void (Tango::DeviceClass::*) (const std::string &, const std::string &))
-            add_wiz_dev_prop_)
+            &Tango::DeviceClass::add_wiz_dev_prop)
         .def("add_wiz_dev_prop",
             (void (Tango::DeviceClass::*) (const std::string &, const std::string &, const std::string &))
-            add_wiz_dev_prop__)
+            &Tango::DeviceClass::add_wiz_dev_prop)
         .def("add_wiz_class_prop",
             (void (Tango::DeviceClass::*) (const std::string &, const std::string &))
-            add_wiz_class_prop_)
+            &Tango::DeviceClass::add_wiz_class_prop)
         .def("add_wiz_class_prop",
             (void (Tango::DeviceClass::*) (const std::string &, const std::string &, const std::string &))
-            add_wiz_class_prop__)
+            &Tango::DeviceClass::add_wiz_class_prop)
         .def("_device_destroyer",
             (void (Tango::DeviceClass::*) (const char *))
             &Tango::DeviceClass::device_destroyer)

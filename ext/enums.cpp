@@ -10,7 +10,7 @@
 ******************************************************************************/
 
 #include "precompiled_header.hpp"
-#include <tango/tango.h>
+#include <tango.h>
 
 #include <boost/utility/enable_if.hpp>
 
