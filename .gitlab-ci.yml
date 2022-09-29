@@ -10,7 +10,7 @@ default:
   image: continuumio/miniconda3:4.9.2
 
 variables:
-  CPP_TANGO_VERSION: "9.3.4"
+  CPP_TANGO_VERSION: "9.4.0dev0"
   CACHE_FALLBACK_KEY: "v1-$CI_JOB_NAME-$CI_DEFAULT_BRANCH"
   TWINE_USERNAME: __token__
   TWINE_PASSWORD: secret
@@ -31,11 +31,11 @@ cache:
   tags:
     - gitlab-org
   variables:
-    TANGO_DEPENDENCIES: 'cpptango==${CPP_TANGO_VERSION} tango-test==3.2'
+    TANGO_DEPENDENCIES: 'cpptango==${CPP_TANGO_VERSION}'
     DEBIAN_FRONTEND: "noninteractive"
   before_script:
     - apt-get update -y --allow-releaseinfo-change-suite
-    - apt-get -y install make pkg-config rsync
+    - apt-get -y install make pkg-config rsync build-essential cmake git libcos4-dev libomniorb4-dev libomnithread4-dev libzmq3-dev omniidl
     - conda init bash
     - source ~/.bashrc
     - conda activate ./envs/$PYTHON_VERSION || conda create --prefix ./envs/$PYTHON_VERSION --yes python=$PYTHON_VERSION
@@ -43,12 +43,16 @@ cache:
 
     # Install build dependencies
     - conda install --yes -c main -c conda-forge boost gxx_linux-64 cppzmq numpy
-    - conda install --yes -c main -c conda-forge -c tango-controls $TANGO_DEPENDENCIES
+    - conda install --yes -c main -c conda-forge -c tango-controls -c tango-controls/label/dev -c conda-forge/label/cpptango_rc $TANGO_DEPENDENCIES
     - conda clean --all --force-pkgs-dirs --yes
     # Use conda prefix as root for the dependencies
     - export BOOST_ROOT=$CONDA_PREFIX TANGO_ROOT=$CONDA_PREFIX ZMQ_ROOT=$CONDA_PREFIX OMNI_ROOT=$CONDA_PREFIX
     # Use custom boost python library name to work with newer naming scheme
     - export BOOST_PYTHON_LIB=boost_python$BOOST_PYTHON
+
+    - git clone --depth 1 https://gitlab.com/tango-controls/TangoTest.git /tangotest
+    - cmake -B /tangotest/build -DCMAKE_CXX_COMPILER=/usr/bin/x86_64-linux-gnu-g++ -DTANGO_WARNINGS_AS_ERRORS=ON /tangotest
+    - make -C /tangotest/build install
 
     # make sure old_ext exists
     - mkdir -p cached_ext
