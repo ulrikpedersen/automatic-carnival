@@ -14,7 +14,7 @@ RUN apt-get update -y --allow-releaseinfo-change-suite; \
     apt-get -y install make pkg-config rsync
 
 # if we use cpptango dev - we have to build TangoTest, so also packages to build
-RUN if [[ "${CPP_TANGO_VERSION}" = *"dev"* ]]; then \
+RUN if [[ "${CPP_TANGO_VERSION}" = *"dev"* ]] || [[ "${CPP_TANGO_VERSION}" = *"rc"* ]]; then \
       apt-get -y install build-essential cmake git libcos4-dev libomniorb4-dev libomnithread4-dev libzmq3-dev omniidl; \
     fi
 
@@ -36,7 +36,9 @@ RUN conda init bash; \
 # install cpptango and main requirements to conda
 RUN conda install --yes -c conda-forge -c defaults boost gxx_linux-64 cppzmq numpy; \
     if [[ "${CPP_TANGO_VERSION}" = *"dev"* ]]; then \
-      conda install -c tango-controls/label/dev -c tango-controls -c conda-forge -c defaults cpptango=="$CPP_TANGO_VERSION"; \
+      conda install -c tango-controls/label/dev -c conda-forge -c defaults cpptango=="$CPP_TANGO_VERSION"; \
+    elif [[ "${CPP_TANGO_VERSION}" = *"rc"* ]]; then \
+      conda install -c conda-forge/label/cpptango_rc -c conda-forge -c defaults cpptango=="$CPP_TANGO_VERSION"; \
     else \
       conda install -c tango-controls -c conda-forge -c defaults cpptango=="$CPP_TANGO_VERSION"; \
     fi
@@ -51,7 +53,7 @@ RUN if [[ "${PYTHON_VERSION}" = "2."* ]]; then \
     fi
 
 # if we use cpptango dev - we have to build TangoTest
-RUN if [[ "${CPP_TANGO_VERSION}" = *"dev"* ]]; then \
+RUN if [[ "${CPP_TANGO_VERSION}" = *"dev"* ]] || [[ "${CPP_TANGO_VERSION}" = *"rc"* ]]; then \
       git clone --depth 1 https://gitlab.com/tango-controls/TangoTest.git /tangotest && \
       cmake -B /tangotest/build -DCMAKE_CXX_COMPILER=/usr/bin/x86_64-linux-gnu-g++ -DTANGO_WARNINGS_AS_ERRORS=ON /tangotest && \
       make -C /tangotest/build install; \
