@@ -63,9 +63,7 @@ struct python_tangocpp<Tango::DEV_STRING>
     }
 };
 
-#ifndef DISABLE_PYTANGO_NUMPY
-#   include "device_attribute_numpy.hpp"
-#endif
+#include "device_attribute_numpy.hpp"
 
 #define EXTRACT_VALUE(self, value_ptr) \
 try { \
@@ -586,11 +584,9 @@ namespace PyDeviceAttribute
                 {
                     default:
                     case PyTango::ExtractAsNumpy:
-#                   ifndef DISABLE_PYTANGO_NUMPY
                         TANGO_CALL_ON_ATTRIBUTE_DATA_TYPE_ID(data_type,
                             _update_array_values, self, is_image, py_value);
                         break;
-#                   endif
                     case PyTango::ExtractAsTuple:
                         TANGO_CALL_ON_ATTRIBUTE_DATA_TYPE_ID(data_type,
                             _update_array_values_as_tuples, self, is_image, py_value);
@@ -714,18 +710,10 @@ namespace PyDeviceAttribute
                 // Then the conversions between numpy types to c++ are not
                 // defined by boost while the conversions between python
                 // standard types and C++ are.
-#               ifdef DISABLE_PYTANGO_NUMPY
-                {
+                if (PyArray_Check(py_value.ptr()))
+                    TANGO_CALL_ON_ATTRIBUTE_DATA_TYPE_ID( data_type, _fill_numpy_attribute, self, isImage, py_value );
+                else
                     TANGO_CALL_ON_ATTRIBUTE_DATA_TYPE_ID( data_type, _fill_list_attribute, self, isImage, py_value );
-                }
-#               else
-                {
-                    if (PyArray_Check(py_value.ptr()))
-                        TANGO_CALL_ON_ATTRIBUTE_DATA_TYPE_ID( data_type, _fill_numpy_attribute, self, isImage, py_value );
-                    else
-                        TANGO_CALL_ON_ATTRIBUTE_DATA_TYPE_ID( data_type, _fill_list_attribute, self, isImage, py_value );
-                }
-#               endif
                 break;
             default:
                 raise_(PyExc_TypeError, "unsupported data_format.");

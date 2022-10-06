@@ -182,9 +182,9 @@ Basic read/write attribute operations::
     # ... or, the shorter version:
     tango_test.long_image = image_value
 
-Note that if PyTango is compiled with numpy support the values got when reading
-a spectrum or an image will be numpy arrays. This results in a faster and
-more memory efficient PyTango. You can also use numpy to specify the values when
+Note that the values got when reading a spectrum or an image are numpy arrays.
+This results in a faster and more memory efficient PyTango.
+You can also use numpy to specify the values when
 writing attributes, especially if you know the exact attribute type::
 
     import numpy

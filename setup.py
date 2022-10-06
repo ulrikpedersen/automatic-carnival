@@ -17,6 +17,7 @@ import runpy
 import struct
 import subprocess
 import json
+import numpy
 
 from ctypes.util import find_library
 
@@ -29,11 +30,6 @@ from distutils.command.build import build as dftbuild
 from distutils.unixccompiler import UnixCCompiler
 from distutils.version import LooseVersion as V
 
-# Detect numpy
-try:
-    import numpy
-except ImportError:
-    numpy = None
 
 # Platform constants
 POSIX = "posix" in os.name
@@ -49,7 +45,7 @@ PYTHON35 = (3, 5) <= PYTHON_VERSION < (3, 6)
 TESTING = any(x in sys.argv for x in ["test", "pytest"])
 
 
-if numpy and not PYTHON35:
+if not PYTHON35:
     try:
         from numpy.distutils.ccompiler import CCompiler_compile
         import distutils.ccompiler
@@ -114,17 +110,14 @@ def uniquify(seq):
 
 
 def get_c_numpy():
-    if numpy is None:
-        return
-    else:
-        get_include = getattr(numpy, "get_include", None)
+    get_include = getattr(numpy, "get_include", None)
+    if get_include is None:
+        get_include = getattr(numpy, "get_numpy_include", None)
         if get_include is None:
-            get_include = getattr(numpy, "get_numpy_include", None)
-            if get_include is None:
-                return
-        inc = get_include()
-        if os.path.isdir(inc):
-            return inc
+            return
+    inc = get_include()
+    if os.path.isdir(inc):
+        return inc
 
 
 def has_c_numpy():
@@ -267,9 +260,7 @@ class build(dftbuild):
         dftbuild.finalize_options(self)
 
     def run(self):
-        if numpy is None:
-            self.warn("NOT using numpy: it is not available")
-        elif get_c_numpy() is None:
+        if get_c_numpy() is None:
             self.warn("NOT using numpy: numpy available but C source is not")
         dftbuild.run(self)
         if self.strip_lib:
@@ -384,11 +375,8 @@ def setup_args():
         directories["include_dirs"].append(numpy_c_include)
 
     macros = []
-    if not has_numpy():
-        macros.append(("DISABLE_PYTANGO_NUMPY", None))
-    else:
-        macros.append(("PYTANGO_NUMPY_VERSION", numpy.__version__))
-        macros.append(("NPY_NO_DEPRECATED_API", "0"))
+    macros.append(("PYTANGO_NUMPY_VERSION", numpy.__version__))
+    macros.append(("NPY_NO_DEPRECATED_API", "0"))
 
     if POSIX or MACOS:
         directories = pkg_config(*sys_libs, **directories)
@@ -423,6 +411,7 @@ def setup_args():
     ]
 
     install_requires = [
+        "numpy (>=1.1)",
         "six (>=1.10)",
     ]
     if PYTHON_VERSION < (3, 4):
