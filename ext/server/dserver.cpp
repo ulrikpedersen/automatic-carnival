@@ -135,10 +135,6 @@ BOOST_PYTHON_FUNCTION_OVERLOADS(rem_obj_polling_overload, PyDServer::rem_obj_pol
 
 void export_dserver()
 {
-    // The following function declarations are necessary to be able to cast
-    // the function parameters from string& to const string&, otherwise python
-    // will not recognize the method calls
-
     class_<Tango::DServer,
         bases<Tango::Device_4Impl>, boost::noncopyable>
         ("DServer", no_init)

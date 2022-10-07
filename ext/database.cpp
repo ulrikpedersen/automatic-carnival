@@ -151,10 +151,6 @@ struct PyDatabase
 
 void export_database()
 {
-    // The following function declarations are necessary to be able to cast
-    // the function parameters from string& to const string&, otherwise python
-    // will not recognize the method calls
-
     bopy::class_<Tango::Database, bopy::bases<Tango::Connection> > Database("Database", bopy::init<>())
     ;
 
