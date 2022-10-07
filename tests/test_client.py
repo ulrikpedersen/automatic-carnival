@@ -138,7 +138,7 @@ def get_ports(pid):
 
 
 def start_server(server, inst, device):
-    exe = find_executable(server, '/usr/local/bin')
+    exe = find_executable(server)
     cmd = ("{0} {1} -ORBendPoint giop:tcp::0 -nodb -dlist {2}"
            .format(exe, inst, device))
     proc = Popen(cmd.split(), close_fds=True)

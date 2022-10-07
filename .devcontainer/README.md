@@ -12,20 +12,22 @@ Using some command line overrides, images for various versions of Python and Tan
 From within this folder, run commands like the following:
 
 ```shell script
-export PYTHON_VERSION=3.7
-export CPP_TANGO_VERSION=9.3.4
-docker build . -t pytango-dev:py${PYTHON_VERSION}-tango${CPP_TANGO_VERSION} --build-arg PYTHON_VERSION --build-arg CPP_TANGO_VERSION
+export PYTHON_VERSION=3.10
+export CPP_TANGO_VERSION=9.4.0
+docker build . --platform=linux/amd64 -t pytango-dev:py${PYTHON_VERSION}-tango${CPP_TANGO_VERSION} --build-arg PYTHON_VERSION --build-arg CPP_TANGO_VERSION
 ```
 
-Note: the cppTango version must exist in the channel used, the default is here:
-https://anaconda.org/tango-controls/cpptango/files
+Note: 
+- the cppTango version must exist on conda-forge:  https://anaconda.org/conda-forge/cpptango
+- the `--platform=linux/amd64 ` parameter is useful if not running on a linux/amd64 platform  
+  (e.g., Apple Silicon) - without the parameter conda may fail to find compatible packages.
 
 ## Build, install and test PyTango in a container
 
 Run an instance of the container, volume mounting an external PyTango repo into the container.  For example:
 
 ```shell script
-docker run -it --rm -v ~/tango-src/pytango:/opt/pytango pytango-dev:py3.7-tango9.3.2
+docker run -it --rm -v ~/tango-src/pytango:/opt/pytango pytango-dev:py3.10-tango9.4.0
 ```
 
 Inside the container:
@@ -49,7 +51,7 @@ Add a new interpreter:
 
 - Open the _Add Interpreter..._ dialog
 - Select _Docker_
-- Pick the image to use, e.g., `pytango-dev:py3.7-tango9.3.2`
+- Pick the image to use, e.g., `pytango-dev:py3.10-tango9.4.0`
 
 Running tests:
 
