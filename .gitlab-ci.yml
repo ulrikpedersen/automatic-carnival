@@ -63,6 +63,8 @@ cache:
 build-pypi-sdist-package:
   stage: build
   image: python:3.8
+  before_script:
+    - pip install numpy
   script:
     - python setup.py check sdist
   artifacts:
