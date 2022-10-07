@@ -134,9 +134,6 @@ namespace PyDeviceProxy
         typedef typename TANGO_const2type(tangoTypeConst) TangoScalarType;
         TangoScalarType tg_value;
         from_py<tangoTypeConst>::convert(py_value, tg_value);
-// if you use this line of code you will get an unresolved
-// reference for T = <char> don't know why!
-//        obj << tg_value;
         Tango::DataElement<TangoScalarType> data_elt(name, tg_value);
         obj << data_elt;
     }

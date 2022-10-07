@@ -147,10 +147,6 @@ namespace PyTango { namespace Pipe {
         typedef typename TANGO_const2type(tangoTypeConst) TangoScalarType;
         TangoScalarType tg_value;
         from_py<tangoTypeConst>::convert(py_value, tg_value);
-// the same problem, as in device_proxy.cpp, line 137:
-// if you use following code you will get an unresolved
-// reference for T = <char> for Tango::DEV_STRING type
-//          obj << py_value;
         Tango::DataElement<TangoScalarType> data_elt(name, tg_value);
         obj << data_elt;
     }
@@ -484,12 +480,8 @@ namespace PyDevicePipe
 		typedef typename TANGO_const2type(tangoTypeConst) TangoScalarType;
 		TangoScalarType tg_value;
 		from_py<tangoTypeConst>::convert(py_value, tg_value);
-// the same problem, as in device_proxy.cpp, line 137:
-// if you use following code you will get an unresolved
-// reference for T = <char> for Tango::DEV_STRING type
-//          obj << py_value;
-        Tango::DataElement<TangoScalarType> data_elt(name, tg_value);
-        obj << data_elt;
+		Tango::DataElement<TangoScalarType> data_elt(name, tg_value);
+		obj << data_elt;
 	}
 
 	template<typename T, long tangoArrayTypeConst>
