@@ -17,7 +17,6 @@ import runpy
 import struct
 import subprocess
 import json
-import numpy
 
 from ctypes.util import find_library
 
@@ -30,6 +29,11 @@ from distutils.command.build import build as dftbuild
 from distutils.unixccompiler import UnixCCompiler
 from distutils.version import LooseVersion as V
 
+# numpy is only required when compiling, not when building the sdist for example
+try:
+    import numpy
+except ImportError:
+    numpy = None
 
 # Platform constants
 POSIX = "posix" in os.name
@@ -368,15 +372,15 @@ def setup_args():
     add_lib("zmq", directories, sys_libs, lib_name="libzmq")
     add_lib_boost(directories)
 
-    # special numpy configuration
-
-    numpy_c_include = get_c_numpy()
-    if numpy_c_include is not None:
-        directories["include_dirs"].append(numpy_c_include)
-
     macros = []
-    macros.append(("PYTANGO_NUMPY_VERSION", numpy.__version__))
-    macros.append(("NPY_NO_DEPRECATED_API", "0"))
+    # special numpy configuration (only needed at build time)
+    if numpy is not None:
+        numpy_c_include = get_c_numpy()
+        if numpy_c_include is not None:
+            directories["include_dirs"].append(numpy_c_include)
+
+        macros.append(("PYTANGO_NUMPY_VERSION", numpy.__version__))
+        macros.append(("NPY_NO_DEPRECATED_API", "0"))
 
     if POSIX or MACOS:
         directories = pkg_config(*sys_libs, **directories)
