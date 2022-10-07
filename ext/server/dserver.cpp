@@ -10,7 +10,7 @@
 ******************************************************************************/
 
 #include "precompiled_header.hpp"
-#include <tango.h>
+#include <tango/tango.h>
 #include "to_py.h"
 #include "from_py.h"
 
@@ -135,12 +135,6 @@ BOOST_PYTHON_FUNCTION_OVERLOADS(rem_obj_polling_overload, PyDServer::rem_obj_pol
 
 void export_dserver()
 {
-    // The following function declarations are necessary to be able to cast
-    // the function parameters from string& to const string&, otherwise python
-    // will not recognize the method calls
-
-    void (Tango::DServer::*restart_)(std::string &) = &Tango::DServer::restart;
-
     class_<Tango::DServer,
         bases<Tango::Device_4Impl>, boost::noncopyable>
         ("DServer", no_init)
@@ -149,7 +143,7 @@ void export_dserver()
         .def("query_sub_device",  &PyDServer::query_sub_device)
         .def("kill", &Tango::DServer::kill)
         .def("restart", 
-            (void (Tango::DServer::*) (const std::string &)) restart_)
+            (void (Tango::DServer::*) (const std::string &)) &Tango::DServer::restart)
         .def("restart_server", &Tango::DServer::restart_server)
         .def("query_class_prop", &PyDServer::query_class_prop)
         .def("query_dev_prop", &PyDServer::query_dev_prop)

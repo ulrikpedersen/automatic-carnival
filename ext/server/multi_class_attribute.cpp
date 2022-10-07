@@ -16,13 +16,11 @@ using namespace boost::python;
 
 void export_multi_class_attribute()
 {
-    Tango::Attr& (Tango::MultiClassAttribute::*get_attr_)(std::string &) =
-        &Tango::MultiClassAttribute::get_attr;
 
     class_<Tango::MultiClassAttribute, boost::noncopyable>("MultiClassAttribute", no_init)
         .def("get_attr",
             (Tango::Attr& (Tango::MultiClassAttribute::*) (const std::string &))
-            get_attr_,
+            &Tango::MultiClassAttribute::get_attr,
             return_value_policy<reference_existing_object>())
 	.def("remove_attr", &Tango::MultiClassAttribute::remove_attr)
         .def("get_attr_list", &Tango::MultiClassAttribute::get_attr_list,

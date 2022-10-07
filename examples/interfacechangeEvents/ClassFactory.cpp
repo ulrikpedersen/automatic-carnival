@@ -38,7 +38,7 @@ static const char *RcsId = "$Id:  $";
 //        (Program Obviously used to Generate tango Object)
 //=============================================================================
 
-#include <tango.h>
+#include <tango/tango.h>
 #include <IfchangeServerClass.h>
 
 //	Add class header files if needed

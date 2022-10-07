@@ -38,7 +38,7 @@
 #ifndef PipeServer_H
 #define PipeServer_H
 
-#include <tango.h>
+#include <tango/tango.h>
 
 
 /*----- PROTECTED REGION END -----*/	//	PipeServer.h

@@ -17,6 +17,8 @@ from __future__ import print_function
 
 import copy
 import functools
+import inspect
+import os
 
 from ._tango import (
     DeviceImpl, Device_3Impl, Device_4Impl, Device_5Impl,
@@ -65,6 +67,19 @@ def __run_in_executor(fn):
         return wrapper
     else:
         return fn
+
+def get_source_location():
+    """Helper function that provides source location for logging functions."""
+    # Search the call stack until we are out of the 'tango' module. We cannot
+    # have a fixed number here beause loggers/streams are used in many places
+    # inside pytango with varying call stack depth.
+    for frame, filename, lineno, _, _, _ in inspect.stack():
+        module = frame.f_globals['__name__']
+        if module != "tango" and not module.startswith("tango."):
+            filename = os.path.basename(filename)
+            return filename, lineno
+    return "(unknown)", 0
+
 
 class LatestDeviceImpl(get_latest_device_class()):
     __doc__ = """\
@@ -527,7 +542,8 @@ def __DeviceImpl__debug_stream(self, msg, *args):
         :param msg: the message to be sent to the debug stream
         :type msg: str
     """
-    self.__debug_stream(msg % args)
+    filename, line = get_source_location()
+    self.__debug_stream(filename, line, msg % args)
 
 
 def __DeviceImpl__info_stream(self, msg, *args):
@@ -543,7 +559,8 @@ def __DeviceImpl__info_stream(self, msg, *args):
         :param msg: the message to be sent to the info stream
         :type msg: str
     """
-    self.__info_stream(msg % args)
+    filename, line = get_source_location()
+    self.__info_stream(filename, line, msg % args)
 
 
 def __DeviceImpl__warn_stream(self, msg, *args):
@@ -559,7 +576,8 @@ def __DeviceImpl__warn_stream(self, msg, *args):
         :param msg: the message to be sent to the warn stream
         :type msg: str
     """
-    self.__warn_stream(msg % args)
+    filename, line = get_source_location()
+    self.__warn_stream(filename, line, msg % args)
 
 
 def __DeviceImpl__error_stream(self, msg, *args):
@@ -575,7 +593,8 @@ def __DeviceImpl__error_stream(self, msg, *args):
         :param msg: the message to be sent to the error stream
         :type msg: str
     """
-    self.__error_stream(msg % args)
+    filename, line = get_source_location()
+    self.__error_stream(filename, line, msg % args)
 
 
 def __DeviceImpl__fatal_stream(self, msg, *args):
@@ -591,7 +610,8 @@ def __DeviceImpl__fatal_stream(self, msg, *args):
         :param msg: the message to be sent to the fatal stream
         :type msg: str
     """
-    self.__fatal_stream(msg % args)
+    filename, line = get_source_location()
+    self.__fatal_stream(filename, line, msg % args)
 
 
 @property
@@ -668,7 +688,8 @@ def __Logger__log(self, level, msg, *args):
         :param args: list of optional message arguments
         :type args: Sequence[str]
     """
-    self.__log(level, msg % args)
+    filename, line = get_source_location()
+    self.__log(filename, line, level, msg % args)
 
 
 def __Logger__log_unconditionally(self, level, msg, *args):
@@ -685,7 +706,8 @@ def __Logger__log_unconditionally(self, level, msg, *args):
         :param args: list of optional message arguments
         :type args: Sequence[str]
     """
-    self.__log_unconditionally(level, msg % args)
+    filename, line = get_source_location()
+    self.__log_unconditionally(filename, line, level, msg % args)
 
 
 def __Logger__debug(self, msg, *args):
@@ -699,7 +721,8 @@ def __Logger__debug(self, msg, *args):
         :param args: list of optional message arguments
         :type args: Sequence[str]
     """
-    self.__debug(msg % args)
+    filename, line = get_source_location()
+    self.__debug(filename, line, msg % args)
 
 
 def __Logger__info(self, msg, *args):
@@ -713,7 +736,8 @@ def __Logger__info(self, msg, *args):
         :param args: list of optional message arguments
         :type args: Sequence[str]
     """
-    self.__info(msg % args)
+    filename, line = get_source_location()
+    self.__info(filename, line, msg % args)
 
 
 def __Logger__warn(self, msg, *args):
@@ -727,7 +751,8 @@ def __Logger__warn(self, msg, *args):
         :param args: list of optional message arguments
         :type args: Sequence[str]
     """
-    self.__warn(msg % args)
+    filename, line = get_source_location()
+    self.__warn(filename, line, msg % args)
 
 
 def __Logger__error(self, msg, *args):
@@ -741,7 +766,8 @@ def __Logger__error(self, msg, *args):
         :param args: list of optional message arguments
         :type args: Sequence[str]
     """
-    self.__error(msg % args)
+    filename, line = get_source_location()
+    self.__error(filename, line, msg % args)
 
 
 def __Logger__fatal(self, msg, *args):
@@ -755,7 +781,8 @@ def __Logger__fatal(self, msg, *args):
         :param args: list of optional message arguments
         :type args: Sequence[str]
     """
-    self.__fatal(msg % args)
+    filename, line = get_source_location()
+    self.__fatal(filename, line, msg % args)
 
 
 def __UserDefaultAttrProp_set_enum_labels(self, enum_labels):

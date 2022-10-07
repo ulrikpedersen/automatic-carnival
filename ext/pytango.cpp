@@ -20,7 +20,7 @@
 #   include <numpy/arrayobject.h>
 #endif
 
-#include <tango.h>
+#include <tango/tango.h>
 
 using namespace boost::python;
 

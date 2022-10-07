@@ -13,7 +13,7 @@
 #define _ATTR_H_
 
 #include <boost/python.hpp>
-#include <tango.h>
+#include <tango/tango.h>
 
 #include "exception.h"
 #include "pytgutils.h"

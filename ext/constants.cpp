@@ -10,7 +10,7 @@
 ******************************************************************************/
 
 #include "precompiled_header.hpp"
-#include <tango.h>
+#include <tango/tango.h>
 #include "tango_numpy.h"
 #include "tgutils.h"
 
@@ -21,6 +21,73 @@
 using namespace boost::python;
 
 long TANGO_VERSION_HEX;
+
+// Some internal constants were removed from cppTango in 9.4. To support both
+// 9.4 and previous versions we must export constants conditionally, skipping
+// the ones that are no longer available in cppTango. For each constant that 
+// could missing we must define a dummy fallback value of the type specified
+// below, in the global namespace. This type is later used to detect missing
+// constants using a template specialization.
+struct PyTangoFallbackConstant {};
+
+static const PyTangoFallbackConstant MIN_POLL_PERIOD;
+static const PyTangoFallbackConstant DELTA_T;
+static const PyTangoFallbackConstant MIN_DELTA_WORK;
+static const PyTangoFallbackConstant TIME_HEARTBEAT;
+static const PyTangoFallbackConstant POLL_LOOP_NB;
+static const PyTangoFallbackConstant ONE_SECOND;
+static const PyTangoFallbackConstant DISCARD_THRESHOLD;
+
+static const PyTangoFallbackConstant DELTA_PERIODIC;
+static const PyTangoFallbackConstant DELTA_PERIODIC_LONG;
+
+static const PyTangoFallbackConstant RECONNECTION_DELAY;
+
+template <typename T>
+static void export_conditionally(scope& consts_scope, const char* name, T value)
+{
+    consts_scope.attr(name) = value;
+}
+
+template <>
+void export_conditionally(scope& /*consts_scope*/, const char* /*name*/, PyTangoFallbackConstant)
+{
+    // Do nothing for missing constants.
+}
+
+namespace Tango
+{
+static void export_optional_constants(scope& consts_scope)
+{
+    // This function must be defined in the Tango namespace and all constants
+    // must be referenced using unqualified names. They are resolved either to
+    // the proper constants provided by cppTango (if exist) or to the fallback
+    // values defined in this file.
+
+    //
+    // Some general interest define
+    //
+    export_conditionally(consts_scope, "DELTA_T", DELTA_T);
+    export_conditionally(consts_scope, "DELTA_T", DELTA_T);
+    export_conditionally(consts_scope, "MIN_DELTA_WORK", MIN_DELTA_WORK);
+    export_conditionally(consts_scope, "TIME_HEARTBEAT", TIME_HEARTBEAT);
+    export_conditionally(consts_scope, "POLL_LOOP_NB", POLL_LOOP_NB);
+    export_conditionally(consts_scope, "ONE_SECOND", ONE_SECOND);
+    export_conditionally(consts_scope, "DISCARD_THRESHOLD", DISCARD_THRESHOLD);
+
+    //
+    // Event related define
+    //
+    export_conditionally(consts_scope, "DELTA_PERIODIC", DELTA_PERIODIC);
+    export_conditionally(consts_scope, "DELTA_PERIODIC_LONG", DELTA_PERIODIC_LONG);
+
+    //
+    // Time to wait before trying to reconnect after
+    // a connevtion failure
+    //
+    export_conditionally(consts_scope, "RECONNECTION_DELAY", RECONNECTION_DELAY);
+}
+}
 
 void export_constants()
 {
@@ -58,6 +125,8 @@ void export_constants()
     //
     // From tango_const.h
     //
+
+    Tango::export_optional_constants(consts_scope);
 
     //
     // Some general interest define
@@ -107,12 +176,6 @@ void export_constants()
     consts_scope.attr("LOCAL_REQUEST_STR_SIZE") = Tango::LOCAL_REQUEST_STR_SIZE;
 
     consts_scope.attr("MIN_POLL_PERIOD") = Tango::MIN_POLL_PERIOD;
-    consts_scope.attr("DELTA_T") = Tango::DELTA_T;
-    consts_scope.attr("MIN_DELTA_WORK") = Tango::MIN_DELTA_WORK;
-    consts_scope.attr("TIME_HEARTBEAT") = Tango::TIME_HEARTBEAT;
-    consts_scope.attr("POLL_LOOP_NB") = Tango::POLL_LOOP_NB;
-    consts_scope.attr("ONE_SECOND") = Tango::ONE_SECOND;
-    consts_scope.attr("DISCARD_THRESHOLD") = Tango::DISCARD_THRESHOLD;
 
     consts_scope.attr("DEFAULT_TIMEOUT") = Tango::DEFAULT_TIMEOUT;
     consts_scope.attr("DEFAULT_POLL_OLD_FACTOR") = Tango::DEFAULT_POLL_OLD_FACTOR;
@@ -134,8 +197,6 @@ void export_constants()
     consts_scope.attr("EVENT_HEARTBEAT_PERIOD") = Tango::EVENT_HEARTBEAT_PERIOD;
     consts_scope.attr("EVENT_RESUBSCRIBE_PERIOD") = Tango::EVENT_RESUBSCRIBE_PERIOD;
     consts_scope.attr("DEFAULT_EVENT_PERIOD") = Tango::DEFAULT_EVENT_PERIOD;
-    consts_scope.attr("DELTA_PERIODIC") = Tango::DELTA_PERIODIC;
-    consts_scope.attr("DELTA_PERIODIC_LONG") = Tango::DELTA_PERIODIC_LONG;
     consts_scope.attr("HEARTBEAT") = Tango::HEARTBEAT;
 
     //
@@ -182,12 +243,6 @@ void export_constants()
     consts_scope.attr("DB_RECONNECT_TIMEOUT") = Tango::DB_RECONNECT_TIMEOUT;
     consts_scope.attr("DB_TIMEOUT") = Tango::DB_TIMEOUT;
     consts_scope.attr("DB_START_PHASE_RETRIES") = Tango::DB_START_PHASE_RETRIES;
-
-    //
-    // Time to wait before trying to reconnect after
-    // a connevtion failure
-    //
-    consts_scope.attr("RECONNECTION_DELAY") = Tango::RECONNECTION_DELAY;
 
     //
     // Access Control related defines

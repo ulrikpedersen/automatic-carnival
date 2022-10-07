@@ -10,7 +10,7 @@
 ******************************************************************************/
 
 #include "precompiled_header.hpp"
-#include <tango.h>
+#include <tango/tango.h>
 
 using namespace boost::python;
 

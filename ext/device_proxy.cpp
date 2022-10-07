@@ -134,9 +134,6 @@ namespace PyDeviceProxy
         typedef typename TANGO_const2type(tangoTypeConst) TangoScalarType;
         TangoScalarType tg_value;
         from_py<tangoTypeConst>::convert(py_value, tg_value);
-// if you use this line of code you will get an unresolved
-// reference for T = <char> don't know why!
-//        obj << tg_value;
         Tango::DataElement<TangoScalarType> data_elt(name, tg_value);
         obj << data_elt;
     }
@@ -718,16 +715,6 @@ namespace PyDeviceProxy
 
 void export_device_proxy()
 {
-    // The following function declarations are necessary to be able to cast
-    // the function parameters from string& to const string&, otherwise python
-    // will not recognize the method calls
-
-    void (Tango::DeviceProxy::*get_property_)(std::string &, Tango::DbData &) =
-        &Tango::DeviceProxy::get_property;
-
-    void (Tango::DeviceProxy::*delete_property_)(std::string &) =
-        &Tango::DeviceProxy::delete_property;
-
     bopy::class_<Tango::DeviceProxy, bopy::bases<Tango::Connection> >
         DeviceProxy("DeviceProxy", bopy::init<>())
     ;
@@ -818,11 +805,11 @@ void export_device_proxy()
         //
         .def("_get_property",
             (void (Tango::DeviceProxy::*) (const std::string &, Tango::DbData &))
-            get_property_,
+            &Tango::DeviceProxy::get_property,
             ( arg_("self"), arg_("propname"), arg_("propdata") ) )
 
         .def("_get_property",
-            (void (Tango::DeviceProxy::*) (std::vector<std::string>&, Tango::DbData &))
+            (void (Tango::DeviceProxy::*) (const std::vector<std::string>&, Tango::DbData &))
             &Tango::DeviceProxy::get_property,
             ( arg_("self"), arg_("propnames"), arg_("propdata") ) )
 
@@ -835,14 +822,14 @@ void export_device_proxy()
             ( arg_("self"), arg_("propdata") ) )
 
         .def("_delete_property", (void (Tango::DeviceProxy::*) (const std::string &))
-            delete_property_,
+            &Tango::DeviceProxy::delete_property,
             ( arg_("self"), arg_("propname") ) )
 
-        .def("_delete_property", (void (Tango::DeviceProxy::*) (StdStringVector &))
+        .def("_delete_property", (void (Tango::DeviceProxy::*) (const StdStringVector &))
             &Tango::DeviceProxy::delete_property,
             ( arg_("self"), arg_("propnames") ) )
 
-        .def("_delete_property", (void (Tango::DeviceProxy::*) (Tango::DbData &))
+        .def("_delete_property", (void (Tango::DeviceProxy::*) (const Tango::DbData &))
             &Tango::DeviceProxy::delete_property,
             ( arg_("self"), arg_("propdata") ) )
 
@@ -858,7 +845,7 @@ void export_device_proxy()
          bopy::return_value_policy<bopy::manage_new_object>() )
 
         .def("_get_pipe_config",
-         (Tango::PipeInfoList* (Tango::DeviceProxy::*)(StdStringVector &))
+         (Tango::PipeInfoList* (Tango::DeviceProxy::*)(const StdStringVector &))
          &Tango::DeviceProxy::get_pipe_config,
          bopy::return_value_policy<bopy::manage_new_object>() )
 
@@ -892,7 +879,7 @@ void export_device_proxy()
             bopy::return_value_policy<bopy::manage_new_object>() )
 
         .def("_get_attribute_config",
-            (Tango::AttributeInfoList* (Tango::DeviceProxy::*)(StdStringVector &))
+            (Tango::AttributeInfoList* (Tango::DeviceProxy::*)(const StdStringVector &))
             &Tango::DeviceProxy::get_attribute_config,
             ( arg_("self"), arg_("attr_names") ),
             bopy::return_value_policy<bopy::manage_new_object>() )
@@ -920,12 +907,12 @@ void export_device_proxy()
             bopy::return_value_policy<bopy::manage_new_object>() )
 
         .def("_set_attribute_config",
-            (void (Tango::DeviceProxy::*)(Tango::AttributeInfoList &))
+            (void (Tango::DeviceProxy::*)(const Tango::AttributeInfoList &))
             &Tango::DeviceProxy::set_attribute_config,
             ( arg_("self"), arg_("seq") ) )
 
         .def("_set_attribute_config",
-            (void (Tango::DeviceProxy::*)(Tango::AttributeInfoListEx &))
+            (void (Tango::DeviceProxy::*)(const Tango::AttributeInfoListEx &))
             &Tango::DeviceProxy::set_attribute_config,
             ( arg_("self"), arg_("seq") ) )
 

@@ -12,7 +12,7 @@
 #pragma once
 
 #include <boost/python.hpp>
-#include <tango.h>
+#include <tango/tango.h>
 #include <iostream>
 #include <string>
 

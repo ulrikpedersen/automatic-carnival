@@ -38,7 +38,7 @@
 #ifndef IfchangeServer_H
 #define IfchangeServer_H
 
-#include <tango.h>
+#include <tango/tango.h>
 
 
 /*----- PROTECTED REGION END -----*/	//	IfchangeServer.h

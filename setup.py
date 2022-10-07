@@ -37,6 +37,7 @@ except ImportError:
 
 # Platform constants
 POSIX = "posix" in os.name
+MACOS = "darwin" in os.sys.platform
 WINDOWS = "nt" in os.name
 IS64 = 8 * struct.calcsize("P") == 64
 PYTHON_VERSION = sys.version_info
@@ -317,7 +318,7 @@ class build_ext(dftbuild_ext):
 
     def build_extension(self, ext):
         if self.use_cpp_0x:
-            ext.extra_compile_args += ["-std=c++0x"]
+            ext.extra_compile_args += ["-std=c++14"]
             ext.define_macros += [("PYTANGO_HAS_UNIQUE_PTR", "1")]
         ext.extra_compile_args += [
             "-Wno-deprecated-declarations",
@@ -371,14 +372,9 @@ def setup_args():
         "libraries": [],
     }
     sys_libs = []
-
-    # Link specifically to libtango version 9
-    tangolib = ":libtango.so.9" if POSIX else "tango"
-    directories["libraries"].append(tangolib)
-
+    add_lib("tango", directories, sys_libs, lib_name="tango")
     add_lib("omni", directories, sys_libs, lib_name="omniORB4")
     add_lib("zmq", directories, sys_libs, lib_name="libzmq")
-    add_lib("tango", directories, sys_libs, inc_suffix="tango")
     add_lib_boost(directories)
 
     # special numpy configuration
@@ -394,7 +390,7 @@ def setup_args():
         macros.append(("PYTANGO_NUMPY_VERSION", numpy.__version__))
         macros.append(("NPY_NO_DEPRECATED_API", "0"))
 
-    if POSIX:
+    if POSIX or MACOS:
         directories = pkg_config(*sys_libs, **directories)
 
     Release = get_release_info()

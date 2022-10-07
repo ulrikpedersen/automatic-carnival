@@ -90,7 +90,10 @@ def get_host_ip():
     """
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     # Connecting to a UDP address doesn't send packets
-    s.connect(('8.8.8.8', 0))
+    # Note:  For some reason Python3 on macOS does not accept 0 as a port but
+    # returns with an errno 49 instead. Therefore just use port 80 which just
+    # works as well.
+    s.connect(('8.8.8.8', 80))
     # Get ip address
     ip = s.getsockname()[0]
     return ip
@@ -393,7 +396,7 @@ class MultiDeviceTestContext(object):
         if self.handle is not None:
             os.close(self.handle)
             os.unlink(self.db)
-    
+
     def get_server_access(self):
         """Return the full server name."""
         form = 'tango://{0}:{1}/{2}#{3}'

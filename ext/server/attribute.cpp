@@ -765,8 +765,10 @@ void export_attribute()
         .def("is_polled", &PyAttribute::is_polled)
         .def("check_alarm", &Tango::Attribute::check_alarm)
         .def("get_writable", &Tango::Attribute::get_writable)
-        .def("get_name", &Tango::Attribute::get_name,
-            return_value_policy<copy_non_const_reference>())
+        .def("get_name",
+            (std::string const& (Tango::Attribute::*) () const)
+            &Tango::Attribute::get_name,
+            return_value_policy<copy_const_reference>())
         .def("get_data_type", &Tango::Attribute::get_data_type)
         .def("get_data_format", &Tango::Attribute::get_data_format)
         .def("get_assoc_name", &Tango::Attribute::get_assoc_name, 

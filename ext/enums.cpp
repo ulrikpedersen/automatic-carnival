@@ -10,9 +10,90 @@
 ******************************************************************************/
 
 #include "precompiled_header.hpp"
-#include <tango.h>
+#include <tango/tango.h>
+
+#include <boost/utility/enable_if.hpp>
 
 using namespace boost::python;
+
+// This file exposes cppTango enumeration types which are usually defined in
+// tango_const.h.in. A special handling is needed for LogLevel and LogTarget
+// as these two enums may not be defined in cppTango 9.3 if it was compiled
+// without TANGO_HAS_LOG4TANGO set.
+
+// A fallback type if it is not defined by cppTango in the Tango namespace.
+// For the SFINAE below to work as intended, the size of cppTango's LogLevel
+// must be different from 1 (right now it is sizeof(int) = 4).
+typedef char LogLevel;
+typedef char LogTarget;
+
+// Fallback enum values. These are not really needed but compiler needs to be
+// able to resolve names when it parses the template specialization (even if
+// it is later rejected by enable_if).
+static const int LOG_OFF = 0;
+static const int LOG_FATAL = 0;
+static const int LOG_ERROR = 0;
+static const int LOG_WARN = 0;
+static const int LOG_INFO = 0;
+static const int LOG_DEBUG = 0;
+
+static const int LOG_CONSOLE = 0;
+static const int LOG_FILE = 0;
+static const int LOG_DEVICE = 0;
+
+namespace Tango
+{
+    struct PyTangoLogEnums
+    {
+        typedef LogLevel LogLevelT;
+        typedef LogTarget LogTargetT;
+    };
+
+    // Accessors for enum values. If Tango does not provide those,
+    // fallback values from the global namespace will be used.
+    static LogLevel pytango_enum_log_off() { return LOG_OFF; }
+    static LogLevel pytango_enum_log_fatal() { return LOG_FATAL; }
+    static LogLevel pytango_enum_log_error() { return LOG_ERROR; }
+    static LogLevel pytango_enum_log_warn() { return LOG_WARN; }
+    static LogLevel pytango_enum_log_info() { return LOG_INFO; }
+    static LogLevel pytango_enum_log_debug() { return LOG_DEBUG; }
+    static LogTarget pytango_enum_log_console() { return LOG_CONSOLE; }
+    static LogTarget pytango_enum_log_file() { return LOG_FILE; }
+    static LogTarget pytango_enum_log_device() { return LOG_DEVICE; }
+}
+
+template <typename T, typename = void>
+struct Log4TangoEnums
+{
+    static void export_enums()
+    {
+        // By default do nothing.
+    }
+};
+
+template <typename T>
+struct Log4TangoEnums<T,
+    typename boost::enable_if_c<(sizeof(typename T::LogLevelT) != 1)>::type>
+{
+    static void export_enums()
+    {
+        enum_<typename T::LogLevelT>("LogLevel")
+            .value("LOG_OFF", Tango::pytango_enum_log_off())
+            .value("LOG_FATAL", Tango::pytango_enum_log_fatal())
+            .value("LOG_ERROR", Tango::pytango_enum_log_error())
+            .value("LOG_WARN", Tango::pytango_enum_log_warn())
+            .value("LOG_INFO", Tango::pytango_enum_log_info())
+            .value("LOG_DEBUG", Tango::pytango_enum_log_debug())
+        ;
+
+        // We assume that LogTarget is also available if LogLevel is available.
+        enum_<typename T::LogTargetT>("LogTarget")
+            .value("LOG_CONSOLE", Tango::pytango_enum_log_console())
+            .value("LOG_FILE", Tango::pytango_enum_log_file())
+            .value("LOG_DEVICE", Tango::pytango_enum_log_device())
+        ;
+    }
+};
 
 void export_enums()
 {
@@ -101,24 +182,7 @@ void export_enums()
         .value("LOCK_EXIT", Tango::LOCK_EXIT)
     ;
 
-#ifdef TANGO_HAS_LOG4TANGO
-
-    enum_<Tango::LogLevel>("LogLevel")
-        .value("LOG_OFF", Tango::LOG_OFF)
-        .value("LOG_FATAL", Tango::LOG_FATAL)
-        .value("LOG_ERROR", Tango::LOG_ERROR)
-        .value("LOG_WARN", Tango::LOG_WARN)
-        .value("LOG_INFO", Tango::LOG_INFO)
-        .value("LOG_DEBUG", Tango::LOG_DEBUG)
-    ;
-
-    enum_<Tango::LogTarget>("LogTarget")
-        .value("LOG_CONSOLE", Tango::LOG_CONSOLE)
-        .value("LOG_FILE", Tango::LOG_FILE)
-        .value("LOG_DEVICE", Tango::LOG_DEVICE)
-    ;
-
-#endif // TANGO_HAS_LOG4TANGO
+    Log4TangoEnums<Tango::PyTangoLogEnums>::export_enums();
 
     enum_<Tango::EventType>("EventType")
         .value("CHANGE_EVENT", Tango::CHANGE_EVENT)
