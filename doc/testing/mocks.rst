@@ -81,7 +81,7 @@ We want to move from the original implementation to the mocked implementation sh
 Solution
 --------
 
-This can be achieved by using the `unittest.mock <https://docs.python.org/3.7/library/unittest.mock.html>`_ library that comes with Python 3 or the third-party library `mock <https://pypi.org/project/mock/>`_ for Python 2.7.
+This can be achieved by using the `unittest.mock <https://docs.python.org/3.7/library/unittest.mock.html>`_ library that comes with Python 3.
 
 The *mock.patch()* method allows us to temporarily change the object that a name points to with another one.
 

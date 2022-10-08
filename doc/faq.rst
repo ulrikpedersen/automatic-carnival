@@ -37,7 +37,7 @@ To see which boost python file PyTango needs, type:
 
 .. sourcecode:: console
 
-    $ ldd /usr/lib64/python2.7/site-packages/tango/_tango.so
+    $ ldd /usr/lib64/python3.10/site-packages/tango/_tango.so
         linux-vdso.so.1 =>  (0x00007ffea7562000)
         libtango.so.9 => /lib64/libtango.so.9 (0x00007fac04011000)
         libomniORB4.so.1 => /lib64/libomniORB4.so.1 (0x00007fac03c62000)

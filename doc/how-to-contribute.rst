@@ -29,7 +29,7 @@ Documentation is written in reStructuredText_ and built with Sphinx_ - it's easy
 It also uses autodoc_ importing docstrings from tango package.
 Theme is not important, a theme prepared for Tango Community can be also used.
 
-To test the docs locally requires Python >= 3.5:
+To test the docs locally requires Python >= 3.6:
       - ``$ python -m pip install six numpy sphinx sphinx_rtd_theme``
       - ``$ python -m sphinx doc build/sphinx``
 

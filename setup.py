@@ -41,22 +41,18 @@ MACOS = "darwin" in os.sys.platform
 WINDOWS = "nt" in os.name
 IS64 = 8 * struct.calcsize("P") == 64
 PYTHON_VERSION = sys.version_info
-PYTHON2 = (2,) <= PYTHON_VERSION < (3,)
-PYTHON3 = (3,) <= PYTHON_VERSION < (4,)
-PYTHON35 = (3, 5) <= PYTHON_VERSION < (3, 6)
 
 # Arguments
 TESTING = any(x in sys.argv for x in ["test", "pytest"])
 
 
-if not PYTHON35:
-    try:
-        from numpy.distutils.ccompiler import CCompiler_compile
-        import distutils.ccompiler
-        distutils.ccompiler.CCompiler.compile = CCompiler_compile
-        print("Using numpy-patched parallel compiler")
-    except ImportError:
-        pass
+try:
+    from numpy.distutils.ccompiler import CCompiler_compile
+    import distutils.ccompiler
+    distutils.ccompiler.CCompiler.compile = CCompiler_compile
+    print("Using numpy-patched parallel compiler")
+except ImportError:
+    pass
 
 
 def get_readme(name="README.rst"):
@@ -380,7 +376,7 @@ def setup_args():
         "PyTango",  # Backward compatibilty
     ]
 
-    python_requires = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+    python_requires = ">=3.6"
 
     requires = [
         "boost_python (>=1.33)",
@@ -392,8 +388,6 @@ def setup_args():
         "numpy (>=1.13.3)",
         "six (>=1.10)",
     ]
-    if PYTHON_VERSION < (3, 4):
-        install_requires.append("enum34")
 
     setup_requires = []
 
@@ -405,29 +399,7 @@ def setup_args():
         "psutil",
     ]
 
-    if PYTHON2:
-        tests_require += [
-            "attrs < 22",
-            "configparser < 5",
-            "contextlib2 < 21",
-            "futures",
-            "importlib_metadata < 3",
-            "packaging < 21",
-            "pyparsing < 3",
-            "pytest < 5",
-            "pytest-xdist < 2",
-            "pytest-forked < 1.4",
-            "trollius",
-            "zipp >= 0.5, < 2",
-        ]
-    elif PYTHON_VERSION < (3, 6):
-        tests_require += [
-            "importlib_metadata < 3",
-            "pytest < 6.2",
-            "pytest-xdist < 2.5",
-            "pytest-forked < 1.4",
-        ]
-    elif PYTHON_VERSION < (3, 7):
+    if PYTHON_VERSION < (3, 7):
         tests_require += ["pytest < 7.1", "typing-extensions < 4.0", "pytest-xdist"]
     else:
         tests_require += ["pytest", "pytest-xdist"]
@@ -451,11 +423,11 @@ def setup_args():
         "Operating System :: Unix",
         "Programming Language :: C",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Topic :: Scientific/Engineering",
         "Topic :: Software Development :: Libraries",
     ]

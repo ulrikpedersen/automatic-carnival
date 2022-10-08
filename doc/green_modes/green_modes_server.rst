@@ -37,12 +37,11 @@ asyncio mode
 
 The way asyncio green mode on the server side works is it redirects all user
 code to an event loop. This means that all user methods become coroutines, so
-in Python > 3.5 you should define them with `async` keyword. In Python < 3.5,
-you should use a `@coroutine` decorator. This also means that in order to
-convert existing code of your devices to :obj:`~tango.GreenMode.Asyncio` green
-mode you will have to introduce at least those changes. But, of course, to
-truly benefit from this green mode (and asynchronous approach in general),
-you should introduce more far-fetched changes!
+in Python > 3.5 you should define them with `async` keyword.
+This also means that in order to convert existing code of your devices
+to :obj:`~tango.GreenMode.Asyncio` green mode you will have to introduce
+at least those changes. But, of course, to truly benefit from this green mode
+(and asynchronous approach in general), you should introduce more far-fetched changes!
 
 The main benefit of asynchronous programing approach is that it lets you
 control precisely when code is run sequentially without interruptions and
