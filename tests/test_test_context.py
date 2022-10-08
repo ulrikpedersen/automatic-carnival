@@ -24,7 +24,6 @@ from tango.test_utils import (
 )
 
 
-ASYNC_AWAIT_AVAILABLE = sys.version_info >= (3, 5)
 WINDOWS = "nt" in os.name
 
 
@@ -84,19 +83,12 @@ class Device2Asyncio(Device2):
     green_mode = GreenMode.Asyncio
 
 
-if ASYNC_AWAIT_AVAILABLE:
-    code = textwrap.dedent("""
-        class Device1AsyncInit(Device1):
-            green_mode = GreenMode.Asyncio
+class Device1AsyncInit(Device1):
+    green_mode = GreenMode.Asyncio
 
-            async def init_device(self):
-                await super().init_device()
-                self._attr1 = 150
-
-           """).format(**globals())
-    exec(code)
-else:
-    Device1AsyncInit = None
+    async def init_device(self):
+        await super().init_device()
+        self._attr1 = 150
 
 
 def test_single_device(server_green_mode):
@@ -107,7 +99,6 @@ def test_single_device(server_green_mode):
         assert proxy.attr1 == 100
 
 
-@pytest.mark.skipif(not ASYNC_AWAIT_AVAILABLE, reason="async/await only in Python 3.5+")
 def test_single_async_init_device():
     with DeviceTestContext(Device1AsyncInit) as proxy:
         assert proxy.attr1 == 150
@@ -196,7 +187,6 @@ def test_multi_with_two_devices(server_green_mode):
         assert proxy2.attr2 == 200
 
 
-@pytest.mark.skipif(not ASYNC_AWAIT_AVAILABLE, reason="async/await only in Python 3.5+")
 @pytest.mark.parametrize(
     "first_type, second_type, exception_type",
     [
@@ -234,7 +224,6 @@ def test_multi_with_mixed_device_green_modes(first_type, second_type, exception_
                 pass
 
 
-@pytest.mark.skipif(not ASYNC_AWAIT_AVAILABLE, reason="async/await only in Python 3.5+")
 @pytest.mark.parametrize(
     "device_type, green_mode, global_mode, exception_type, executor_type",
     [
@@ -292,7 +281,6 @@ def test_green_modes_in_device_kwarg_and_global(
         tango.set_green_mode(old_green_mode)
 
 
-@pytest.mark.skipif(not ASYNC_AWAIT_AVAILABLE, reason="async/await only in Python 3.5+")
 def test_multi_with_async_devices_initialised():
 
     class TestDevice2Async(Device2):

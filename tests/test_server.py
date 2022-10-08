@@ -28,7 +28,6 @@ except ImportError:
     import trollius as asyncio  # noqa: F401
 
 # Constants
-ASYNC_AWAIT_AVAILABLE = sys.version_info >= (3, 5)
 WINDOWS = "nt" in os.name
 
 
@@ -568,13 +567,7 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(
                 return self._is_test_attr_allowed
             """)
 
-        if ASYNC_AWAIT_AVAILABLE:
-            asynchronous_code = synchronous_code.replace("def ", "async def ")
-        else:
-            asynchronous_code = synchronous_code.replace(
-                "def ",
-                "@asyncio.coroutine\ndef "
-            )
+        asynchronous_code = synchronous_code.replace("def ", "async def ")
 
         if server_green_mode != GreenMode.Asyncio:
             exec(synchronous_code)
@@ -721,24 +714,12 @@ def test_dynamic_attribute_with_non_device_method_fails(server_green_mode):
 
 def test_dynamic_attribute_with_non_device_method_patched(server_green_mode):
 
-    def read_function_outside_of_any_class(attr):
-        attr.set_value(123)
-
-    synchronous_code = textwrap.dedent("""\
+    if server_green_mode == GreenMode.Asyncio:
+        async def read_function_outside_of_any_class(attr):
+            attr.set_value(123)
+    else:
         def read_function_outside_of_any_class(attr):
             attr.set_value(123)
-        """)
-
-    if server_green_mode == GreenMode.Asyncio:
-        if ASYNC_AWAIT_AVAILABLE:
-            asynchronous_code = synchronous_code.replace("def ", "async def ")
-        else:
-            asynchronous_code = synchronous_code.replace(
-                "def ",
-                "@asyncio.coroutine\ndef "
-            )
-
-        exec(asynchronous_code) in globals(), locals()
 
     class TestDevice(Device):
         green_mode = server_green_mode
@@ -923,22 +904,10 @@ def test_inheritance(server_green_mode):
             return 3 * A.dev_status(self)
 
         if server_green_mode == GreenMode.Asyncio:
-            if ASYNC_AWAIT_AVAILABLE:
-                code = textwrap.dedent("""\
-                    async def dev_status(self):
-                        coro = super(type(self), self).dev_status()
-                        result = await coro
-                        return 3*result
-                """)
-            else:
-                code = textwrap.dedent("""\
-                    @asyncio.coroutine
-                    def dev_status(self):
-                        coro = super(type(self), self).dev_status()
-                        result = yield asyncio.From(coro)
-                        raise asyncio.Return(3*result)
-                """)
-            exec(code)
+            async def dev_status(self):
+                coro = super(type(self), self).dev_status()
+                result = await coro
+                return 3*result
 
     with DeviceTestContext(B) as proxy:
         assert proxy.get_prop1() == "hello1"
