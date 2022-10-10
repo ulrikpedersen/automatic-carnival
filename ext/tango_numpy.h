@@ -11,8 +11,6 @@
 
 #pragma once
 
-#ifndef DISABLE_PYTANGO_NUMPY
-
 #include <Python.h>
 
 //#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
@@ -21,9 +19,9 @@
 // in just one file while using numpy in all the project files.
 // http://docs.scipy.org/doc/numpy/reference/c-api.array.html#miscellaneous
 // - {
-#      define PY_ARRAY_UNIQUE_SYMBOL pytango_ARRAY_API
-#      define NO_IMPORT_ARRAY
-#      include <numpy/arrayobject.h>
+#define PY_ARRAY_UNIQUE_SYMBOL pytango_ARRAY_API
+#define NO_IMPORT_ARRAY
+#include <numpy/arrayobject.h>
 // - }
 
 #include "tgutils.h"
@@ -83,5 +81,3 @@
         enum {value = NPY_UBYTE };
     };
 /// @}
-
-#endif // #ifndef DISABLE_PYTANGO_NUMPY

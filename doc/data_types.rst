@@ -9,10 +9,9 @@ This chapter describes the mapping of data types between Python and Tango.
 
 Tango has more data types than Python which is more dynamic. The input and
 output values of the commands are translated according to the array below.
-Note that if PyTango is compiled with :py:mod:`numpy` support the numpy type
-will be the used for the input arguments. Also, it is recomended to use numpy
-arrays of the appropiate type for output arguments as well, as they tend to be
-much more efficient.
+Note that the numpy type is used for the input arguments.
+Also, it is recommended to use numpy arrays of the appropiate type for output
+arguments as well, as they tend to be much more efficient.
 
 
 **For scalar types (SCALAR)**

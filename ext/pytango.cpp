@@ -15,10 +15,8 @@
 #define DISABLE_BOOST_DOCSTRING_OPTIONS
 #endif
 
-#ifndef DISABLE_PYTANGO_NUMPY
-#   define PY_ARRAY_UNIQUE_SYMBOL pytango_ARRAY_API
-#   include <numpy/arrayobject.h>
-#endif
+#define PY_ARRAY_UNIQUE_SYMBOL pytango_ARRAY_API
+#include <numpy/arrayobject.h>
 
 #include <tango/tango.h>
 
@@ -61,9 +59,7 @@ void export_log4tango();
 void export_auto_tango_monitor();
 void export_ensure_omni_thread();
 
-#ifdef DISABLE_PYTANGO_NUMPY
-void init_numpy(void) {}
-#elif PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= 3
 void* init_numpy(void) { import_array(); return NULL; }
 #else
 void init_numpy(void) { import_array(); return; }

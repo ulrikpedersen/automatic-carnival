@@ -11,20 +11,6 @@
 
 #pragma once
 
-#ifdef DISABLE_PYTANGO_NUMPY
-
-template<long tangoTypeConst>
-struct convert_numpy_to_integer {
-    convert_numpy_to_integer() {}
-};
-
-template<long tangoTypeConst>
-struct convert_numpy_to_float {
-    convert_numpy_to_float() {}
-};
-
-#else
-
 template<long tangoTypeConst>
 struct convert_numpy_to_integer
 {
@@ -115,5 +101,3 @@ struct convert_numpy_to_float
         data->convertible = storage;
     }
 };
-
-#endif

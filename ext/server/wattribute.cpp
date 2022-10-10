@@ -654,9 +654,7 @@ namespace PyWAttribute
 /// @}
 }
 
-#ifndef DISABLE_PYTANGO_NUMPY
-#   include "wattribute_numpy.hpp"
-#endif
+#include "wattribute_numpy.hpp"
 
 
 namespace PyWAttribute
@@ -683,11 +681,9 @@ namespace PyWAttribute
                     break;
                 }
                 case PyTango::ExtractAsNumpy: {
-#               ifndef DISABLE_PYTANGO_NUMPY
                     TANGO_CALL_ON_ATTRIBUTE_DATA_TYPE_ID(type,
                         __get_write_value_array_numpy, att, &value);
                     break;
-#               endif
                 }
                 case PyTango::ExtractAsList: {
                     TANGO_CALL_ON_ATTRIBUTE_DATA_TYPE_ID(type,

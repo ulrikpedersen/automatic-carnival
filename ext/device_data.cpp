@@ -15,9 +15,7 @@
 
 using namespace boost::python;
 
-#ifndef DISABLE_PYTANGO_NUMPY
-#   include "to_py_numpy.hpp"
-#endif
+#include "to_py_numpy.hpp"
 
 namespace PyDeviceData {
 
@@ -165,9 +163,7 @@ namespace PyDeviceData {
             {
                 default:
                 case PyTango::ExtractAsNumpy:
-#                 ifndef DISABLE_PYTANGO_NUMPY
                     return to_py_numpy<tangoArrayTypeConst>(tmp_ptr, py_self);
-#                 endif
                 case PyTango::ExtractAsList:
                 case PyTango::ExtractAsPyTango3:
                     return to_py_list(tmp_ptr);

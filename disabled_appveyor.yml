@@ -174,7 +174,7 @@ build_script:
   - cmake --build ./ -j 4 --config Release
 
 test_script:
-  - "%PYTHON_ROOT%/Scripts/pip.exe install \"gevent!=1.5a1\" pytest psutil \"six>=1.10\" \"numpy>=1.1\""
+  - "%PYTHON_ROOT%/Scripts/pip.exe install \"gevent!=1.5a1\" pytest psutil \"six>=1.10\" \"numpy>=1.13.3\""
   - cmd: if %PYTHON_VER%==27 "%PYTHON_ROOT%/Scripts/pip.exe" install futures trollius "zipp>=0.5,<2" "pyparsing<3" "pytest<5"
   - cmd: if %PYTHON_VER% LSS 34 "%PYTHON_ROOT%/Scripts/pip.exe" install enum34
   - cmd: cd "C:\projects\pytango\tests"

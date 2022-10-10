@@ -98,17 +98,8 @@ void export_constants()
     consts_scope.attr("__doc__") = "module containing several Tango constants.\n"
         "\nNew in PyTango 7.0.0";
 
-#ifdef DISABLE_PYTANGO_NUMPY
-    consts_scope.attr("NUMPY_SUPPORT") = false;
-    consts_scope.attr("NUMPY_VERSION") = "0.0.0";
-#else
     consts_scope.attr("NUMPY_SUPPORT") = true;
-#ifdef PYTANGO_NUMPY_VERSION
     consts_scope.attr("NUMPY_VERSION") = xstr(PYTANGO_NUMPY_VERSION);
-#else
-    consts_scope.attr("NUMPY_VERSION") = "0.0.0";
-#endif
-#endif
 
     consts_scope.attr("PY_MAJOR_VERSION") = PY_MAJOR_VERSION;
     consts_scope.attr("PY_MINOR_VERSION") = PY_MINOR_VERSION;

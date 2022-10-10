@@ -29,7 +29,7 @@ from distutils.command.build import build as dftbuild
 from distutils.unixccompiler import UnixCCompiler
 from distutils.version import LooseVersion as V
 
-# Detect numpy
+# numpy is only required when compiling, not when building the sdist for example
 try:
     import numpy
 except ImportError:
@@ -49,7 +49,7 @@ PYTHON35 = (3, 5) <= PYTHON_VERSION < (3, 6)
 TESTING = any(x in sys.argv for x in ["test", "pytest"])
 
 
-if numpy and not PYTHON35:
+if not PYTHON35:
     try:
         from numpy.distutils.ccompiler import CCompiler_compile
         import distutils.ccompiler
@@ -111,31 +111,6 @@ def uniquify(seq):
         if elem not in no_dups:
             no_dups.append(elem)
     return no_dups
-
-
-def get_c_numpy():
-    if numpy is None:
-        return
-    else:
-        get_include = getattr(numpy, "get_include", None)
-        if get_include is None:
-            get_include = getattr(numpy, "get_numpy_include", None)
-            if get_include is None:
-                return
-        inc = get_include()
-        if os.path.isdir(inc):
-            return inc
-
-
-def has_c_numpy():
-    return get_c_numpy() is not None
-
-
-def has_numpy(with_src=True):
-    ret = numpy is not None
-    if with_src:
-        ret &= has_c_numpy()
-    return ret
 
 
 def add_lib(name, dirs, sys_libs, env_name=None, lib_name=None, inc_suffix=None):
@@ -267,10 +242,6 @@ class build(dftbuild):
         dftbuild.finalize_options(self)
 
     def run(self):
-        if numpy is None:
-            self.warn("NOT using numpy: it is not available")
-        elif get_c_numpy() is None:
-            self.warn("NOT using numpy: numpy available but C source is not")
         dftbuild.run(self)
         if self.strip_lib:
             self.strip_debug_symbols()
@@ -377,16 +348,11 @@ def setup_args():
     add_lib("zmq", directories, sys_libs, lib_name="libzmq")
     add_lib_boost(directories)
 
-    # special numpy configuration
-
-    numpy_c_include = get_c_numpy()
-    if numpy_c_include is not None:
-        directories["include_dirs"].append(numpy_c_include)
-
     macros = []
-    if not has_numpy():
-        macros.append(("DISABLE_PYTANGO_NUMPY", None))
-    else:
+    # special numpy configuration (only needed at build time)
+    if numpy is not None:
+        directories["include_dirs"].append(numpy.get_include())
+
         macros.append(("PYTANGO_NUMPY_VERSION", numpy.__version__))
         macros.append(("NPY_NO_DEPRECATED_API", "0"))
 
@@ -418,11 +384,12 @@ def setup_args():
 
     requires = [
         "boost_python (>=1.33)",
-        "numpy (>=1.1)",
+        "numpy (>=1.13.3)",
         "six (>=1.10)",
     ]
 
     install_requires = [
+        "numpy (>=1.13.3)",
         "six (>=1.10)",
     ]
     if PYTHON_VERSION < (3, 4):

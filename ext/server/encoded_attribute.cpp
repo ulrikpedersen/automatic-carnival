@@ -62,7 +62,6 @@ namespace PyEncodedAttribute
             self.encode_gray8(buffer, w, h);
             return;
         }
-#ifndef DISABLE_PYTANGO_NUMPY
         else if (PyArray_Check(py_value_ptr))
         {
             w = static_cast<int>(PyArray_DIM(py_value_ptr, 1));
@@ -72,7 +71,6 @@ namespace PyEncodedAttribute
             self.encode_gray8(buffer, w, h);
             return;
         }
-#endif
         // It must be a py sequence
         // we are sure that w and h are given by python (see encoded_attribute.py)
         const int length = w*h;
@@ -176,7 +174,6 @@ namespace PyEncodedAttribute
             self.encode_jpeg_gray8(buffer, w, h, quality);
             return;
         }
-#ifndef DISABLE_PYTANGO_NUMPY
         else if (PyArray_Check(py_value_ptr))
         {
             w = static_cast<int>(PyArray_DIM(py_value_ptr, 1));
@@ -186,7 +183,6 @@ namespace PyEncodedAttribute
             self.encode_jpeg_gray8(buffer, w, h, quality);
             return;
         }
-#endif
         // It must be a py sequence
         // we are sure that w and h are given by python (see encoded_attribute.py)
         const int length = w*h;
@@ -290,7 +286,6 @@ namespace PyEncodedAttribute
             self.encode_gray16(buffer, w, h);
             return;
         }
-#ifndef DISABLE_PYTANGO_NUMPY
         else if (PyArray_Check(py_value_ptr))
         {
             w = static_cast<int>(PyArray_DIM(py_value_ptr, 1));
@@ -300,7 +295,6 @@ namespace PyEncodedAttribute
             self.encode_gray16(buffer, w, h);
             return;
         }
-#endif
         // It must be a py sequence
         // we are sure that w and h are given by python (see encoded_attribute.py)
         const int length = w*h;
@@ -403,14 +397,12 @@ namespace PyEncodedAttribute
             self.encode_rgb24(buffer, w, h);
             return;
         }
-#ifndef DISABLE_PYTANGO_NUMPY
         else if (PyArray_Check(py_value_ptr))
         {
             buffer = (unsigned char*)(PyArray_DATA(py_value_ptr));
             self.encode_rgb24(buffer, w, h);
             return;
         }
-#endif
         // It must be a py sequence
         // we are sure that w and h are given by python (see encoded_attribute.py)
         const int length = w*h;
@@ -517,14 +509,12 @@ namespace PyEncodedAttribute
             self.encode_jpeg_rgb24(buffer, w, h, quality);
             return;
         }
-#ifndef DISABLE_PYTANGO_NUMPY
         else if (PyArray_Check(py_value_ptr))
         {
             buffer = (unsigned char*)(PyArray_DATA(py_value_ptr));
             self.encode_jpeg_rgb24(buffer, w, h, quality);
             return;
         }
-#endif
         // It must be a py sequence
         // we are sure that w and h are given by python (see encoded_attribute.py)
 		const int length = w*h;
@@ -631,14 +621,12 @@ namespace PyEncodedAttribute
             self.encode_jpeg_rgb32(buffer, w, h, quality);
             return;
         }
-#ifndef DISABLE_PYTANGO_NUMPY
         else if (PyArray_Check(py_value_ptr))
         {
             buffer = (unsigned char*)(PyArray_DATA(py_value_ptr));
             self.encode_jpeg_rgb32(buffer, w, h, quality);
             return;
         }
-#endif
         // It must be a py sequence
         // we are sure that w and h are given by python (see encoded_attribute.py)
 		const int length = w*h;
@@ -750,7 +738,6 @@ namespace PyEncodedAttribute
         switch (extract_as)
         {
             case PyTango::ExtractAsNumpy:
-#ifndef DISABLE_PYTANGO_NUMPY
             {
                 npy_intp dims[2] = { height, width };
                 ret = PyArray_SimpleNewFromData(2, dims, NPY_UBYTE, ch_ptr);
@@ -780,7 +767,6 @@ namespace PyEncodedAttribute
                 PyArray_BASE(ret) = guard;
                 break;
             }
-#endif
             case PyTango::ExtractAsString:
             {
                 ret = PyTuple_New(3);
@@ -885,7 +871,6 @@ namespace PyEncodedAttribute
         switch (extract_as)
         {
             case PyTango::ExtractAsNumpy:
-#ifndef DISABLE_PYTANGO_NUMPY
             {
                 npy_intp dims[2] = { height, width };
                 ret = PyArray_SimpleNewFromData(2, dims, NPY_USHORT, ch_ptr);
@@ -915,7 +900,6 @@ namespace PyEncodedAttribute
                 PyArray_BASE(ret) = guard;
                 break;
             }
-#endif
             case PyTango::ExtractAsString:
             {
                 ret = PyTuple_New(3);
@@ -1023,7 +1007,6 @@ namespace PyEncodedAttribute
         switch (extract_as)
         {
             case PyTango::ExtractAsNumpy:
-#ifndef DISABLE_PYTANGO_NUMPY
             {
                 npy_intp dims[2] = { height, width };
                 ret = PyArray_SimpleNewFromData(2, dims, NPY_UINT32, ch_ptr);
@@ -1053,7 +1036,6 @@ namespace PyEncodedAttribute
                 PyArray_BASE(ret) = guard;
                 break;
             }
-#endif
             case PyTango::ExtractAsString:
             {
                 ret = PyTuple_New(3);

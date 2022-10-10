@@ -74,42 +74,7 @@ struct from_py<tangoTypeConst> \
 // provide conversion from python integers to all the data types accepted
 // by tango we must check the ranges manually. Also now we can add numpy
 // support to some extent...
-#ifdef DISABLE_PYTANGO_NUMPY
-# define DEFINE_FAST_TANGO_FROMPY_NUM(tangoTypeConst, cpy_type, FN) \
-    template<> \
-    struct from_py<tangoTypeConst> \
-    { \
-        typedef TANGO_const2type(tangoTypeConst) TangoScalarType; \
-        typedef std::numeric_limits<TangoScalarType> TangoScalarTypeLimits; \
-    \
-        static inline void convert(const boost::python::object &o, TangoScalarType &tg) \
-        { \
-            convert(o.ptr(), tg); \
-        } \
-    \
-        static inline void convert(PyObject *o, TangoScalarType &tg) \
-        { \
-            cpy_type cpy_value = FN(o); \
-            if(PyErr_Occurred()) { \
-	        PyErr_Clear(); \
-                PyErr_SetString(PyExc_TypeError, "Expecting a numeric type, it is not."); \
-                boost::python::throw_error_already_set();  \
-            } \
-            if (TangoScalarTypeLimits::is_integer) { \
-                if (cpy_value > TangoScalarTypeLimits::max()) {	\
-                    PyErr_SetString(PyExc_OverflowError, "Value is too large."); \
-                    boost::python::throw_error_already_set(); \
-                } \
-                if (cpy_value < TangoScalarTypeLimits::min()) {	\
-                    PyErr_SetString(PyExc_OverflowError, "Value is too small."); \
-                    boost::python::throw_error_already_set(); \
-                } \
-            } \
-            tg = static_cast<TangoScalarType>(cpy_value);  \
-        } \
-    };
-#else // DISABLE_PYTANGO_NUMPY
-# define DEFINE_FAST_TANGO_FROMPY_NUM(tangoTypeConst, cpy_type, FN) \
+#define DEFINE_FAST_TANGO_FROMPY_NUM(tangoTypeConst, cpy_type, FN) \
     template<> \
     struct from_py<tangoTypeConst> \
     { \
@@ -153,7 +118,6 @@ struct from_py<tangoTypeConst> \
             tg = static_cast<TangoScalarType>(cpy_value);  \
         } \
     };
-#endif // !DISABLE_PYTANGO_NUMPY
 
 
 /* Allow for downcast */
@@ -203,29 +167,6 @@ struct array_element_from_py<Tango::DEVVAR_CHARARRAY>
         convert(o.ptr(), tg);
     }
 
-#ifdef DISABLE_PYTANGO_NUMPY
-    static inline void convert(PyObject *o, TangoScalarType &tg)
-    {
-        long cpy_value = PyLong_AsLong(o);
-        if(PyErr_Occurred()) {
-            PyErr_Clear();
-            PyErr_SetString(PyExc_TypeError, "Expecting a numeric type,"
-                " but it is not");
-            boost::python::throw_error_already_set(); 
-        }
-        if (TangoScalarTypeLimits::is_integer) {
-            if (cpy_value > TangoScalarTypeLimits::max()) {
-                PyErr_SetString(PyExc_OverflowError, "Value is too large.");
-                boost::python::throw_error_already_set();
-            }
-            if (cpy_value < TangoScalarTypeLimits::min()) {
-                PyErr_SetString(PyExc_OverflowError, "Value is too small.");
-                boost::python::throw_error_already_set();
-            }
-        }
-        tg = static_cast<TangoScalarType>(cpy_value);
-    }
-#else
     static inline void convert(PyObject *o, TangoScalarType &tg)
     {
         long cpy_value = PyLong_AsLong(o);
@@ -257,7 +198,6 @@ struct array_element_from_py<Tango::DEVVAR_CHARARRAY>
         }
         tg = static_cast<TangoScalarType>(cpy_value);
     }
-#endif // DISABLE_PYTANGO_NUMPY
 
 };
 
@@ -485,14 +425,9 @@ inline TANGO_const2type(Tango::DEV_ENCODED)*
     return 0;
 }
 
-# ifndef DISABLE_PYTANGO_NUMPY
-#   include "fast_from_py_numpy.hpp"
-#   define fast_python_to_tango_buffer fast_python_to_tango_buffer_numpy
-#   define fast_python_to_corba_buffer fast_python_to_corba_buffer_numpy
-# else
-#   define fast_python_to_tango_buffer fast_python_to_tango_buffer_sequence
-#   define fast_python_to_corba_buffer fast_python_to_corba_buffer_sequence
-# endif
+#include "fast_from_py_numpy.hpp"
+#define fast_python_to_tango_buffer fast_python_to_tango_buffer_numpy
+#define fast_python_to_corba_buffer fast_python_to_corba_buffer_numpy
 
 template<long tangoArrayTypeConst>
 inline typename TANGO_const2type(tangoArrayTypeConst)* fast_convert2array(boost::python::object o)

@@ -16,9 +16,7 @@
 #include "tango_numpy.h"
 #include "fast_from_py.h"
 
-#ifndef DISABLE_PYTANGO_NUMPY
-#   include "to_py_numpy.hpp"
-#endif
+#include "to_py_numpy.hpp"
 
 namespace PyTango 
 { 
@@ -84,11 +82,9 @@ namespace PyTango
             {
                 default:
                 case PyTango::ExtractAsNumpy:
-#                 ifndef DISABLE_PYTANGO_NUMPY
                     data = to_py_numpy<tangoArrayTypeConst>(&tmp_arr, py_self);
                     tmp_arr.get_buffer(1);
                     break;
-#                 endif
                 case PyTango::ExtractAsList:
                 case PyTango::ExtractAsPyTango3:
                     data = to_py_list(&tmp_arr);
@@ -251,12 +247,8 @@ namespace PyTango
             {
                 default:
                 case PyTango::ExtractAsNumpy:
-
-#                 ifndef DISABLE_PYTANGO_NUMPY
                     data = to_py_numpy<tangoArrayTypeConst>(&tmp_arr, 1);
                     break;
-#                 endif
-
                 case PyTango::ExtractAsList:
                 case PyTango::ExtractAsPyTango3:
                     data = to_py_list(&tmp_arr);
