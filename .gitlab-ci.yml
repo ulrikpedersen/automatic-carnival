@@ -91,11 +91,6 @@ build-pypi-sdist-package:
     - docker build -t $CI_REGISTRY/${LOWER_PROJECT_NAMESPACE}/$CI_PROJECT_NAME/pytango-dev:py${PYTHON_VERSION}-tango${CPP_TANGO_VERSION}-pytango${COMMIT_TAG} --build-arg PYTHON_VERSION --build-arg CPP_TANGO_VERSION -f Dockerfile .
     - docker push $CI_REGISTRY/${LOWER_PROJECT_NAMESPACE}/$CI_PROJECT_NAME/pytango-dev:py${PYTHON_VERSION}-tango${CPP_TANGO_VERSION}-pytango${COMMIT_TAG}
 
-build-docker-image-py27:
-  extends: .base_build_docker_image
-  variables:
-    PYTHON_VERSION: "2.7"
-
 build-docker-image-py37:
   extends: .base_build_docker_image
   variables:
@@ -143,14 +138,6 @@ test_py3.6:
   variables:
     PYTHON_VERSION: '3.6'
     BOOST_PYTHON: '36'
-  script:
-    - python setup.py test
-
-test_py2.7:
-  extends: .base_build
-  variables:
-    PYTHON_VERSION: '2.7'
-    BOOST_PYTHON: '27'
   script:
     - python setup.py test
 

@@ -29,7 +29,7 @@ Documentation is written in reStructuredText_ and built with Sphinx_ - it's easy
 It also uses autodoc_ importing docstrings from tango package.
 Theme is not important, a theme prepared for Tango Community can be also used.
 
-To test the docs locally requires Python >= 3.5:
+To test the docs locally requires Python >= 3.6:
       - ``$ python -m pip install six numpy sphinx sphinx_rtd_theme``
       - ``$ python -m sphinx doc build/sphinx``
 
@@ -165,8 +165,6 @@ Upload the new version to PyPI
   * If necessary, pip install twine: https://pypi.org/project/twine/)
   * On AppVeyor find the build for the tag, download artifacts, and upload wheels.
     E.g., for version 9.3.4:
-      - ``$ twine upload dist/pytango-9.3.4-cp27-cp27m-win32.whl``
-      - ``$ twine upload dist/pytango-9.3.4-cp27-cp27m-win_amd64.whl``
       - ``$ twine upload dist/pytango-9.3.4-cp36-cp36m-win32.whl``
       - ``$ twine upload dist/pytango-9.3.4-cp36-cp36m-win_amd64.whl``
       - ``$ twine upload dist/pytango-9.3.4-cp37-cp37m-win32.whl``

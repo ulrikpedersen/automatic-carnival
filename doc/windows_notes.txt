@@ -26,8 +26,8 @@ Where:
     - <PythonVersion> **must** be *26*, *27*, *31*, *32*, *33*
 
 Example: Assuming you choose *C:\\Python* as PythonBaseDir, if you want to build
-PyTango for python 2.7 on 64 bits you must install python in
-:file:`C:\\python\\x64\\27`.
+PyTango for python 3.9 on 64 bits you must install python in
+:file:`C:\\python\\x64\\39`.
 
 **Visual C++**
 

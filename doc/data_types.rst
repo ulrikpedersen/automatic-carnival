@@ -248,8 +248,7 @@ In PyTango, a *blob* is represented by a sequence of two elements:
 
 When using the compact dictionary version note that the order of the data elements
 is lost. If the order is important for you, consider using
-:py:class:`collections.OrderedDict` instead (if you have python >=2.7. If not you can
-use ``ordereddict`` backport module available on pypi).
+:py:class:`collections.OrderedDict` instead.
 Also, in compact mode it is not possible to enforce a specific type. As a
 consequence, DevEncoded is not supported in compact mode.
 
