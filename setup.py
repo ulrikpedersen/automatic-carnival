@@ -410,12 +410,12 @@ def setup_args():
 
     requires = [
         "boost_python (>=1.33)",
-        "numpy (>=1.1)",
+        "numpy (>=1.13.3)",
         "six (>=1.10)",
     ]
 
     install_requires = [
-        "numpy (>=1.1)",
+        "numpy (>=1.13.3)",
         "six (>=1.10)",
     ]
     if PYTHON_VERSION < (3, 4):

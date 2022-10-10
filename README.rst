@@ -35,7 +35,7 @@ General dependencies:
 
 Python dependencies:
 
--  numpy_ >= 1.1
+-  numpy_ >= 1.13.3
 -  six_ >= 1.10
 
 Build dependencies:
