@@ -171,12 +171,6 @@ public:
     virtual void device_name_factory(std::vector<std::string> &dev_list);
 
     /**
-     * This method is called to ask Python to delete a class by decrementing
-     * the Python ref count
-     */
-    virtual void delete_class();
-
-    /**
      * This method forward a C++ call to the signal_handler method to the
      * Python method or executes default signal handler if no signal handler
      * is defined in python

@@ -303,27 +303,6 @@ void CppDeviceClassWrap::default_signal_handler(long signo)
     this->Tango::DeviceClass::signal_handler(signo);
 }
 
-void CppDeviceClassWrap::delete_class()
-{
-    AutoPythonGIL __py_lock;
-
-    try
-    {
-        //
-        // Call the delete_class_list function in order to clear the global
-        // constructed class Python list. It is MANDATORY to destroy these objects
-        // from Python. Otherwise, there are "seg fault" when Python exit.
-        // It tooks me quite a long time to find this...
-        //
-        PYTANGO_MOD
-        pytango.attr("delete_class_list")();
-    }
-    catch(error_already_set &eas)
-    {
-        handle_python_exception(eas);
-    }
-}
-
 namespace PyDeviceClass
 {
 
