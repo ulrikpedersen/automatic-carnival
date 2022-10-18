@@ -311,14 +311,6 @@ void export_constants()
     consts_scope.attr("MemNotUsed") = Tango::MemNotUsed;
     consts_scope.attr("MemAttrPropName") = Tango::MemAttrPropName;
 
-#ifdef TANGO_LONG64
-    consts_scope.attr("TANGO_LONG32") = false;
-    consts_scope.attr("TANGO_LONG64") = true;
-#else
-    consts_scope.attr("TANGO_LONG32") = true;
-    consts_scope.attr("TANGO_LONG64") = false;
-#endif
-
     consts_scope.attr("API_AttrConfig") = Tango::API_AttrConfig;
     consts_scope.attr("API_AttrEventProp") = Tango::API_AttrEventProp;
     consts_scope.attr("API_AttrIncorrectDataNumber") = Tango::API_AttrIncorrectDataNumber;
