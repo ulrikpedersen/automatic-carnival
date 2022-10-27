@@ -543,7 +543,9 @@ def __DeviceImpl__debug_stream(self, msg, *args):
         :type msg: str
     """
     filename, line = get_source_location()
-    self.__debug_stream(filename, line, msg % args)
+    if args:
+        msg = msg % args
+    self.__debug_stream(filename, line, msg)
 
 
 def __DeviceImpl__info_stream(self, msg, *args):
@@ -560,7 +562,9 @@ def __DeviceImpl__info_stream(self, msg, *args):
         :type msg: str
     """
     filename, line = get_source_location()
-    self.__info_stream(filename, line, msg % args)
+    if args:
+        msg = msg % args
+    self.__info_stream(filename, line, msg)
 
 
 def __DeviceImpl__warn_stream(self, msg, *args):
@@ -577,7 +581,9 @@ def __DeviceImpl__warn_stream(self, msg, *args):
         :type msg: str
     """
     filename, line = get_source_location()
-    self.__warn_stream(filename, line, msg % args)
+    if args:
+        msg = msg % args
+    self.__warn_stream(filename, line, msg)
 
 
 def __DeviceImpl__error_stream(self, msg, *args):
@@ -594,7 +600,9 @@ def __DeviceImpl__error_stream(self, msg, *args):
         :type msg: str
     """
     filename, line = get_source_location()
-    self.__error_stream(filename, line, msg % args)
+    if args:
+        msg = msg % args
+    self.__error_stream(filename, line, msg)
 
 
 def __DeviceImpl__fatal_stream(self, msg, *args):
@@ -611,7 +619,9 @@ def __DeviceImpl__fatal_stream(self, msg, *args):
         :type msg: str
     """
     filename, line = get_source_location()
-    self.__fatal_stream(filename, line, msg % args)
+    if args:
+        msg = msg % args
+    self.__fatal_stream(filename, line, msg)
 
 
 @property
