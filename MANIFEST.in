@@ -3,6 +3,7 @@ include Makefile
 include winsetup.py
 include CMakeLists.txt
 include cmake/*
+include pyproject.toml
 
 graft ext
 graft doc
