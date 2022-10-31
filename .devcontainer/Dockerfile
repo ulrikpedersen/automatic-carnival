@@ -40,9 +40,9 @@ RUN mamba init bash && \
 # - depending on Python we need different test utilities
 # - depending on cppTango version, we may get TangoTest from conda-forge, or build from source
 RUN if [[ "${PYTHON_VERSION}" = "2."* ]]; then \
-      export PYTHON_TEST_PACKAGES="trollius futures 'pyparsing<3' 'pytest<5' 'pytest-xdist<2' 'gevent!=1.5a1' psutil enum34"; \
+      export PYTHON_TEST_PACKAGES="trollius futures 'pyparsing<3' 'pytest<5' 'pytest-forked<1.4' 'gevent!=1.5a1' psutil enum34"; \
     else \
-      export PYTHON_TEST_PACKAGES="pytest pytest-xdist 'gevent!=1.5a1' psutil"; \
+      export PYTHON_TEST_PACKAGES="pytest pytest-forked 'gevent!=1.5a1' psutil"; \
     fi && \
     if [[ "${CPP_TANGO_VERSION}" = *"dev"* ]] || [[ "${CPP_TANGO_VERSION}" = *"rc"* ]]; then \
       export TANGO_TEST_PACKAGE=""; \
