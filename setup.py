@@ -400,9 +400,9 @@ def setup_args():
     ]
 
     if PYTHON_VERSION < (3, 7):
-        tests_require += ["pytest < 7.1", "typing-extensions < 4.0", "pytest-xdist"]
+        tests_require += ["pytest < 7.1", "typing-extensions < 4.0", "pytest-forked"]
     else:
-        tests_require += ["pytest", "pytest-xdist"]
+        tests_require += ["pytest", "pytest-forked"]
 
     package_data = {
         "tango.databaseds": ["*.xmi", "*.sql", "*.sh", "DataBaseds"],

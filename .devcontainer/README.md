@@ -58,7 +58,7 @@ Running tests:
 - If you want to run all the tests, it will work out the box.
 - If you only want to run a subset, the `setup.cfg` file needs to be change temporarily:
   - In the `[tool:pytest]` section, remove the `tests` path from the additional options, to give:
-     `addopts = -v --boxed`
+     `addopts = -v --forked`
   - If the change isn't made you may get errors like:
 
     ```
