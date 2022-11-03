@@ -989,30 +989,45 @@ def test_logging(server_green_mode):
         green_mode = server_green_mode
         _last_log_time = 0.0
 
-        @command(dtype_in='str')
+        @command(dtype_in=('str',))
         def log_fatal_message(self, msg):
             self._last_log_time = time.time()
-            self.fatal_stream(msg)
+            if len(msg) > 1:
+                self.fatal_stream(msg[0], msg[1])
+            else:
+                self.fatal_stream(msg[0])
 
-        @command(dtype_in='str')
+        @command(dtype_in=('str',))
         def log_error_message(self, msg):
             self._last_log_time = time.time()
-            self.error_stream(msg)
+            if len(msg) > 1:
+                self.error_stream(msg[0], msg[1])
+            else:
+                self.error_stream(msg[0])
 
-        @command(dtype_in='str')
+        @command(dtype_in=('str',))
         def log_warn_message(self, msg):
             self._last_log_time = time.time()
-            self.warn_stream(msg)
+            if len(msg) > 1:
+                self.warn_stream(msg[0], msg[1])
+            else:
+                self.warn_stream(msg[0])
 
-        @command(dtype_in='str')
+        @command(dtype_in=('str',))
         def log_info_message(self, msg):
             self._last_log_time = time.time()
-            self.info_stream(msg)
+            if len(msg) > 1:
+                self.info_stream(msg[0], msg[1])
+            else:
+                self.info_stream(msg[0])
 
-        @command(dtype_in='str')
+        @command(dtype_in=('str',))
         def log_debug_message(self, msg):
             self._last_log_time = time.time()
-            self.debug_stream(msg)
+            if len(msg) > 1:
+                self.debug_stream(msg[0], msg[1])
+            else:
+                self.debug_stream(msg[0])
 
         @attribute(dtype=float)
         def last_log_time(self):
@@ -1088,34 +1103,59 @@ def test_logging(server_green_mode):
         consumer_access = context.get_device_access("test/log/consumer")
         proxy_source.add_logging_target("device::{}".format(consumer_access))
 
-        for msg in ("",
-                    " with literal %s",
-                    " with string \"%s\" as arg" % "foo"):
+        for msg in ([""],
+                    [" with literal %s"],
+                    [" with string %s as arg", "foo"]):
 
-            level = 'fatal'
-            log_msg = "test " + level + msg
+            level = "fatal"
+            log_msg = msg[:]
+            log_msg[0] = "test " + level + msg[0]
             proxy_source.log_fatal_message(log_msg)
-            assert_log_details_correct(level, log_msg)
+            if len(msg) > 1:
+                 check_log_msg = log_msg[0] % log_msg[1]
+            else:
+                check_log_msg = log_msg[0]
+            assert_log_details_correct(level, check_log_msg)
 
             level = 'error'
-            log_msg = "test " + level + msg
+            log_msg = msg[:]
+            log_msg[0] = "test " + level + msg[0]
             proxy_source.log_error_message(log_msg)
-            assert_log_details_correct(level, log_msg)
+            if len(msg) > 1:
+                 check_log_msg = log_msg[0] % log_msg[1]
+            else:
+                check_log_msg = log_msg[0]
+            assert_log_details_correct(level, check_log_msg)
 
             level = 'warn'
-            log_msg = "test " + level + msg
+            log_msg = msg[:]
+            log_msg[0] = "test " + level + msg[0]
             proxy_source.log_warn_message(log_msg)
-            assert_log_details_correct(level, log_msg)
+            if len(msg) > 1:
+                 check_log_msg = log_msg[0] % log_msg[1]
+            else:
+                check_log_msg = log_msg[0]
+            assert_log_details_correct(level, check_log_msg)
 
             level = 'info'
-            log_msg = "test " + level + msg
+            log_msg = msg[:]
+            log_msg[0] = "test " + level + msg[0]
             proxy_source.log_info_message(log_msg)
-            assert_log_details_correct(level, log_msg)
+            if len(msg) > 1:
+                 check_log_msg = log_msg[0] % log_msg[1]
+            else:
+                check_log_msg = log_msg[0]
+            assert_log_details_correct(level, check_log_msg)
 
             level = 'debug'
-            log_msg = "test " + level + msg
+            log_msg = msg[:]
+            log_msg[0] = "test " + level + msg[0]
             proxy_source.log_debug_message(log_msg)
-            assert_log_details_correct(level, log_msg)
+            if len(msg) > 1:
+                 check_log_msg = log_msg[0] % log_msg[1]
+            else:
+                check_log_msg = log_msg[0]
+            assert_log_details_correct(level, check_log_msg)
 
 
 # fixtures
