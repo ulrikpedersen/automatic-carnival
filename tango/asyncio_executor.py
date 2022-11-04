@@ -24,6 +24,10 @@ try:
     from asyncio import run_coroutine_threadsafe
 except ImportError:
     from .asyncio_tools import run_coroutine_threadsafe
+try:
+    from asyncio import coroutine
+except ImportError:
+    from .asyncio_tools import coroutine
 
 # Tango imports
 from .green import AbstractExecutor
@@ -82,13 +86,13 @@ class AsyncioExecutor(AbstractExecutor):
 
     def submit(self, fn, *args, **kwargs):
         """Submit an operation"""
-        corofn = asyncio.coroutine(lambda: fn(*args, **kwargs))
+        corofn = coroutine(lambda: fn(*args, **kwargs))
         return run_coroutine_threadsafe(corofn(), self.loop)
 
     def execute(self, fn, *args, **kwargs):
         """Execute an operation and return the result."""
         if self.in_executor_context():
-            corofn = asyncio.coroutine(lambda: fn(*args, **kwargs))
+            corofn = coroutine(lambda: fn(*args, **kwargs))
             return corofn()
         future = self.submit(fn, *args, **kwargs)
         return future.result()

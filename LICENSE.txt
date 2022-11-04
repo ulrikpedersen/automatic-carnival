@@ -163,3 +163,8 @@ whether future versions of the GNU Lesser General Public License shall
 apply, that proxy's public statement of acceptance of any version is
 permanent authorization for you to choose that version for the
 Library.
+
+
+Portions of the code are licensed under different licences, listed below:
+
+tango/asyncio_tools.py coroutine function:  CPython, Python Software Foundation License Version 2, https://github.com/python/cpython/blob/3.10/LICENSE
