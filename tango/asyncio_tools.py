@@ -1,7 +1,11 @@
 """Backport some asyncio features."""
 from __future__ import absolute_import
 
+import collections
 import concurrent.futures
+import functools
+import inspect
+import types
 
 try:
     import asyncio
@@ -99,3 +103,43 @@ def run_coroutine_threadsafe(coro, loop):
 
     loop.call_soon_threadsafe(callback)
     return future
+
+
+# Function removed from Python 3.11
+# Taken from https://github.com/python/cpython/blob/3.10/Lib/asyncio/coroutines.py
+# (without the _DEBUG part)
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+# 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Python Software Foundation;
+# All Rights Reserved
+def coroutine(func):
+    """Decorator to mark coroutines.
+    If the coroutine is not yielded from before it is destroyed,
+    an error message is logged.
+    """
+    if inspect.iscoroutinefunction(func):
+        return func
+
+    if inspect.isgeneratorfunction(func):
+        coro = func
+    else:
+        @functools.wraps(func)
+        def coro(*args, **kw):
+            res = func(*args, **kw)
+            if (asyncio.isfuture(res) or inspect.isgenerator(res)):
+                res = yield from res
+            else:
+                # If 'res' is an awaitable, run it.
+                try:
+                    await_meth = res.__await__
+                except AttributeError:
+                    pass
+                else:
+                    if isinstance(res, collections.abc.Awaitable):
+                        res = yield from await_meth()
+            return res
+
+    coro = types.coroutine(coro)
+    wrapper = coro
+    wrapper._is_coroutine = asyncio.coroutines._is_coroutine  # For iscoroutinefunction().
+    return wrapper
+
