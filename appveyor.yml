@@ -1,0 +1,6 @@
+version: 9.4.0.dev0.{build}
+
+image: Visual Studio 2015
+
+init:
+  - echo "AppVeyor disabled temporarily"
