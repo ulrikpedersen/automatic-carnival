@@ -132,7 +132,8 @@ from .release import Release
 
 __author__ = Release.author_lines
 __version_info__ = Release.version_info
-__version__ = Release.version
+__version_short__ = Release.version
+__version__ = Release.version_long
 __version_long__ = Release.version_long
 __version_number__ = Release.version_number
 __version_description__ = Release.version_description

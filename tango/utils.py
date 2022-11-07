@@ -1685,7 +1685,7 @@ def info():
     # Compile and Runtime are set by `tango.pytango_init.init`
     from .constants import Compile, Runtime
     msg = """\
-PyTango {0.version} {0.version_info}
+PyTango {0.version_long} {0.version_info}
 PyTango compiled with:
     Python : {1.PY_VERSION}
     Numpy  : {1.NUMPY_VERSION}
