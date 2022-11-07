@@ -400,7 +400,12 @@ def setup_args():
     ]
 
     if PYTHON_VERSION < (3, 7):
-        tests_require += ["pytest < 7.1", "typing-extensions < 4.0", "pytest-forked"]
+        tests_require += [
+            "pytest < 7.1",
+            "pytest-forked",
+            "tomli < 2.0",
+            "typing-extensions < 4.0",
+        ]
     else:
         tests_require += ["pytest", "pytest-forked"]
 
