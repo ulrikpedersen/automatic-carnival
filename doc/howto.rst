@@ -44,15 +44,15 @@ The PyTango version::
 
     >>> import tango
     >>> tango.__version__
-    '9.3.4'
+    '9.4.0'
     >>> tango.__version_info__
-    (9, 3, 4)
+    (9, 4, 0)
 
 and the Tango C++ library version that PyTango was compiled with::
 
     >>> import tango
     >>> tango.constants.TgLibVers
-    '9.3.4'
+    '9.4.0'
 
 
 Start server from command line
