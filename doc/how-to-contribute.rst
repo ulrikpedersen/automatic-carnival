@@ -89,18 +89,18 @@ steps required are as follows:
 
 Pick a version number
   * Semantic version numbering is used:  <major>.<minor>.<patch>
-  * The major and minor version fields (e.g., 9.3) track the TANGO C++ core version.
+  * The major and minor version fields (e.g., 9.4) track the TANGO C++ core version.
   * Small changes are done as patch releases.  For these the version
     number should correspond the current development number since each
     release process finishes with a version bump.
   * Patch release example:
-      - ``9.3.4.devN`` or ``9.3.4aN`` or ``9.3.4bN`` (current development branch)
-      - changes to ``9.3.4`` (the actual release)
-      - changes to ``9.3.5.dev0`` (bump the patch version at the end of the release process)
+      - ``9.4.4.devN`` or ``9.4.4rcN`` (current development branch)
+      - changes to ``9.4.4`` (the actual release)
+      - changes to ``9.4.5.dev0`` (bump the patch version at the end of the release process)
   * Minor release example:
-      - ``9.3.4.devN`` or ``9.3.4aN`` or ``9.3.4bN`` (current development branch)
-      - changes to ``9.4.0`` (the actual release)
-      - changes to ``9.4.1.dev0`` (bump the patch version at the end of the release process)
+      - ``9.4.4.devN`` or ``9.4.4rcN`` (current development branch)
+      - changes to ``9.5.0`` (the actual release)
+      - changes to ``9.5.1.dev0`` (bump the patch version at the end of the release process)
 
 Create an issue in GitLab
   * This is to inform the community that a release is planned.
@@ -124,12 +124,12 @@ Create an issue in GitLab
   * A check list in this form on GitLab can be ticked off as the work progresses.
 
 Make a branch from ``develop`` to prepare the release
-  * Example branch name: ``prepare-v9.3.4``.
+  * Example branch name: ``prepare-v9.4.4``.
   * Edit the changelog (in ``docs/revision.rst``).  Include *all* merge requests
     since the version was bumped after the previous release.  Reverted merge
     requests can be omitted.
   * Bump the versions (``tango/release.py`` and ``appveyor.yml``).
-    E.g. ``version_info = (9, 3, 4)``, and ``version: 9.3.4.{build}``
+    E.g. ``version_info = (9, 4, 4)``, and ``version: 9.4.4.{build}``
   * Create a merge request to get these changes reviewed and merged before proceeding.
 
 Make sure CI is OK on ``develop`` branch
@@ -142,7 +142,7 @@ Make sure the documentation is updated
     contributor, if necessary.
   * Readthedocs *should* automatically build the docs for each:
       - push to develop (latest docs)
-      - new tags (e.g v9.3.4)
+      - new tags (e.g v9.4.4)
   * *But*, the webhooks are somehow broken, so it probably won't work automatically!
       - Trigger the builds manually here:  https://readthedocs.org/projects/pytango/builds/
       - Set the new version to "active" here:
@@ -151,11 +151,11 @@ Make sure the documentation is updated
 Create an annotated tag for the release
   * GitLab's can be used to create the tag, but a message must be included.
     We don't want lightweight tags.
-  * Alternatively, create tag from the command line (e.g., for version 9.3.4):
+  * Alternatively, create tag from the command line (e.g., for version 9.4.4):
       - ``$ git checkout develop``
       - ``$ git pull``
-      - ``$ git tag -a -m "tag v9.3.4" v9.3.4``
-      - ``$ git push -v origin refs/tags/v9.3.4``
+      - ``$ git tag -a -m "tag v9.4.4" v9.4.4``
+      - ``$ git push -v origin refs/tags/v9.4.4``
 
 Upload the new version to PyPI
   * The source tarball is automatically uploaded to PyPI by Gitlab CI on tag.  Any other wheels
@@ -164,20 +164,15 @@ Upload the new version to PyPI
   * Get account permissions for PyTango from another contributor, if necessary.
   * If necessary, pip install twine: https://pypi.org/project/twine/)
   * On AppVeyor find the build for the tag, download artifacts, and upload wheels.
-    E.g., for version 9.3.4:
-      - ``$ twine upload dist/pytango-9.3.4-cp36-cp36m-win32.whl``
-      - ``$ twine upload dist/pytango-9.3.4-cp36-cp36m-win_amd64.whl``
-      - ``$ twine upload dist/pytango-9.3.4-cp37-cp37m-win32.whl``
-      - ``$ twine upload dist/pytango-9.3.4-cp37-cp37m-win_amd64.whl``
-      - ``$ twine upload dist/pytango-9.3.4-cp38-cp38m-win32.whl``
-      - ``$ twine upload dist/pytango-9.3.4-cp38-cp38m-win_amd64.whl``
+    E.g., for version 9.4.4:
+      - ``$ twine upload dist/pytango-9.4.4-*.whl``
 
 Bump the version with "-dev" in the develop branch
   * Make a branch like ``bump-dev-version`` from head of ``develop``.
-  * In ``tango/release.py``, change ``version_info``, e.g. from ``(9, 3, 4)`` to
-    ``(9, 3, 5, 'dev', 0)``.
-  * In ``appveyor.yml``, change ``version``, e.g. from ``9.3.4.{build}`` to
-    ``9.3.5.dev0.{build}``.
+  * In ``tango/release.py``, change ``version_info``, e.g. from ``(9, 4, 4)`` to
+    ``(9, 4, 5, 'dev', 0)``.
+  * In ``appveyor.yml``, change ``version``, e.g. from ``9.4.4.{build}`` to
+    ``9.4.5.dev0.{build}``.
   * Create MR, merge to ``develop``.
 
 Create and fill in the release description on GitLab

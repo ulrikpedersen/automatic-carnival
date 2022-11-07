@@ -51,7 +51,7 @@ class Release:
     separator = '.' if 'dev' in release or 'post' in release else ''
     version_long = version + separator + release
 
-    version_description = 'This version implements the C++ Tango 9.3 API.'
+    version_description = 'This version implements the C++ Tango 9.4 API.'
     version_number = int(version.replace('.', ''))
     description = 'A python binding for the Tango control system'
     long_description = 'This module implements the Python Tango Device API ' \

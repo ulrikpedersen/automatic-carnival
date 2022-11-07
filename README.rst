@@ -17,7 +17,7 @@ Description
 -----------
 
 PyTango_ exposes the complete `Tango C++ API`_ through the ``tango`` python module.
-It also adds a bit of abstraction by taking advantage of the Python capabilites:
+It also adds a bit of abstraction by taking advantage of the Python capabilities:
 
 - ``tango.client`` provides a client access to device servers and databases.
 - ``tango.server`` provides base classes to declare and run device servers.
@@ -26,11 +26,11 @@ It also adds a bit of abstraction by taking advantage of the Python capabilites:
 Requirements
 ------------
 
-PyTango_ is compatible with python 2 and python 3.
+PyTango_ is compatible with python 3.6+.
 
 General dependencies:
 
--  libtango_ >= 9.3, and its dependencies: omniORB4 and libzmq
+-  libtango_ >= 9.4, and its dependencies: omniORB4 and libzmq
 -  `Boost.Python`_ >= 1.33
 
 Python dependencies:
@@ -59,14 +59,18 @@ Install
 
 PyTango_ is available on PyPI_ as ``pytango``::
 
-    $ pip install pytango
+    $ python -m pip install pytango
 
-Alternatively, PyTango_ can be built and installed from the
+Alternatively, pre-built PyTango_ binaries can be installed from `Conda Forge_`::
+
+    $ conda install -c conda-forge pytango
+
+For the very latest code, or for development purposes, PyTango_ can be built and installed from the
 `sources`_::
 
-    $ python setup.py install
+    $ python -m pip install .
 
-In both cases, the installation takes a few minutes since the ``_tango`` boost
+The installation may take a few minutes if the ``_tango`` boost
 extension has to compile.
 
 .. note::
@@ -81,20 +85,20 @@ To test the installation, import ``tango`` and check ``tango.utils.info()``::
 
     >>> import tango
     >>> print(tango.utils.info())
-    PyTango 9.3.4 (9, 3, 4)
+    PyTango 9.4.0 (9, 4, 0)
     PyTango compiled with:
-        Python : 3.8.5
-        Numpy  : 1.19.2
-        Tango  : 9.3.4
-        Boost  : 1.73.0
+        Python : 3.10.6
+        Numpy  : 1.23.4
+        Tango  : 9.4.0
+        Boost  : 1.80.0
 
     PyTango runtime is:
-        Python : 3.8.5
-        Numpy  : 1.19.2
-        Tango  : 9.3.4
+        Python : 3.10.6
+        Numpy  : 1.23.4
+        Tango  : 9.4.0
 
     PyTango running on:
-    uname_result(system='Linux', node='ed71265a2807', release='4.19.76-linuxkit', version='#1 SMP Tue May 26 11:42:35 UTC 2020', machine='x86_64', processor='')
+    uname_result(system='Linux', node='624986bbd0fe', release='5.10.104-linuxkit', version='#1 SMP PREEMPT Thu Mar 17 17:05:54 UTC 2022', machine='x86_64', processor='x86_64')
 
 For an interactive use, consider using ITango_, a tango IPython_ profile.
 
@@ -140,8 +144,9 @@ All contributions,  `PR and bug reports`_ are welcome, please see: `How to Contr
 
 .. _Tango: http://tango-controls.org
 .. _Tango C++ API: https://tango-controls.github.io/cppTango-docs/index.html
-.. _PyTango: http://gitlab.com/tango-cs/pytango
+.. _PyTango: http://gitlab.com/tango-controls/pytango
 .. _PyPI: http://pypi.python.org/pypi/pytango
+.. _Conda Forge: https://anaconda.org/conda-forge/pytango
 
 .. _libtango: http://tango-controls.org/downloads
 .. _Boost.Python: https://www.boost.org/doc/libs/release/libs/python/doc/html/index.html
