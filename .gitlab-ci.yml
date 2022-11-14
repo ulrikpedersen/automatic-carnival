@@ -150,8 +150,8 @@ test-wheel:
   before_script:
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
   script:
-    - /opt/python/${PYTHON_TAG}/bin/python -m pip install dist/${WHEEL}[tests]
-    - /opt/python/${PYTHON_TAG}/bin/pytest
+    - /opt/python/${PYTHON_TAG}/bin/pip install dist/${WHEEL}
+    - /opt/python/${PYTHON_TAG}/bin/python setup.py test
 
 release-pypi-package:
   stage: release
