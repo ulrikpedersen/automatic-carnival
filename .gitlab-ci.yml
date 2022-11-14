@@ -49,11 +49,6 @@ cache:
 build-wheel:
   stage: build
   extends: .matrix-wheel
-  before_script:
-    # make sure old_ext exists
-    - mkdir -p cached_ext
-    # Touch the .so files if the extension hasn't changed
-    - diff -r cached_ext ext && find build -name _tango*.so -printf "touching %p\n" -exec touch {} + || true
   script:
     # build wheel
     - /opt/python/${PYTHON_TAG}/bin/python setup.py build
@@ -63,9 +58,6 @@ build-wheel:
     - rm -rf dist/${WHEEL_REGEX} # delete unrepaired wheel
     # copy wheel to dist
     - cp wheelhouse/${WHEEL_REGEX} ./dist # are we always sure of the name?
-  after_script:
-    # The build directory has been updated, cached_ext needs to be synchronized too
-    - rsync -a --delete ext/ cached_ext
   artifacts:
     expire_in: 1 day
     paths:
