@@ -9,7 +9,6 @@ default:
   interruptible: false
 
 variables:
-  PYTANGO_VERSION: 9.4.0rc1 # saved in pytango/release.py
   CPP_TANGO_VERSION: "9.4.0"
   CACHE_FALLBACK_KEY: "v1-$CPP_TANGO_VERSION-$CI_JOB_NAME-$CI_DEFAULT_BRANCH"
   TWINE_USERNAME: __token__
@@ -32,8 +31,7 @@ cache:
     MANYLINUX: manylinux2014
     GLIBC_TAG: '2_17' # depends on manylinux
     PYTHON_TAG: 'cp${PYTHON_VER}-cp${PYTHON_VER}${ABI_SUFFIX}'
-    BUILD_WHEEL: pytango-${PYTANGO_VERSION}-${PYTHON_TAG}-linux_${ARCH}.whl
-    WHEEL: pytango-${PYTANGO_VERSION}-${PYTHON_TAG}-manylinux_${GLIBC_TAG}_${ARCH}.${MANYLINUX}_${ARCH}.whl
+    WHEEL_REGEX: pytango*${PYTHON_TAG}*${ARCH}.whl
   parallel:
     matrix:
       - ARCH: [x86_64, i686, aarch64]
@@ -61,10 +59,10 @@ build-wheel:
     - /opt/python/${PYTHON_TAG}/bin/python setup.py build
     - /opt/python/${PYTHON_TAG}/bin/python setup.py bdist_wheel
     # repair wheel
-    - auditwheel repair dist/${BUILD_WHEEL}
-    - rm -rf dist/${BUILD_WHEEL} # delete unrepaired wheel
+    - auditwheel repair dist/${WHEEL_REGEX}
+    - rm -rf dist/${WHEEL_REGEX} # delete unrepaired wheel
     # copy wheel to dist
-    - cp wheelhouse/${WHEEL} ./dist # are we always sure of the name?
+    - cp wheelhouse/${WHEEL_REGEX} ./dist # are we always sure of the name?
   after_script:
     # The build directory has been updated, cached_ext needs to be synchronized too
     - rsync -a --delete ext/ cached_ext
@@ -150,7 +148,7 @@ test-wheel:
   before_script:
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
   script:
-    - /opt/python/${PYTHON_TAG}/bin/pip install dist/${WHEEL}
+    - /opt/python/${PYTHON_TAG}/bin/pip install dist/${WHEEL_REGEX}
     - /opt/python/${PYTHON_TAG}/bin/python setup.py test
 
 release-pypi-package:
