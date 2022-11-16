@@ -33,6 +33,15 @@ __all__ = ("MultiDeviceTestContext", "DeviceTestContext", "run_device_test_conte
 
 # Helpers
 
+_WINDOWS = "nt" in os.name
+if not _WINDOWS:
+    _DEFAULT_THREAD_TIMEOUT = 3.
+    _DEFAULT_PROCESS_TIMEOUT = 5.
+else:
+    _DEFAULT_THREAD_TIMEOUT = 5.
+    _DEFAULT_PROCESS_TIMEOUT = 7.
+
+
 IOR = collections.namedtuple(
     'IOR',
     'first dtype_length dtype nb_profile tag '
@@ -254,8 +263,8 @@ class MultiDeviceTestContext(object):
     nodb = "dbase=no"
     command = "{0} {1} -ORBendPoint giop:tcp:{2}:{3} -file={4}"
 
-    thread_timeout = 3.
-    process_timeout = 5.
+    thread_timeout = _DEFAULT_THREAD_TIMEOUT
+    process_timeout = _DEFAULT_PROCESS_TIMEOUT
 
     def __init__(self, devices_info, server_name=None, instance_name=None,
                  db=None, host=None, port=0, debug=3,

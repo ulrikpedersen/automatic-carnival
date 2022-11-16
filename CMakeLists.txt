@@ -1,7 +1,13 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 set(CMP0048 NEW)
-
 project(_tango LANGUAGES CXX)
+
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 14)
+endif()
+
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_STANDARD_REQUIRED YES)
 
 # Set PROJECT_VERSION and PACKAGE_VERSION from git tags
 include(cmake/project_version.cmake)
@@ -21,12 +27,9 @@ add_definitions(-DZMQ_STATIC)
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   set(PY_TARGET "64")
   add_definitions(-D_64BITS)
-  if(MSVC14)
-    add_definitions(-D_TIMERS_T_)
-  endif(MSVC14)
+  add_definitions(-D_TIMERS_T_)
 elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
   set(PY_TARGET "32")
-  add_definitions(-DJPG_USE_ASM)
 else(CMAKE_SIZEOF_VOID_P EQUAL 8)
   message(FATAL_ERROR "Unknown architecture - aborting!")
 endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -126,25 +129,17 @@ set(HEADERS
         ext/tgutils.h
         ext/to_py.h)
 
-set(${PROJECT_NAME} INCLUDE_DIRS "$ENV{TANGO_ROOT}/include")
-
-if(MSVC90)
-  # v9 used for Python 2
-  set(VCSTR "90")
-  set(BOOST_VERSION_ "1_70")
-elseif(MSVC14)
-  # v14 used for Python 3
-  set(VCSTR "140")
-  set(BOOST_VERSION_ "1_73")
-endif()
+set(BOOST_VCSTR "140")
+set(BOOST_VERSION_ "1_73")
+set(ZMQ_VCSTR "141")
 set(ZMQ_VERSION_ "4_0_5")
 
 set(RELEASE "Release_$ENV{PYTHON_VER}_${PY_TARGET}")
-include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/ext")
-include_directories(${PROJECT_NAME} PUBLIC "$ENV{BOOST_ROOT}/include/boost-${BOOST_VERSION_}")
-include_directories(${PROJECT_NAME} PUBLIC "$ENV{PYTHON_ROOT}/include")
-include_directories(${PROJECT_NAME} PUBLIC "$ENV{TANGO_ROOT}/include")
-include_directories(${PROJECT_NAME} PUBLIC "$ENV{PYTHON_ROOT}/Lib/site-packages/numpy/core/include")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/ext")
+include_directories("$ENV{TANGO_ROOT}/include")
+include_directories("$ENV{PYTHON_ROOT}/include")
+include_directories("$ENV{BOOST_ROOT}/include/boost-${BOOST_VERSION_}")
+include_directories("$ENV{PYTHON_ROOT}/Lib/site-packages/numpy/core/include")
 link_directories("$ENV{TANGO_ROOT}/bin")
 link_directories("$ENV{TANGO_ROOT}/lib")
 link_directories("$ENV{PYTHON_ROOT}/libs")
@@ -168,11 +163,6 @@ set_target_properties(${PROJECT_NAME}
   LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/${RELEASE}/tango"
   RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/${RELEASE}/tango")
 
-if(MSVC90 AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
-  # resolve VC 9 64bits complains
-  set_source_files_properties(ext/base_types.cpp PROPERTIES COMPILE_FLAGS /bigobj)
-endif()
-
 add_custom_command(TARGET ${PROJECT_NAME}
   POST_BUILD
   COMMAND "$ENV{PYTHON_ROOT}/python.exe"  ARGS "${CMAKE_CURRENT_SOURCE_DIR}/winsetup.py" ${RELEASE} dist temp_dist $(ConfigurationName) $(PlatformName)
@@ -186,14 +176,13 @@ install(TARGETS ${PROJECT_NAME}
 set_property(TARGET ${PROJECT_NAME} PROPERTY COMPILE_OPTIONS "/bigobj")
 set_property(TARGET ${PROJECT_NAME} PROPERTY COMPILE_OPTIONS "/MT")
 set_property(TARGET ${PROJECT_NAME} PROPERTY LINK_FLAGS "/LTCG /force:multiple /DYNAMICBASE:NO /OPT:REF /OPT:ICF /SUBSYSTEM:WINDOWS")
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME} PUBLIC $ENV{TANGO_ROOT}/lib/libtango.lib
                                              $ENV{TANGO_ROOT}/lib/omniORB4.lib
                                              $ENV{TANGO_ROOT}/lib/omniDynamic4.lib
                                              $ENV{TANGO_ROOT}/lib/COS4.lib
-                                             $ENV{TANGO_ROOT}/lib/omnithread.lib)
+                                             $ENV{TANGO_ROOT}/lib/omnithread.lib
+                                             $ENV{TANGO_ROOT}/lib/libzmq-v${ZMQ_VCSTR}-mt-s-${ZMQ_VERSION_}.lib
+                                             $ENV{TANGO_ROOT}/lib/jpeg-static.lib)
 target_link_libraries(${PROJECT_NAME} PUBLIC ws2_32 mswsock advapi32 comctl32 odbc32)
-target_link_libraries(${PROJECT_NAME} PUBLIC $ENV{TANGO_ROOT}/lib/pthreadVC2.lib)
-target_link_libraries(${PROJECT_NAME} PUBLIC $ENV{TANGO_ROOT}/lib/libzmq-v${VCSTR}-mt-s-${ZMQ_VERSION_}.lib)
-target_link_libraries(${PROJECT_NAME} PUBLIC $ENV{BOOST_ROOT}/lib/libboost_python$ENV{PYTHON_VER}-vc${VCSTR}-mt-s-x${PY_TARGET}-${BOOST_VERSION_}.lib)
+target_link_libraries(${PROJECT_NAME} PUBLIC $ENV{BOOST_ROOT}/lib/libboost_python$ENV{PYTHON_VER}-vc${BOOST_VCSTR}-mt-s-x${PY_TARGET}-${BOOST_VERSION_}.lib)
 target_link_libraries(${PROJECT_NAME} PUBLIC $ENV{PYTHON_ROOT}/libs/python$ENV{PYTHON_VER}.lib)

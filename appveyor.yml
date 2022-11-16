@@ -1,8 +1,161 @@
 version: 9.4.0rc1.{build}
 
-image: Visual Studio 2015
+image: Visual Studio 2022
+
+environment:
+  BOOST_DOWNLOAD_BASE: https://github.com/tango-controls/boost-ci/releases/download/
+  BOOST_VERSION: 1.73.0
+  CPPTANGO_VERSION: 9.4.0 # 9.4.0.windows0 packages: https://gitlab.com/tango-controls/cppTango/-/packages/10381909
+  CPPTANGO_WIN32_DOWNLOAD_LINK: https://gitlab.com/tango-controls/cppTango/-/package_files/58360377/download
+  CPPTANGO_WIN64_DOWNLOAD_LINK: https://gitlab.com/tango-controls/cppTango/-/package_files/58357157/download
+  TANGO_TEST_VERSION: 3.6
+  TANGO_TEST_WIN32_DOWNLOAD_LINK: https://gitlab.com/tango-controls/TangoTest/-/package_files/45776380/download
+  TANGO_TEST_WIN64_DOWNLOAD_LINK: https://gitlab.com/tango-controls/TangoTest/-/package_files/45776372/download
+  CMAKE_GENERATOR: "Visual Studio 17 2022"
+  GEVENT_NOT_SUPPORTED: true
+  matrix:
+    - platform: x86
+      configuration: Release
+      ARCH: Win32
+      BOOST_ARCH: win32-msvc14
+      CPPTANGO_ARCH: v141_x86
+      CPPTANGO_DOWNLOAD_LINK: "%CPPTANGO_WIN32_DOWNLOAD_LINK%"
+      TANGO_TEST_DOWNLOAD_LINK: "%TANGO_TEST_WIN32_DOWNLOAD_LINK%"
+      PYTHON_VER: 36
+      PYTHON_ROOT: c:\Python36\
+    - platform: x64
+      configuration: Release
+      ARCH: x64
+      BOOST_ARCH: x64-msvc14
+      CPPTANGO_ARCH: v141_x64
+      CPPTANGO_DOWNLOAD_LINK: "%CPPTANGO_WIN64_DOWNLOAD_LINK%"
+      TANGO_TEST_DOWNLOAD_LINK: "%TANGO_TEST_WIN64_DOWNLOAD_LINK%"
+      PYTHON_VER: 36
+      PYTHON_ROOT: c:\Python36-x64\
+    - platform: x86
+      configuration: Release
+      ARCH: Win32
+      BOOST_ARCH: win32-msvc14
+      CPPTANGO_ARCH: v141_x86
+      CPPTANGO_DOWNLOAD_LINK: "%CPPTANGO_WIN32_DOWNLOAD_LINK%"
+      TANGO_TEST_DOWNLOAD_LINK: "%TANGO_TEST_WIN32_DOWNLOAD_LINK%"
+      PYTHON_VER: 37
+      PYTHON_ROOT: c:\Python37\
+    - platform: x64
+      configuration: Release
+      ARCH: x64
+      BOOST_ARCH: x64-msvc14
+      CPPTANGO_ARCH: v141_x64
+      CPPTANGO_DOWNLOAD_LINK: "%CPPTANGO_WIN64_DOWNLOAD_LINK%"
+      TANGO_TEST_DOWNLOAD_LINK: "%TANGO_TEST_WIN64_DOWNLOAD_LINK%"
+      PYTHON_VER: 37
+      PYTHON_ROOT: c:\Python37-x64\
+    - platform: x86
+      configuration: Release
+      ARCH: Win32
+      BOOST_ARCH: win32-msvc14
+      CPPTANGO_ARCH: v141_x86
+      CPPTANGO_DOWNLOAD_LINK: "%CPPTANGO_WIN32_DOWNLOAD_LINK%"
+      TANGO_TEST_DOWNLOAD_LINK: "%TANGO_TEST_WIN32_DOWNLOAD_LINK%"
+      PYTHON_VER: 38
+      PYTHON_ROOT: c:\Python38\
+    - platform: x64
+      configuration: Release
+      ARCH: x64
+      BOOST_ARCH: x64-msvc14
+      CPPTANGO_ARCH: v141_x64
+      CPPTANGO_DOWNLOAD_LINK: "%CPPTANGO_WIN64_DOWNLOAD_LINK%"
+      TANGO_TEST_DOWNLOAD_LINK: "%TANGO_TEST_WIN64_DOWNLOAD_LINK%"
+      PYTHON_VER: 38
+      PYTHON_ROOT: c:\Python38-x64\
 
 init:
-  - echo "AppVeyor disabled temporarily"
+  # Tango
+  - cmd: cd "C:\projects\"
+  - cmd: md libtango
+  - cmd: cd "C:\projects\"
+  - appveyor DownloadFile "%CPPTANGO_DOWNLOAD_LINK%" -FileName libtango.zip
+  - cmd: 7z -y x libtango.zip -oC:\projects\libtango\
 
-build: off
+  # prevent warning C4005: 'HAVE_STDDEF_H': macro redefinition
+  # (macro also defined in CPython's pyconfig.h)
+  - ps: |
+      $filename = ('C:\projects\libtango/libtango_' + $Env:CPPTANGO_VERSION + '_' + $Env:CPPTANGO_ARCH + '_static_release\include\jconfig.h')
+      (Get-Content $filename).Replace("#define HAVE_STDDEF_H", "#undef HAVE_STDDEF_H`n#define HAVE_STDDEF_H") | Set-Content $filename
+      Get-Content $filename
+
+  # TangoTest
+  - cmd: cd "C:\projects\"
+  - cmd: md tango_test
+  - cmd: cd "C:\projects\tango_test"
+  - appveyor DownloadFile %TANGO_TEST_DOWNLOAD_LINK% -FileName TangoTest.exe
+  - cmd: path=C:\projects\tango_test;%path%
+
+  # Boost
+  - cmd: cd "C:\projects\"
+  - appveyor DownloadFile %BOOST_DOWNLOAD_BASE%/%BOOST_VERSION%/boost-python-%BOOST_VERSION%_%BOOST_ARCH%_py%PYTHON_VER%.zip
+  - cmd: 7z -y x boost-python-%BOOST_VERSION%_%BOOST_ARCH%_py%PYTHON_VER%.zip -oC:\projects\
+
+  # Final step: return to pytango folder before AppVeyor does git checkout
+  - cmd: cd "C:\projects\pytango"
+
+install:
+  # Setting Visual Compiler
+  - cmd: cd "C:\projects\"
+  - cmd: if %ARCH%==Win32 call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars32.bat"
+  - cmd: if %ARCH%==x64 call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+  - cmd: set PYTHON_ROOT=%PYTHON_ROOT%
+  - "%PYTHON_ROOT%/Scripts/pip.exe install wheel numpy"
+  - cmd: echo PLATFORM is '%platform%'
+  - cmd: echo ARCH is '%ARCH%'
+  - cmd: echo CMAKE_GENERATOR is '%CMAKE_GENERATOR%'
+  # Prepare cmake
+  - cmd: cd "C:\projects\pytango"
+  - cmd: set BOOST_ROOT=c:/projects/Boost
+  - cmd: set TANGO_ROOT=C:/projects/libtango/libtango_%CPPTANGO_VERSION%_%CPPTANGO_ARCH%_static_release
+  - cmd: echo TANGO_ROOT is "%TANGO_ROOT%"
+  - cmd: cmake -G "%CMAKE_GENERATOR%" -A %ARCH% .
+
+clone_folder: C:\projects\pytango
+
+build:
+  parallel: true
+  verbosity: minimal
+
+build_script:
+  - cmd: cd C:/projects/pytango
+  - cmake --build ./ -j 4 --config Release -v
+
+test_script:
+  - "%PYTHON_ROOT%/Scripts/pip.exe install \"gevent!=1.5a1\" psutil \"six>=1.10\" \"numpy>=1.1\""
+  - cmd: if %PYTHON_VER% LSS 37 "%PYTHON_ROOT%/Scripts/pip.exe" install "pytest<7.1" "tomli<2.0" "typing-extensions<4.0"
+  - cmd: if %PYTHON_VER% GEQ 37 "%PYTHON_ROOT%/Scripts/pip.exe" install pytest
+  - cmd: cd "C:\projects\pytango\tests"
+  - cmd: type nul > pytest_empty_config.txt
+  - "%PYTHON_ROOT%/Scripts/pytest.exe -c pytest_empty_config.txt --collect-only -q -q -k \"not test_client.py and not gevent and not test_event\""
+  - cmd: path=%PYTHON_ROOT%\Scripts;%path%
+  - cmd: type nul > summary.json
+  - cmd: run_tests_win.bat
+  - cmd: set API_URL=%APPVEYOR_API_URL%/api/tests/batch
+  - cmd: powershell -command "$body = Get-Content summary.json -Raw; Invoke-Webrequest $env:API_URL -Method 'POST' -UseBasicParsing -ContentType 'application/json; charset=utf-8' -Body $body"
+  - cmd: cd "C:\projects\pytango"
+  - cmd: if "%GEVENT_NOT_SUPPORTED%"=="true" (%PYTHON_ROOT%python.exe setup.py check_tests_errors --summary-file="./tests/summary.json" --ignore-gevent-errors) else (%PYTHON_ROOT%python.exe setup.py check_tests_errors --summary-file="./tests/summary.json")
+
+after_test:
+  - cmd: cd C:/projects/pytango/dist
+  - cmd: dir
+  - cmd: cd C:/projects/pytango
+  # copy artifacts
+  - cmd: move .\dist\pytango*.exe C:/projects/pytango
+  - cmd: move .\dist\pytango*.whl C:/projects/pytango
+
+#on_failure:
+##  RDP for failure
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#
+#on_finish:
+##  #RDP for finish
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
+artifacts:
+  - path: ./*.whl
