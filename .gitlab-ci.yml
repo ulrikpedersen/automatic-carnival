@@ -137,8 +137,8 @@ test-wheel:
   stage: test
   extends: .matrix-wheel
   script:
-    - /opt/python/${PYTHON_TAG}/bin/pip install dist/${WHEEL_REGEX}
-    - /opt/python/${PYTHON_TAG}/bin/python setup.py test
+    - /opt/python/${PYTHON_TAG}/bin/pip install $(ls dist/${WHEEL_REGEX})[tests]
+    - /opt/python/${PYTHON_TAG}/bin/pytest
 
 release-pypi-package:
   stage: release

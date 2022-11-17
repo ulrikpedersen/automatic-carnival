@@ -521,6 +521,9 @@ def setup_args():
         install_requires=install_requires,
         setup_requires=setup_requires,
         tests_require=tests_require,
+        extras_require={
+            "tests": tests_require
+        },
         ext_package="tango",
         ext_modules=[pytango_ext],
         cmdclass=cmdclass,
