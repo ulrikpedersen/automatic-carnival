@@ -136,9 +136,12 @@ test-source:
 test-wheel:
   stage: test
   extends: .matrix-wheel
+  before_script:
+    - /opt/python/${PYTHON_TAG}/bin/python -m venv venv
+    - source venv/bin/activate
+    - pip install $(find dist/${WHEEL_REGEX})[tests]
   script:
-    - /opt/python/${PYTHON_TAG}/bin/pip install $(ls dist/${WHEEL_REGEX})[tests]
-    - /opt/python/${PYTHON_TAG}/bin/pytest
+    - pytest
 
 release-pypi-package:
   stage: release
