@@ -139,6 +139,7 @@ test-wheel:
   before_script:
     - /opt/python/${PYTHON_TAG}/bin/python -m venv venv
     - source venv/bin/activate
+    - pip install --upgrade pip
     - pip install $(find dist/${WHEEL_REGEX})[tests]
   script:
     - pytest
