@@ -373,7 +373,7 @@ def __Util__add_class(self, *args, **kwargs):
     language = kwargs.get("language", "python")
     f = self.add_TgClass
     if language != "python":
-        f = f = self.add_Cpp_TgClass
+        f = self.add_Cpp_TgClass
     return f(*args)
 
 
@@ -883,7 +883,7 @@ def __doc_Util():
                 return _LOOP_NB > 100
 
             def main():
-                py = tango.Util(sys.argv)
+                util = tango.Util(sys.argv)
 
                 # ...
 

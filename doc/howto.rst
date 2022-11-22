@@ -802,7 +802,7 @@ device server than before but with one C++ Tango class called SerialLine::
     import sys
 
     if __name__ == '__main__':
-        py = tango.Util(sys.argv)
+        util = tango.Util(sys.argv)
         util.add_class('SerialLine', 'SerialLine', language="c++")
         util.add_class(PLCClass, PLC, 'PLC')
         util.add_class(IRMirrorClass, IRMirror, 'IRMirror')

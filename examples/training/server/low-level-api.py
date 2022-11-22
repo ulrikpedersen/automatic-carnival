@@ -42,8 +42,8 @@ class MotorClass(tango.DeviceClass):
 
 def main():
     try:
-        py = tango.Util(sys.argv)
-        py.add_class(MotorClass, Motor, "Motor")
+        util = tango.Util(sys.argv)
+        util.add_class(MotorClass, Motor, "Motor")
         U = tango.Util.instance()
         U.server_init()
         U.server_run()
