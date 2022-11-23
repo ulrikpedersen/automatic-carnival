@@ -5,9 +5,9 @@ image: Visual Studio 2022
 environment:
   BOOST_DOWNLOAD_BASE: https://github.com/tango-controls/boost-ci/releases/download/
   BOOST_VERSION: 1.73.0
-  CPPTANGO_VERSION: 9.4.0 # 9.4.0.windows0 packages: https://gitlab.com/tango-controls/cppTango/-/packages/10381909
-  CPPTANGO_WIN32_DOWNLOAD_LINK: https://gitlab.com/tango-controls/cppTango/-/package_files/58360377/download
-  CPPTANGO_WIN64_DOWNLOAD_LINK: https://gitlab.com/tango-controls/cppTango/-/package_files/58357157/download
+  CPPTANGO_VERSION: 9.4.0 # from: https://gitlab.com/tango-controls/cppTango/-/releases/9.4.0.windows1
+  CPPTANGO_WIN32_DOWNLOAD_LINK: https://gitlab.com/tango-controls/cppTango/-/package_files/60775943/download
+  CPPTANGO_WIN64_DOWNLOAD_LINK: https://gitlab.com/tango-controls/cppTango/-/package_files/60773874/download
   TANGO_TEST_VERSION: 3.6
   TANGO_TEST_WIN32_DOWNLOAD_LINK: https://gitlab.com/tango-controls/TangoTest/-/package_files/45776380/download
   TANGO_TEST_WIN64_DOWNLOAD_LINK: https://gitlab.com/tango-controls/TangoTest/-/package_files/45776372/download
