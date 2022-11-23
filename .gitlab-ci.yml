@@ -25,7 +25,9 @@ cache:
   policy: pull-push
 
 .matrix-wheel:
-  image: ${IMAGE_REGISTRY}:${MANYLINUX}_${ARCH}_v1.0.0
+  image: ${IMAGE_REGISTRY}:${MANYLINUX}_${ARCH}_v1.1.0
+  tags:
+    - maxiv-docker
   variables:
     IMAGE_REGISTRY: registry.gitlab.com/tango-controls/docker/pytango-builder
     MANYLINUX: manylinux2014
