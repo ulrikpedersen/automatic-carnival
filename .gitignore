@@ -9,6 +9,9 @@ __pycache__/
 # Precompiled headers
 *.gch
 
+# Local pipelines
+builds/
+
 # Packages
 bin/
 build/

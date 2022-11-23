@@ -7,14 +7,12 @@ stages:
 
 default:
   interruptible: false
-  image: condaforge/mambaforge:4.14.0-0
 
 variables:
   CPP_TANGO_VERSION: "9.4.0"
   CACHE_FALLBACK_KEY: "v1-$CPP_TANGO_VERSION-$CI_JOB_NAME-$CI_DEFAULT_BRANCH"
   TWINE_USERNAME: __token__
   TWINE_PASSWORD: secret
-
 
 cache:
   key: "v1-$CPP_TANGO_VERSION-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
@@ -26,41 +24,47 @@ cache:
     - ./cached_ext
   policy: pull-push
 
-.base_build:
-  stage: test
+.matrix-wheel:
+  image: ${IMAGE_REGISTRY}:${MANYLINUX}_${ARCH}_v1.1.0
   tags:
-    - gitlab-org
+    - maxiv-docker
   variables:
-    TANGO_DEPENDENCIES: "cpptango=${CPP_TANGO_VERSION} tango-test=3.6"
-    DEBIAN_FRONTEND: "noninteractive"
-  before_script:
-    - apt-get update -y --allow-releaseinfo-change-suite
-    - apt-get -y install make pkg-config rsync
-    - sed -i 's/\[ -z "\$PS1" \] && return/# disabled early exit for non-interactive usage in container!/' ~/.bashrc
-    - mamba init bash
-    - source ~/.bashrc
-    - mamba activate ./envs/$PYTHON_VERSION || mamba create --prefix ./envs/$PYTHON_VERSION --yes python=$PYTHON_VERSION
-    - mamba activate ./envs/$PYTHON_VERSION
+    IMAGE_REGISTRY: registry.gitlab.com/tango-controls/docker/pytango-builder
+    MANYLINUX: manylinux2014
+    GLIBC_TAG: '2_17' # depends on manylinux
+    PYTHON_TAG: 'cp${PYTHON_VER}-cp${PYTHON_VER}${ABI_SUFFIX}'
+    WHEEL_REGEX: pytango*${PYTHON_TAG}*${ARCH}.whl
+  parallel:
+    matrix:
+      - ARCH: [x86_64, i686, aarch64]
+        PYTHON_VER: [36, 37]
+        ABI_SUFFIX: ['m']
 
-    # Install build dependencies
-    - mamba install --yes -c conda-forge -c tango-controls/label/dev -c conda-forge/label/cpptango_rc boost cppzmq cxx-compiler numpy $TANGO_DEPENDENCIES
-    - mamba clean --all --force-pkgs-dirs --yes
-    # Use conda prefix as root for the dependencies
-    - export BOOST_ROOT=$CONDA_PREFIX TANGO_ROOT=$CONDA_PREFIX ZMQ_ROOT=$CONDA_PREFIX OMNI_ROOT=$CONDA_PREFIX
-    # Use custom boost python library name to work with newer naming scheme
-    - export BOOST_PYTHON_LIB=boost_python$BOOST_PYTHON
+      - ARCH: [x86_64, i686, aarch64]
+        PYTHON_VER: [38, 39, 310, 311]
+  rules:
+    - if: '$CI_COMMIT_TAG'
+    - if: $CI_PIPELINE_SOURCE != "merge_request_event"
+      when: manual
+      allow_failure: true
 
-    # make sure old_ext exists
-    - mkdir -p cached_ext
-    # Touch the .so files if the extension hasn't changed
-    - diff -r cached_ext ext && find build -name _tango*.so -printf "touching %p\n" -exec touch {} + || true
+build-wheel:
+  stage: build
+  extends: .matrix-wheel
+  script:
+    # build wheel
+    - /opt/python/${PYTHON_TAG}/bin/python -m build --wheel
+    # repair wheel
+    - auditwheel repair dist/${WHEEL_REGEX}
+    - rm -rf dist/${WHEEL_REGEX} # delete unrepaired wheel
+    # copy wheel to dist
+    - cp wheelhouse/${WHEEL_REGEX} ./dist # are we always sure of the name?
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - dist/
 
-    - python setup.py build
-
-    # The build directory has been updated, cached_ext needs to be synchronized too
-    - rsync -a --delete ext/ cached_ext/
-
-build-pypi-sdist-package:
+build-sdist:
   stage: build
   image: python:3.8
   script:
@@ -70,7 +74,7 @@ build-pypi-sdist-package:
     paths:
       - dist/
 
-.base_build_docker_image:
+build-docker-image:
   stage: image
   image: docker:latest
   services:
@@ -90,64 +94,57 @@ build-pypi-sdist-package:
     - cd .devcontainer # Minimize build context migrated to docker container
     - docker build -t $CI_REGISTRY/${LOWER_PROJECT_NAMESPACE}/$CI_PROJECT_NAME/pytango-dev:py${PYTHON_VERSION}-tango${CPP_TANGO_VERSION}-pytango${COMMIT_TAG} --build-arg PYTHON_VERSION --build-arg CPP_TANGO_VERSION -f Dockerfile .
     - docker push $CI_REGISTRY/${LOWER_PROJECT_NAMESPACE}/$CI_PROJECT_NAME/pytango-dev:py${PYTHON_VERSION}-tango${CPP_TANGO_VERSION}-pytango${COMMIT_TAG}
+  parallel:
+    matrix:
+      - PYTHON_VERSION: ['3.7', '3.8']
 
-build-docker-image-py37:
-  extends: .base_build_docker_image
+test-source:
+  stage: test
+  image: condaforge/mambaforge:4.14.0-0
+  tags:
+    - gitlab-org
   variables:
-    PYTHON_VERSION: "3.7"
-
-build-docker-image-py38:
-  extends: .base_build_docker_image
-  variables:
-    PYTHON_VERSION: "3.8"
-
-test_py3.11:
-  extends: .base_build
-  variables:
-    PYTHON_VERSION: '3.11'
-    BOOST_PYTHON: '311'
+    TANGO_DEPENDENCIES: "cpptango=${CPP_TANGO_VERSION} tango-test=3.6"
+    DEBIAN_FRONTEND: "noninteractive"
+  before_script:
+    - apt-get update -y --allow-releaseinfo-change-suite
+    - apt-get -y install make pkg-config rsync
+    - sed -i 's/\[ -z "\$PS1" \] && return/# disabled early exit for non-interactive usage in container!/' ~/.bashrc
+    - mamba init bash
+    - source ~/.bashrc
+    - mamba activate ./envs/$PYTHON_VERSION || mamba create --prefix ./envs/$PYTHON_VERSION --yes python=$PYTHON_VERSION
+    - mamba activate ./envs/$PYTHON_VERSION
+    # Install build dependencies
+    - mamba install --yes -c conda-forge -c tango-controls/label/dev -c conda-forge/label/cpptango_rc boost cppzmq cxx-compiler numpy $TANGO_DEPENDENCIES
+    - mamba clean --all --force-pkgs-dirs --yes
+    # Use conda prefix as root for the dependencies
+    - export BOOST_ROOT=$CONDA_PREFIX TANGO_ROOT=$CONDA_PREFIX ZMQ_ROOT=$CONDA_PREFIX OMNI_ROOT=$CONDA_PREFIX
+    # Use custom boost python library name to work with newer naming scheme
+    - export BOOST_PYTHON_LIB=boost_python$(echo $PYTHON_VERSION | tr -d .)
+    # make sure old_ext exists
+    - mkdir -p cached_ext
+    # Touch the .so files if the extension hasn't changed
+    - diff -r cached_ext ext && find build -name _tango*.so -printf "touching %p\n" -exec touch {} + || true
+    # Build pytango
+    - python setup.py build
+    # The build directory has been updated, cached_ext needs to be synchronized too
+    - rsync -a --delete ext/ cached_ext/
   script:
     - python setup.py test
+  parallel:
+    matrix:
+      - PYTHON_VERSION: ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11']
 
-test_py3.10:
-  extends: .base_build
-  variables:
-    PYTHON_VERSION: '3.10'
-    BOOST_PYTHON: '310'
+test-wheel:
+  stage: test
+  extends: .matrix-wheel
+  before_script:
+    - /opt/python/${PYTHON_TAG}/bin/python -m venv venv
+    - source venv/bin/activate
+    - pip install --upgrade pip
+    - pip install $(find dist/${WHEEL_REGEX})[tests]
   script:
-    - python setup.py test
-
-test_py3.9:
-  extends: .base_build
-  variables:
-    PYTHON_VERSION: '3.9'
-    BOOST_PYTHON: '39'
-  script:
-    - python setup.py test
-
-test_py3.8:
-  extends: .base_build
-  variables:
-    PYTHON_VERSION: '3.8'
-    BOOST_PYTHON: '38'
-  script:
-    - python setup.py test
-
-test_py3.7:
-  extends: .base_build
-  variables:
-    PYTHON_VERSION: '3.7'
-    BOOST_PYTHON: '37'
-  script:
-    - python setup.py test
-
-test_py3.6:
-  extends: .base_build
-  variables:
-    PYTHON_VERSION: '3.6'
-    BOOST_PYTHON: '36'
-  script:
-    - python setup.py test
+    - pytest
 
 release-pypi-package:
   stage: release
