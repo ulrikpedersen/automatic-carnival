@@ -142,7 +142,7 @@ test-wheel:
     - /opt/python/${PYTHON_TAG}/bin/python -m venv venv
     - source venv/bin/activate
     - pip install --upgrade pip
-    - pip install $(find dist/${WHEEL_REGEX})[tests]
+    - pip install --prefer-binary $(find dist/${WHEEL_REGEX})[tests]
   script:
     - pytest
   rules:
