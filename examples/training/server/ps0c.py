@@ -41,8 +41,8 @@ class PowerSupply(Device):
         noise = -0.05 + 0.1 * random.random()
         return 1.5 + noise
 
-    @InfoIt()
     @command
+    @InfoIt()
     def calibrate(self):
         sleep(0.1)
 
