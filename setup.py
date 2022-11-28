@@ -378,15 +378,10 @@ def setup_args():
 
     python_requires = ">=3.6"
 
-    requires = [
-        "boost_python (>=1.33)",
-        "numpy (>=1.13.3)",
-        "six (>=1.10)",
-    ]
-
     install_requires = [
         "numpy (>=1.13.3)",
         "six (>=1.10)",
+        "packaging",
     ]
 
     setup_requires = []
@@ -517,7 +512,6 @@ def setup_args():
         provides=provides,
         keywords=Release.keywords,
         python_requires=python_requires,
-        requires=requires,
         install_requires=install_requires,
         setup_requires=setup_requires,
         tests_require=tests_require,

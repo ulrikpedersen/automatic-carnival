@@ -14,6 +14,7 @@
 
 from __future__ import absolute_import
 from functools import partial
+from packaging.version import Version
 
 from ._tango import GreenMode
 from .device_proxy import get_device_proxy
@@ -31,9 +32,7 @@ def check_requirements():
                           "green mode. Consider using the futures green mode "
                           "instead")
 
-    import distutils.version
-    gevent_version = ".".join(map(str, gevent.version_info[:3]))
-    if distutils.version.StrictVersion(gevent_version) < "1.0":
+    if Version(gevent.__version__) < Version("1.0"):
         raise ImportError("You need gevent >= 1.0. You are using %s. "
                           "Consider using the futures green mode instead"
                           % gevent_version)
