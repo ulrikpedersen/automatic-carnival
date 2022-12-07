@@ -59,7 +59,7 @@ class TangoStream:
         self._accum = ""
 
 
-class LogIt(object):
+class LogIt:
     """A class designed to be a decorator of any method of a
     :class:`tango.DeviceImpl` subclass. The idea is to log the entrance and
     exit of any decorated method.

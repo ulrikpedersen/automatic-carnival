@@ -1138,7 +1138,7 @@ def command(f=None, dtype_in=None, dformat_in=None, doc_in="",
     return cmd
 
 
-class _BaseProperty(object):
+class _BaseProperty:
     def __init__(self, dtype, doc='', default_value=None, update_db=False):
         self.name = None
         dtype = from_typeformat_to_type(*_get_tango_type_format(dtype))

@@ -24,7 +24,7 @@ from ._tango import Except, DispLevel, Pipe, PipeWriteType, UserDefaultPipeProp
 from .utils import is_non_str_seq, is_pure_str
 
 
-class PipeData(object):
+class PipeData:
     """A helper class that contains the same information one of the items in
     DeviceClass.pipe_list but in object form"""
 

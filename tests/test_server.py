@@ -683,7 +683,7 @@ def test_dynamic_attribute_with_non_device_method_fails(server_green_mode):
     def read_function_outside_of_any_class(attr):
         attr.set_value(123)
 
-    class NonDeviceClass(object):
+    class NonDeviceClass:
         def read_method_outside_of_device_class(self, attr):
             attr.set_value(456)
 

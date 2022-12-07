@@ -279,7 +279,7 @@ def __AttributeProxy__delete_property(self, value):
 # One reason to do it this way: get_device_proxy() will always return the
 # same tango.DeviceProxy with this implementation. And then we can trust
 # it's automatic event unsubscription to handle events.
-class AttributeProxy(object):
+class AttributeProxy:
     """
         AttributeProxy is the high level Tango object which provides the
         client with an easy-to-use interface to TANGO attributes.

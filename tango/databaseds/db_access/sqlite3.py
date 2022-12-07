@@ -72,7 +72,7 @@ def use_cursor(f):
     return wrap
 
 
-class SqlDatabase(object):
+class SqlDatabase:
 
     DB_API_NAME = 'sqlite3'  # Default implementation
 

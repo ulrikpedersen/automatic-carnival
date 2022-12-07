@@ -88,7 +88,7 @@ class LatestDeviceImpl(get_latest_device_class()):
     """.format(get_latest_device_class().__name__)
 
 
-class AttributeAlarm(object):
+class AttributeAlarm:
     """This class represents the python interface for the Tango IDL object
     AttributeAlarm."""
 
@@ -102,7 +102,7 @@ class AttributeAlarm(object):
         self.extensions = []
 
 
-class ChangeEventProp(object):
+class ChangeEventProp:
     """This class represents the python interface for the Tango IDL object
     ChangeEventProp."""
 
@@ -112,7 +112,7 @@ class ChangeEventProp(object):
         self.extensions = []
 
 
-class PeriodicEventProp(object):
+class PeriodicEventProp:
     """This class represents the python interface for the Tango IDL object
     PeriodicEventProp."""
 
@@ -121,7 +121,7 @@ class PeriodicEventProp(object):
         self.extensions = []
 
 
-class ArchiveEventProp(object):
+class ArchiveEventProp:
     """This class represents the python interface for the Tango IDL object
     ArchiveEventProp."""
 
@@ -132,7 +132,7 @@ class ArchiveEventProp(object):
         self.extensions = []
 
 
-class EventProperties(object):
+class EventProperties:
     """This class represents the python interface for the Tango IDL object
     EventProperties."""
 
@@ -142,7 +142,7 @@ class EventProperties(object):
         self.arch_event = ArchiveEventProp()
 
 
-class MultiAttrProp(object):
+class MultiAttrProp:
     """This class represents the python interface for the Tango IDL object
     MultiAttrProp."""
 
@@ -189,7 +189,7 @@ def _init_attr_config(attr_cfg):
     attr_cfg.extensions = []
 
 
-class AttributeConfig(object):
+class AttributeConfig:
     """This class represents the python interface for the Tango IDL object
     AttributeConfig."""
 
@@ -199,7 +199,7 @@ class AttributeConfig(object):
         self.max_alarm = ''
 
 
-class AttributeConfig_2(object):
+class AttributeConfig_2:
     """This class represents the python interface for the Tango IDL object
     AttributeConfig_2."""
 
@@ -210,7 +210,7 @@ class AttributeConfig_2(object):
         self.max_alarm = ''
 
 
-class AttributeConfig_3(object):
+class AttributeConfig_3:
     """This class represents the python interface for the Tango IDL object
     AttributeConfig_3."""
 
@@ -222,7 +222,7 @@ class AttributeConfig_3(object):
         self.sys_extensions = []
 
 
-class AttributeConfig_5(object):
+class AttributeConfig_5:
     """This class represents the python interface for the Tango IDL object
     AttributeConfig_5."""
 

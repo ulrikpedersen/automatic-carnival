@@ -1480,7 +1480,7 @@ def _notifd2db_real_db(ior_string, host=None, out=sys.stdout):
               "to TANGO database", file=out)
 
 
-class EventCallback(object):
+class EventCallback:
     """
     Useful event callback for test purposes
 

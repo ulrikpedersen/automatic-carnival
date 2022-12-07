@@ -64,7 +64,7 @@ def get_green_mode():
 
 # Abstract executor class
 
-class AbstractExecutor(object):
+class AbstractExecutor:
     asynchronous = NotImplemented
     default_wait = NotImplemented
 

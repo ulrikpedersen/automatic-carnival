@@ -58,7 +58,7 @@ def init_constants():
                                        constants.BOOST_PATCH_VERSION)))
     constants.BOOST_VERSION = BOOST_VERSION
 
-    class Compile(object):
+    class Compile:
         PY_VERSION = constants.PY_VERSION
         TANGO_VERSION = constants.TANGO_VERSION
         BOOST_VERSION = constants.BOOST_VERSION
@@ -72,7 +72,7 @@ def init_constants():
     tg_rt_ver = ".".join(map(str, (tg_rt_major_ver, tg_rt_minor_ver,
                                    tg_rt_patch_ver)))
 
-    class Runtime(object):
+    class Runtime:
         PY_VERSION = ".".join(map(str, sys.version_info[:3]))
         TANGO_VERSION = tg_rt_ver
         if constants.NUMPY_SUPPORT:

@@ -104,7 +104,7 @@ def get_device_proxy(*args, **kwargs):
     return DeviceProxy(*args, **kwargs)
 
 
-class __TangoInfo(object):
+class __TangoInfo:
     """Helper class for copying DeviceInfo, or when DeviceProxy.info() fails."""
 
     def __init__(

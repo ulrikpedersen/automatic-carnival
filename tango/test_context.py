@@ -128,7 +128,7 @@ def _device_class_from_field(field):
     return (device_cls_class, device_class)
 
 
-class MultiDeviceTestContext(object):
+class MultiDeviceTestContext:
     """Context to run device(s) without a database.
 
     The difference with respect to

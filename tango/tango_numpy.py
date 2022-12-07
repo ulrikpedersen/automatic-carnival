@@ -42,7 +42,7 @@ def _define_numpy():
     try:
         import numpy
 
-        class NumpyType(object):
+        class NumpyType:
 
             DevShort = numpy.int16
             DevLong = numpy.int32

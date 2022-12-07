@@ -42,7 +42,7 @@ def _command(device, cmd_info, *args, **kwargs):
     return result
 
 
-class _DeviceHelper(object):
+class _DeviceHelper:
     __CMD_FILTER = set(("init", "state", "status"))
     __ATTR_FILTER = set(("state", "status"))
 
@@ -190,7 +190,7 @@ class _DeviceHelper(object):
         return "{0}({1})".format(klass, self.dev_name)
 
 
-class Object(object):
+class Object:
     """Tango object"""
 
     def __init__(self, dev_name, *args, **kwargs):
