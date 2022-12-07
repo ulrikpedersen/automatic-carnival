@@ -12,7 +12,6 @@
 """This module exposes a asyncio version of :class:`PyTango.DeviceProxy` and
 :class:`PyTango.AttributeProxy"""
 
-from __future__ import absolute_import
 from functools import partial
 
 from ._tango import GreenMode

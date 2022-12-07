@@ -13,7 +13,6 @@
 This is an internal PyTango module.
 """
 
-from __future__ import print_function
 
 __all__ = ("DeviceClass", "device_class_init")
 

@@ -15,7 +15,6 @@
 #          Microsoft Visual Studio and not from the command line
 # ------------------------------------------------------------------------------
 
-from __future__ import print_function
 
 import sys
 import os

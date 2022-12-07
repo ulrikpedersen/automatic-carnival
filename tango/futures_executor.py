@@ -9,9 +9,6 @@
 # See LICENSE.txt for more info.
 # ------------------------------------------------------------------------------
 
-# Future imports
-from __future__ import absolute_import
-
 # Concurrent imports
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 

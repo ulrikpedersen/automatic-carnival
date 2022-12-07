@@ -1,5 +1,4 @@
 """Backport some asyncio features."""
-from __future__ import absolute_import
 
 import collections
 import concurrent.futures

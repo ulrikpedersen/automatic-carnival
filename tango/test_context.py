@@ -1,6 +1,5 @@
 """Provide a context to run a device without a database."""
 
-from __future__ import absolute_import
 
 # Imports
 import os

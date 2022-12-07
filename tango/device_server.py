@@ -13,7 +13,6 @@
 This is an internal PyTango module.
 """
 
-from __future__ import print_function
 
 import copy
 import functools

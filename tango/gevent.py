@@ -12,7 +12,6 @@
 """This module exposes a gevent version of :class:`tango.DeviceProxy` and
 :class:`tango.AttributeProxy"""
 
-from __future__ import absolute_import
 from functools import partial
 from packaging.version import Version
 
