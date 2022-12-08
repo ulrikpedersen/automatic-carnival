@@ -237,24 +237,24 @@ def __requires(package_name, min_version=None, conflicts=(),
             package = __import(package_name)
             curr_version = LooseVersion(package.__version__)
         except ImportError:
-            msg = "Could not find package {0} required by {1}".format(
+            msg = "Could not find package {} required by {}".format(
                 package_name, software_name)
             raise Exception(msg)
         except:
-            msg = "Error importing package {0} required by {1}".format(
+            msg = "Error importing package {} required by {}".format(
                 package_name, software_name)
             raise Exception(msg)
 
     if min_version is not None:
         min_version = LooseVersion(min_version)
         if min_version > curr_version:
-            msg = "{0} requires {1} {2} but {3} installed".format(
+            msg = "{} requires {} {} but {} installed".format(
                 software_name, package_name, min_version, curr_version)
             raise Exception(msg)
 
     conflicts = map(LooseVersion, conflicts)
     if curr_version in conflicts:
-        msg = "{0} cannot run with {1} {2}".format(
+        msg = "{} cannot run with {} {}".format(
             software_name, package_name, curr_version)
         raise Exception(msg)
     return True
@@ -336,7 +336,7 @@ def get_tango_device_classes():
         __device_classes = [_tango.DeviceImpl]
         i = 2
         while True:
-            dc = "Device_{0}Impl".format(i)
+            dc = f"Device_{i}Impl"
             try:
                 __device_classes.append(getattr(_tango, dc))
                 i = i + 1
@@ -409,7 +409,7 @@ def __get_tango_type_numpy_support(obj):
     try:
         ndim, dtype = obj.ndim, str(obj.dtype)
         if ndim > 2:
-            raise TypeError('cannot translate numpy array with {0} '
+            raise TypeError('cannot translate numpy array with {} '
                             'dimensions to tango type'.format(obj.ndim))
         return TO_TANGO_TYPE[dtype], AttrDataFormat(ndim)
     except AttributeError:
@@ -994,7 +994,7 @@ def scalar_to_array_type(tg_type):
     try:
         return _scalar_to_array_type[tg_type]
     except KeyError:
-        raise ValueError("Invalid tango scalar type: {0}".format(tg_type))
+        raise ValueError(f"Invalid tango scalar type: {tg_type}")
 
 
 def str_2_obj(obj_str, tg_type=None):
@@ -1105,7 +1105,7 @@ def document_method(klass, method_name, d, add=True):
     if add:
         cpp_doc = meth.__doc__
         if cpp_doc:
-            func.__doc__ = "%s\n%s" % (d, cpp_doc)
+            func.__doc__ = f"{d}\n{cpp_doc}"
             return
     func.__doc__ = d
 
@@ -1121,7 +1121,7 @@ def document_static_method(klass, method_name, d, add=True):
     if add:
         cpp_doc = meth.__doc__
         if cpp_doc:
-            meth.__doc__ = "%s\n%s" % (d, cpp_doc)
+            meth.__doc__ = f"{d}\n{cpp_doc}"
             return
     meth.__doc__ = d
 
@@ -1580,14 +1580,14 @@ class EventCallback:
         """Internal usage only"""
         if evt.err:
             e = evt.errors[0]
-            return "[%s] %s" % (e.reason, e.desc)
+            return f"[{e.reason}] {e.desc}"
 
         if isinstance(evt, EventData):
-            return "[%s] %s" % (
+            return "[{}] {}".format(
                 evt.attr_value.quality, str(evt.attr_value.value))
         elif isinstance(evt, AttrConfEventData):
             cfg = evt.attr_conf
-            return "label='%s'; unit='%s'" % (cfg.label, cfg.unit)
+            return f"label='{cfg.label}'; unit='{cfg.unit}'"
         elif isinstance(evt, DataReadyEventData):
             return ""
         elif isinstance(evt, PipeEventData):
@@ -1772,11 +1772,11 @@ class PyTangoHelpFormatter(HelpFormatter):
             db = Database()
             servers_list = db.get_instance_name_list(self._prog)
             if servers_list.size():
-                usage += 'Instance names defined in database for server {}:\n'.format(self._prog)
+                usage += f'Instance names defined in database for server {self._prog}:\n'
                 for server in servers_list:
                     usage += '\t' + str(server) + '\n'
             else:
-                usage += 'Warning! No defined instance in database for server {} found!\n'.format(self._prog)
+                usage += f'Warning! No defined instance in database for server {self._prog} found!\n'
         except DevFailed:
             pass
 

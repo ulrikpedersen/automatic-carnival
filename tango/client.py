@@ -187,7 +187,7 @@ class _DeviceHelper:
         klass = "Device"
         if info:
             klass = info.dev_class
-        return "{0}({1})".format(klass, self.dev_name)
+        return f"{klass}({self.dev_name})"
 
 
 class Object:

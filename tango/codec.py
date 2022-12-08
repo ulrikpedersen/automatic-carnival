@@ -9,7 +9,7 @@ def loads(fmt, data):
         import json
         loads = json.loads
     else:
-        raise TypeError("Format '{0}' not supported".format(fmt))
+        raise TypeError(f"Format '{fmt}' not supported")
     return loads(data)
 
 
@@ -21,4 +21,4 @@ def dumps(fmt, obj):
     elif fmt.startswith("json"):
         import json
         return fmt, json.dumps(obj)
-    raise TypeError("Format '{0}' not supported".format(fmt))
+    raise TypeError(f"Format '{fmt}' not supported")

@@ -47,7 +47,7 @@ def main():
         plat_name = 'win-amd64'
 
     try:
-        cmd_line = '%s %s ' % (executable, setup_name)
+        cmd_line = '{} {} '.format(executable, setup_name)
         cmd_line += 'build_py --force --no-compile ' \
                     '--build-lib=%s ' \
                     % (build_dir,)

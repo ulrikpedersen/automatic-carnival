@@ -247,9 +247,9 @@ def __DeviceProxy__refresh_cmd_cache(self):
     cmd_cache = {}
     for cmd in cmd_list:
         n = cmd.cmd_name.lower()
-        doc = "%s(%s) -> %s\n\n" % (cmd.cmd_name, cmd.in_type, cmd.out_type)
-        doc += " -  in (%s): %s\n" % (cmd.in_type, cmd.in_type_desc)
-        doc += " - out (%s): %s\n" % (cmd.out_type, cmd.out_type_desc)
+        doc = "{}({}) -> {}\n\n".format(cmd.cmd_name, cmd.in_type, cmd.out_type)
+        doc += " -  in ({}): {}\n".format(cmd.in_type, cmd.in_type_desc)
+        doc += " - out ({}): {}\n".format(cmd.out_type, cmd.out_type_desc)
         cmd_cache[n] = cmd, doc
     self.__dict__['__cmd_cache'] = cmd_cache
 
@@ -1458,7 +1458,7 @@ def __DeviceProxy___get_info_(self):
 
 def __DeviceProxy__str(self):
     info = self._get_info_()
-    return "%s(%s)" % (info.dev_class, self.dev_name())
+    return "{}({})".format(info.dev_class, self.dev_name())
 
 
 def __DeviceProxy__read_pipe(self, pipe_name, extract_as=ExtractAs.Numpy):
@@ -1496,7 +1496,7 @@ def __get_pipe_type_numpy_support(obj):
     except AttributeError:
         return __get_pipe_type_simple(obj)
     if ndim > 1:
-        raise TypeError('cannot translate numpy array with {0} '
+        raise TypeError('cannot translate numpy array with {} '
                         'dimensions to tango type'.format(obj.ndim))
     tg_type = TO_TANGO_TYPE[dtype]
     if ndim > 0:

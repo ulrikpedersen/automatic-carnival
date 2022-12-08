@@ -82,7 +82,7 @@ def get_source_location():
 
 class LatestDeviceImpl(get_latest_device_class()):
     __doc__ = """\
-    Latest implementation of the TANGO device base class (alias for {0}).
+    Latest implementation of the TANGO device base class (alias for {}).
 
     It inherits from CORBA classes where all the network layer is implemented.
     """.format(get_latest_device_class().__name__)
@@ -289,7 +289,7 @@ def __Attribute__set_properties(self, attr_cfg, dev=None):
 
 
 def __Attribute__str(self):
-    return '%s(%s)' % (self.__class__.__name__, self.get_name())
+    return '{}({})'.format(self.__class__.__name__, self.get_name())
 
 
 def __init_Attribute():
@@ -659,7 +659,7 @@ def __DeviceImpl__fatal(self):
 
 
 def __DeviceImpl__str(self):
-    return '%s(%s)' % (self.__class__.__name__, self.get_name())
+    return '{}({})'.format(self.__class__.__name__, self.get_name())
 
 
 def __init_DeviceImpl():
@@ -826,7 +826,7 @@ def __UserDefaultAttrProp_set_enum_labels(self, enum_labels):
 
 
 def __Attr__str(self):
-    return '%s(%s)' % (self.__class__.__name__, self.get_name())
+    return '{}({})'.format(self.__class__.__name__, self.get_name())
 
 
 def __init_Attr():

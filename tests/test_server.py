@@ -44,7 +44,7 @@ def test_empty_device(server_green_mode):
 
 
 def test_set_state(state, server_green_mode):
-    status = 'The device is in {0!s} state.'.format(state)
+    status = f'The device is in {state!s} state.'
 
     class TestDevice(Device):
         green_mode = server_green_mode
@@ -1101,7 +1101,7 @@ def test_logging(server_green_mode):
         proxy_source = context.get_device("test/log/source")
         proxy_consumer = context.get_device("test/log/consumer")
         consumer_access = context.get_device_access("test/log/consumer")
-        proxy_source.add_logging_target("device::{}".format(consumer_access))
+        proxy_source.add_logging_target(f"device::{consumer_access}")
 
         for msg in ([""],
                     [" with literal %s"],

@@ -146,14 +146,14 @@ def __patch_read_method(tango_device_klass, attribute):
     """
     read_method = getattr(attribute, "fget", None)
     if read_method:
-        method_name = "__read_{0}__".format(attribute.attr_name)
+        method_name = f"__read_{attribute.attr_name}__"
         attribute.read_method_name = method_name
     else:
         method_name = attribute.read_method_name
         read_method = getattr(tango_device_klass, method_name)
 
     read_attr = _get_wrapped_read_method(attribute, read_method)
-    method_name = "__read_{0}_wrapper__".format(attribute.attr_name)
+    method_name = f"__read_{attribute.attr_name}_wrapper__"
     attribute.read_method_name = method_name
 
     setattr(tango_device_klass, method_name, read_attr)
@@ -190,7 +190,7 @@ def __patch_write_method(tango_device_klass, attribute):
     """
     write_method = getattr(attribute, "fset", None)
     if write_method:
-        method_name = "__write_{0}__".format(attribute.attr_name)
+        method_name = f"__write_{attribute.attr_name}__"
         attribute.write_method_name = method_name
     else:
         method_name = attribute.write_method_name
@@ -268,14 +268,14 @@ def __patch_pipe_read_method(tango_device_klass, pipe):
     """
     read_method = getattr(pipe, "fget", None)
     if read_method:
-        method_name = "__read_{0}__".format(pipe.pipe_name)
+        method_name = f"__read_{pipe.pipe_name}__"
         pipe.read_method_name = method_name
     else:
         method_name = pipe.read_method_name
         read_method = getattr(tango_device_klass, method_name)
 
     read_pipe = _get_wrapped_pipe_read_method(pipe, read_method)
-    method_name = "__read_{0}_wrapper__".format(pipe.pipe_name)
+    method_name = f"__read_{pipe.pipe_name}_wrapper__"
     pipe.read_method_name = method_name
 
     setattr(tango_device_klass, method_name, read_pipe)
@@ -312,7 +312,7 @@ def __patch_pipe_write_method(tango_device_klass, pipe):
     """
     write_method = getattr(pipe, "fset", None)
     if write_method:
-        method_name = "__write_{0}__".format(pipe.pipe_name)
+        method_name = f"__write_{pipe.pipe_name}__"
         pipe.write_method_name = method_name
     else:
         method_name = pipe.write_method_name
@@ -420,7 +420,7 @@ class _DeviceClass(DeviceClass):
 def __create_tango_deviceclass_klass(tango_device_klass, attrs=None):
     klass_name = tango_device_klass.__name__
     if not issubclass(tango_device_klass, (BaseDevice)):
-        msg = "{0} device must inherit from " \
+        msg = "{} device must inherit from " \
               "tango.server.Device".format(klass_name)
         raise Exception(msg)
 
@@ -605,7 +605,7 @@ class BaseDevice(LatestDeviceImpl):
                 properties = self.device_property_list[prop_name]
                 mandatory = properties[3]
                 if mandatory and value is None:
-                    msg = "Device property {0} is mandatory ".format(prop_name)
+                    msg = f"Device property {prop_name} is mandatory "
                     raise Exception(msg)
         except DevFailed as df:
             print(80 * "-")
@@ -795,12 +795,12 @@ class attribute(AttrData):
             dformat = kwargs.get('dformat')
             if inspect.isclass(dtype) and issubclass(dtype, enum.Enum):
                 if dformat and dformat != AttrDataFormat.SCALAR:
-                    raise TypeError("DevEnum types can only be scalar, not {0}."
+                    raise TypeError("DevEnum types can only be scalar, not {}."
                                     .format(dformat))
                 enum_labels = kwargs.get('enum_labels')
                 if enum_labels:
                     raise TypeError("For dtype of enum.Enum the enum_labels must not "
-                                    "be specified - dtype: {0}, enum_labels: {1}."
+                                    "be specified - dtype: {}, enum_labels: {}."
                                     .format(dtype, enum_labels))
                 kwargs['enum_labels'] = get_enum_labels(dtype)
                 dtype = CmdArgType.DevEnum
@@ -1003,7 +1003,7 @@ class pipe(PipeData):
 
 
 def __build_command_doc(f, name, dtype_in, doc_in, dtype_out, doc_out):
-    doc = "'{0}' TANGO command".format(name)
+    doc = f"'{name}' TANGO command"
     if dtype_in is not None:
         arg_spec = inspect_getargspec(f)
         if len(arg_spec.args) > 1:
@@ -1028,7 +1028,7 @@ def __build_command_doc(f, name, dtype_in, doc_in, dtype_out, doc_out):
             except:
                 pass
         msg = doc_out or '(not documented)'
-        doc += '\n\n:return: {0}\n:rtype: {1}'.format(msg, dtype_out_str)
+        doc += f'\n\n:return: {msg}\n:rtype: {dtype_out_str}'
     return doc
 
 

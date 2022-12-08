@@ -285,11 +285,11 @@ def __DeviceClass__init__(self, name):
 
 
 def __DeviceClass__str__(self):
-    return '%s(%s)' % (self.__class__.__name__, self.get_name())
+    return '{}({})'.format(self.__class__.__name__, self.get_name())
 
 
 def __DeviceClass__repr__(self):
-    return '%s(%s)' % (self.__class__.__name__, self.get_name())
+    return '{}({})'.format(self.__class__.__name__, self.get_name())
 
 
 def __throw_create_attribute_exception(msg):

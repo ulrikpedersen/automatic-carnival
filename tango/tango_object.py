@@ -286,7 +286,7 @@ class Server:
         args = [self.server_type, self.__server_name]
         if self.__port is not None:
             args.extend(["-ORBendPoint",
-                         "giop:tcp::{0}".format(self.__port)])
+                         f"giop:tcp::{self.__port}"])
         return args
 
     def __exec_cb(self, cb):
@@ -311,7 +311,7 @@ class Server:
         server_registered = server_instance in db.get_server_list()
 
         if server_registered:
-            dserver_name = "dserver/{0}".format(server_instance)
+            dserver_name = f"dserver/{server_instance}"
             if db.import_device(dserver_name).exported:
                 import tango
                 dserver = tango.DeviceProxy(dserver_name)
@@ -435,7 +435,7 @@ class Server:
 
     @property
     def server_instance(self):
-        return "{0}/{1}".format(self.server_type, self.__server_name)
+        return f"{self.server_type}/{self.__server_name}"
 
     @property
     def tango_util(self):
@@ -541,7 +541,7 @@ class Server:
         slash_count = name.count("/")
         if slash_count == 0:
             alias = name
-            full_name = "{0}/{1}".format(self.server_instance, name)
+            full_name = f"{self.server_instance}/{name}"
         elif slash_count == 2:
             alias = None
             full_name = name

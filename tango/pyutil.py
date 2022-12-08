@@ -187,7 +187,7 @@ def __Util__delete_device(self, klass_name, device_name):
                                "Util.delete_device")
 
     # 2 - Make sure device name is defined in this server
-    class_device_name = "%s::%s" % (klass_name, device_name)
+    class_device_name = f"{klass_name}::{device_name}"
     ds = self.get_dserver_device()
     dev_names = ds.query_device()
     device_exists = False
@@ -283,7 +283,7 @@ def parse_args(args):
     parsed_args = parser.parse_args(args[1:])
 
     if parsed_args.port and parsed_args.ORBendPoint is None:
-        parsed_args.ORBendPoint = 'giop:tcp:{:s}:{:s}'.format(parsed_args.host, parsed_args.port)
+        parsed_args.ORBendPoint = f'giop:tcp:{parsed_args.host:s}:{parsed_args.port:s}'
 
     if parsed_args.nodb and parsed_args.ORBendPoint is None:
         raise SystemExit('-nodb option should used with [-host] -port or -ORBendPoint options')
@@ -297,20 +297,20 @@ def parse_args(args):
 
     # -v4 has priority on -vvvv
     if verbose is not None:
-        args += ['-v{}'.format(verbose)]
+        args += [f'-v{verbose}']
     elif parsed_args.verbose is not None:
-        args += ['-v{}'.format(parsed_args.verbose)]
+        args += [f'-v{parsed_args.verbose}']
 
     # we add back only exist options
     for key, value in parsed_args.__dict__.items():
         if type(value) == bool:
             if value:
-                args += ["-{:s}".format(key)]
+                args += [f"-{key:s}"]
         elif value is not None:
             if key == 'file':
-                args += ["-{:s}={:s}".format(key, value)]
+                args += [f"-{key:s}={value:s}"]
             elif key not in ['host', 'port', 'verbose', 'instance_name', 'ORB_not_used']:
-                args += ["-{:s}".format(key), "{:s}".format(value)]
+                args += [f"-{key:s}", f"{value:s}"]
 
     return args
 

@@ -936,7 +936,7 @@ class SqlDatabase:
 
 
     def get_instance_name_list(self, server_name):
-        server_name = server_name + "\*"
+        server_name = server_name + r"\*"
         server_list = self.get_server_list(server_name)
         result = []
         for server in server_list:

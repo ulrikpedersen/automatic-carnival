@@ -74,14 +74,14 @@ def __struct_params_str(obj, fmt, f=repr):
 
 def __repr__Struct(self):
     """repr method for struct"""
-    return '%s(%s)' % (self.__class__.__name__, __struct_params_repr(self))
+    return '{}({})'.format(self.__class__.__name__, __struct_params_repr(self))
 
 
 def __str__Struct_Helper(self, f=repr):
     """str method for struct"""
     attrs = [n for n in dir(self) if __inc_param(self, n)]
     fmt = attrs and '%%%ds = %%s' % max(map(len, attrs)) or "%s = %s"
-    return '%s[\n%s]\n' % (self.__class__.__name__, __struct_params_str(self, fmt, f))
+    return '{}[\n{}]\n'.format(self.__class__.__name__, __struct_params_str(self, fmt, f))
 
 
 def __str__Struct(self):
@@ -121,10 +121,10 @@ def __repr__DevFailed(self):
 def __str__DevError(self):
     desc = self.desc.replace("\n", "\n           ")
     s = """DevError[
-    desc = %s
-  origin = %s
-  reason = %s
-severity = %s]\n""" % (desc, self.origin, self.reason, self.severity)
+    desc = {}
+  origin = {}
+  reason = {}
+severity = {}]\n""".format(desc, self.origin, self.reason, self.severity)
     return s
 
 

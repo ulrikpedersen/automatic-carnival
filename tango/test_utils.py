@@ -149,7 +149,7 @@ DEVICE_SERVER_ARGUMENTS = (
 def repr_type(x):
     if not isinstance(x, tuple):
         return x.__name__
-    return '({},)'.format(x[0].__name__)
+    return f'({x[0].__name__},)'
 
 
 # Numpy helpers

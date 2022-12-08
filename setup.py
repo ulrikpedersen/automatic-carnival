@@ -256,10 +256,10 @@ class build(dftbuild):
             stripped_cmd = 'file %s | grep -q "not stripped" || exit 1' % so
             not_stripped = os.system(stripped_cmd) == 0
             if not_stripped:
-                os.system("objcopy --only-keep-debug %s %s" % (so, dbg))
-                os.system("objcopy --strip-debug --strip-unneeded %s" % (so,))
-                os.system("objcopy --add-gnu-debuglink=%s %s" % (dbg, so))
-                os.system("chmod -x %s" % (dbg,))
+                os.system("objcopy --only-keep-debug {} {}".format(so, dbg))
+                os.system("objcopy --strip-debug --strip-unneeded {}".format(so))
+                os.system("objcopy --add-gnu-debuglink={} {}".format(dbg, so))
+                os.system("chmod -x {}".format(dbg))
         finally:
             os.chdir(orig_dir)
 

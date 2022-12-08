@@ -107,8 +107,8 @@ class LogIt:
 
     def __compact_item(self, k, v, maxlen=None):
         if maxlen is None:
-            return "%s=%s" % (k, self.__compact(v))
-        return "%s=%s" % (k, self.__compact(v, maxlen=maxlen))
+            return "{}={}".format(k, self.__compact(v))
+        return "{}={}".format(k, self.__compact(v, maxlen=maxlen))
 
     def __compact_dict(self, d, maxlen=None):
         return (self.__compact_item(k, v) for k, v in d.items())
@@ -135,7 +135,7 @@ class LogIt:
                 sargs = self.__compact_elems_str(args[1:])
             if self._show_kwargs:
                 sargs += self.__compact_dict_str(kwargs)
-            log("-> {0}({1})".format(f_name, sargs))
+            log(f"-> {f_name}({sargs})")
             with_exc = True
             try:
                 ret = f(*args, **kwargs)
@@ -143,12 +143,12 @@ class LogIt:
                 return ret
             finally:
                 if with_exc:
-                    log("<- {0}() raised exception!".format(f_name))
+                    log(f"<- {f_name}() raised exception!")
                 else:
                     sret = ""
                     if self._show_ret:
                         sret = self.__compact_elem(ret) + " "
-                    log("{0}<- {1}()".format(sret, f_name))
+                    log(f"{sret}<- {f_name}()")
 
         log_stream._wrapped = f
         return log_stream

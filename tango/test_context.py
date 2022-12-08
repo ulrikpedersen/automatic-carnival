@@ -56,9 +56,9 @@ def parse_ior(encoded_ior):
     assert encoded_ior[:4] == 'IOR:'
     ior = ascii_to_bytes(encoded_ior[4:])
     dtype_length = struct.unpack_from('II', ior)[-1]
-    form = 'II{:d}sIIIBBHI'.format(dtype_length)
+    form = f'II{dtype_length:d}sIIIBBHI'
     host_length = struct.unpack_from(form, ior)[-1]
-    form = 'II{:d}sIIIBBHI{:d}sH0I'.format(dtype_length, host_length)
+    form = f'II{dtype_length:d}sIIIBBHI{host_length:d}sH0I'
     values = struct.unpack_from(form, ior)
     values += (ior[struct.calcsize(form):],)
     strip = lambda x: x[:-1] if isinstance(x, bytes) else x
@@ -83,7 +83,7 @@ def device(path):
     try:
         module = import_module(module_name)
     except Exception:
-        raise ArgumentTypeError("Error importing {0}.{1}:\n{2}"
+        raise ArgumentTypeError("Error importing {}.{}:\n{}"
                                 .format(module_name, device_name,
                                         traceback.format_exc()))
     return getattr(module, device_name)
@@ -298,7 +298,7 @@ class MultiDeviceTestContext:
         # Command args
         string = self.command.format(
             server_name, instance_name, host, port, db)
-        string += " -v{0}".format(debug) if debug else ""
+        string += f" -v{debug}" if debug else ""
         cmd_args = string.split()
 
         class_list = []
@@ -638,8 +638,8 @@ def run_device_test_context(args=None):
     context.start()
     msg = '{0} started on port {1} with properties {2}'
     print(msg.format(device.__name__, context.port, properties))
-    print('Device access: {}'.format(context.get_device_access()))
-    print('Server access: {}'.format(context.get_server_access()))
+    print(f'Device access: {context.get_device_access()}')
+    print(f'Server access: {context.get_server_access()}')
     context.join()
     print("Done")
 
