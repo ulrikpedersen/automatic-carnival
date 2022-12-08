@@ -1,4 +1,3 @@
-
 import tango
 from tango import DevState
 from tango import GreenMode
