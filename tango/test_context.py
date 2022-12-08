@@ -48,7 +48,7 @@ IOR = collections.namedtuple(
 
 
 def ascii_to_bytes(s):
-    convert = lambda x: six.int2byte(int(x, 16))
+    convert = lambda x: bytes((int(x, 16),))
     return b''.join(convert(s[i:i + 2]) for i in range(0, len(s), 2))
 
 

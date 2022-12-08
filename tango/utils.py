@@ -1756,9 +1756,9 @@ else:
 
         Code taken from https://github.com/benjaminp/six/blob/1.12.0/six.py#L853
         """
-        if isinstance(s, six.text_type):
+        if isinstance(s, str):
             return s.encode(encoding, errors)
-        elif isinstance(s, six.binary_type):
+        elif isinstance(s, bytes):
             return s
         else:
             raise TypeError("not expecting type '%s'" % type(s))
