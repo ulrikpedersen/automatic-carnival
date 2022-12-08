@@ -167,7 +167,7 @@ def __check_read_pipe(dev_pipe):
 def __init_device_proxy_internals(proxy):
     if proxy.__dict__.get('_initialized', False):
         return
-    executors = dict((key, None) for key in GreenMode.names)
+    executors = {key: None for key in GreenMode.names}
     proxy.__dict__['_green_mode'] = None
     proxy.__dict__['_initialized'] = True
     proxy.__dict__['_executors'] = executors

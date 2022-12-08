@@ -386,8 +386,8 @@ class MultiDeviceTestContext:
             device_name = info["name"]
             properties = info.get("properties", {})
             # Patch the property dict to avoid a PyTango bug
-            patched = dict((key, value if value != '' else ' ')
-                           for key, value in properties.items())
+            patched = {key: value if value != '' else ' '
+                           for key, value in properties.items()}
             db.put_device_property(device_name, patched)
 
             memorized = info.get("memorized", {})

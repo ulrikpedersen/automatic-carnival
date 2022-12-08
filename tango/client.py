@@ -43,8 +43,8 @@ def _command(device, cmd_info, *args, **kwargs):
 
 
 class _DeviceHelper:
-    __CMD_FILTER = set(("init", "state", "status"))
-    __ATTR_FILTER = set(("state", "status"))
+    __CMD_FILTER = {"init", "state", "status"}
+    __ATTR_FILTER = {"state", "status"}
 
     __attr_cache = None
     __cmd_cache = None

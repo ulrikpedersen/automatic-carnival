@@ -176,25 +176,25 @@ def test_subscribe_interface_event(event_device):
             break
         time.sleep(DELAY_PER_RETRY)
     # Test the first event value
-    assert set(cmd.cmd_name for cmd in results[0].cmd_list) == \
+    assert {cmd.cmd_name for cmd in results[0].cmd_list} == \
         {'Init', 'State', 'Status',
          'add_dyn_attr', 'delete_dyn_attr',
          'send_change_event', 'send_data_ready_event', 'send_change_event_with_timestamp'}
-    assert set(att.name for att in results[0].att_list) == \
+    assert {att.name for att in results[0].att_list} == \
         {'attr', 'State', 'Status'}
     # Test the second event value
-    assert set(cmd.cmd_name for cmd in results[1].cmd_list) == \
+    assert {cmd.cmd_name for cmd in results[1].cmd_list} == \
         {'Init', 'State', 'Status',
          'add_dyn_attr', 'delete_dyn_attr',
          'send_change_event', 'send_data_ready_event', 'send_change_event_with_timestamp'}
-    assert set(att.name for att in results[1].att_list) == \
+    assert {att.name for att in results[1].att_list} == \
         {'attr', 'State', 'Status', 'bla'}
     # Test the third event value
-    assert set(cmd.cmd_name for cmd in results[2].cmd_list) == \
+    assert {cmd.cmd_name for cmd in results[2].cmd_list} == \
         {'Init', 'State', 'Status',
          'add_dyn_attr', 'delete_dyn_attr',
          'send_change_event', 'send_data_ready_event', 'send_change_event_with_timestamp'}
-    assert set(att.name for att in results[2].att_list) == \
+    assert {att.name for att in results[2].att_list} == \
         {'attr', 'State', 'Status'}
     # Unsubscribe
     event_device.unsubscribe_event(eid)

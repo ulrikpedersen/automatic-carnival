@@ -369,13 +369,13 @@ def test_read_attribute_config(tango_test, attribute):
 def test_attribute_list_query(tango_test):
     attrs = tango_test.attribute_list_query()
     assert all(isinstance(a, AttributeInfo) for a in attrs)
-    assert set(a.name for a in attrs) == set(ATTRIBUTES)
+    assert {a.name for a in attrs} == set(ATTRIBUTES)
 
 
 def test_attribute_list_query_ex(tango_test):
     attrs = tango_test.attribute_list_query_ex()
     assert all(isinstance(a, AttributeInfoEx) for a in attrs)
-    assert set(a.name for a in attrs) == set(ATTRIBUTES)
+    assert {a.name for a in attrs} == set(ATTRIBUTES)
 
 
 def test_device_proxy_dir_method(tango_test):
