@@ -43,7 +43,7 @@ class FuturesExecutor(AbstractExecutor):
     default_wait = True
 
     def __init__(self, process=False, max_workers=20):
-        super(FuturesExecutor, self).__init__()
+        super().__init__()
         cls = ProcessPoolExecutor if process else ThreadPoolExecutor
         self.subexecutor = cls(max_workers=max_workers)
 

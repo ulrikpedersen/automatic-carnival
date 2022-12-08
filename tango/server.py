@@ -787,7 +787,7 @@ class attribute(AttrData):
                         if fget.__doc__ is not None:
                             kwargs['doc'] = fget.__doc__
                 kwargs['fget'] = fget
-        super(attribute, self).__init__(self.name, class_name)
+        super().__init__(self.name, class_name)
         self.__doc__ = kwargs.get('doc', kwargs.get('description',
                                                     'TANGO attribute'))
         if 'dtype' in kwargs:
@@ -960,7 +960,7 @@ class pipe(PipeData):
                         kwargs['doc'] = fget.__doc__
             kwargs['fget'] = fget
 
-        super(pipe, self).__init__(name, class_name)
+        super().__init__(name, class_name)
         self.__doc__ = kwargs.get('doc', kwargs.get('description',
                                                     'TANGO pipe'))
         self.build_from_dict(kwargs)
@@ -1192,7 +1192,7 @@ class device_property(_BaseProperty):
     """
     def __init__(self, dtype, doc='', mandatory=False,
                  default_value=None, update_db=False):
-        super(device_property, self).__init__(dtype, doc, default_value,
+        super().__init__(dtype, doc, default_value,
                                               update_db)
         self.mandatory = mandatory
         if mandatory and default_value is not None:

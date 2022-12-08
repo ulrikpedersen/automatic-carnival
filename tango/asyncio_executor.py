@@ -58,7 +58,7 @@ class AsyncioExecutor(AbstractExecutor):
     default_wait = False
 
     def __init__(self, loop=None, subexecutor=None):
-        super(AsyncioExecutor, self).__init__()
+        super().__init__()
         if loop is None:
             try:
                 loop = asyncio.get_event_loop()

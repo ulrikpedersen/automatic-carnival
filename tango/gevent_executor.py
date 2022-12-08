@@ -91,7 +91,7 @@ class ThreadPool(gevent.threadpool.ThreadPool):
 
     def spawn(self, fn, *args, **kwargs):
         wrapped = wrap_error(fn)
-        raw = super(ThreadPool, self).spawn(wrapped, *args, **kwargs)
+        raw = super().spawn(wrapped, *args, **kwargs)
         return unwrap_error(raw)
 
 
@@ -135,7 +135,7 @@ class GeventExecutor(AbstractExecutor):
     default_wait = True
 
     def __init__(self, loop=None, subexecutor=None):
-        super(GeventExecutor, self).__init__()
+        super().__init__()
         if loop is None:
             loop = gevent.get_hub().loop
         if subexecutor is None:

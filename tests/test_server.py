@@ -185,7 +185,7 @@ def test_read_write_attribute_enum(server_green_mode):
         green_mode = server_green_mode
 
         def __init__(self, *args, **kwargs):
-            super(TestDevice, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
             self.attr_from_enum_value = 0
             self.attr_from_labels_value = 0
 
@@ -239,7 +239,7 @@ def test_read_write_attribute_enum(server_green_mode):
             green_mode = server_green_mode
 
             def __init__(self, *args, **kwargs):
-                super(BadTestDevice, self).__init__(*args, **kwargs)
+                super().__init__(*args, **kwargs)
                 self.attr_value = 0
 
             # enum_labels may not be specified if dtype is an enum.Enum
@@ -331,7 +331,7 @@ def test_read_write_dynamic_attribute(typed_values, server_green_mode):
         green_mode = server_green_mode
 
         def __init__(self, *args, **kwargs):
-            super(TestDevice, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
             self.attr_value = None
 
         @command
@@ -372,7 +372,7 @@ def test_read_write_dynamic_attribute_enum(server_green_mode):
         green_mode = server_green_mode
 
         def __init__(self, *args, **kwargs):
-            super(TestDevice, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
             self.attr_value = 0
 
         @command
@@ -429,7 +429,7 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(
         green_mode = server_green_mode
 
         def __init__(self, *args, **kwargs):
-            super(TestDevice, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
             self._is_test_attr_allowed = True
 
         def initialize_dynamic_attributes(self):
@@ -631,13 +631,13 @@ def test_dynamic_attribute_using_classic_api_like_sardana(device_impl_class):
         }
 
         def __init__(self, name):
-            super(ClassicAPIClass, self).__init__(name)
+            super().__init__(name)
             self.set_type("TestDevice")
 
     class ClassicAPIDeviceImpl(device_impl_class):
 
         def __init__(self, cl, name):
-            super(ClassicAPIDeviceImpl, self).__init__(cl, name)
+            super().__init__(cl, name)
             ClassicAPIDeviceImpl.init_device(self)
 
         def init_device(self):
@@ -834,7 +834,7 @@ def test_device_get_device_properties_when_init_device(server_green_mode):
         _got_properties = False
 
         def get_device_properties(self, *args, **kwargs):
-            super(TestDevice, self).get_device_properties(*args, **kwargs)
+            super().get_device_properties(*args, **kwargs)
             self._got_properties = True
 
         @attribute(dtype=bool)

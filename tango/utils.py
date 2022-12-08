@@ -1767,7 +1767,7 @@ else:
 class PyTangoHelpFormatter(HelpFormatter):
 
     def _format_usage(self, usage, actions, groups, prefix):
-        usage = super(PyTangoHelpFormatter, self)._format_usage(usage, actions, groups, prefix)
+        usage = super()._format_usage(usage, actions, groups, prefix)
         try:
             db = Database()
             servers_list = db.get_instance_name_list(self._prog)

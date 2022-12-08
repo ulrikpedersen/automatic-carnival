@@ -564,7 +564,7 @@ class DeviceTestContext(MultiDeviceTestContext):
                 )
             },
         )
-        super(DeviceTestContext, self).__init__(devices_info,
+        super().__init__(devices_info,
                                                 server_name=server_name,
                                                 instance_name=instance_name,
                                                 db=db, host=host,
@@ -581,11 +581,11 @@ class DeviceTestContext(MultiDeviceTestContext):
         """Return the full device name."""
         if device_name is None:
             device_name = self.device_name
-        return super(DeviceTestContext, self).get_device_access(
+        return super().get_device_access(
             device_name)
 
     def connect(self):
-        super(DeviceTestContext, self).connect()
+        super().connect()
         # Get device proxy
         self.device = self.get_device(self.device_name)
         self.device.ping()
