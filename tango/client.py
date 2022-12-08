@@ -201,7 +201,7 @@ class Object:
         try:
             r = self._helper.get(name)
         except KeyError as ke:
-            six.raise_from(AttributeError('Unknown {0}'.format(name)), ke)
+            raise AttributeError(f'Unknown {name}') from ke
         if isinstance(r, tango.CommandInfo):
             self.__dict__[name] = r.func
             return r.func
@@ -211,7 +211,7 @@ class Object:
         try:
             return self._helper.set(name, value)
         except KeyError as ke:
-            six.raise_from(AttributeError('Unknown {0}'.format(name)), ke)
+            raise AttributeError(f'Unknown {name}') from ke
 
     def __getitem__(self, name):
         return self._helper[name]
