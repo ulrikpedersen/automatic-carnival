@@ -16,7 +16,7 @@ from functools import partial
 # Concurrency imports
 import threading
 import multiprocessing
-from six.moves import queue
+import queue
 
 # CLI imports
 from ast import literal_eval

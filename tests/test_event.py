@@ -6,7 +6,7 @@ from functools import partial
 from threading import Thread
 
 import pytest
-from six import StringIO
+from io import StringIO
 
 from tango import (
     EventType, GreenMode, DeviceProxy, AttrQuality, EnsureOmniThread, is_omni_thread,
