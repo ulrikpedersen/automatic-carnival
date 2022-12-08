@@ -320,7 +320,7 @@ class check_tests_errors(Command):
             raise Exception("Provided summary.json file does not exists.")
 
     def run(self):
-        with open(self.summary_file, "r") as f:
+        with open(self.summary_file) as f:
             summary = json.load(f)
             for test in summary:
                 if test["outcome"] in ["failed", "Failed", "fail", "error", "Error"]:
