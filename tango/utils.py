@@ -16,7 +16,6 @@ This is an internal PyTango module.
 
 import os
 import sys
-import six
 import types
 import numbers
 import enum
@@ -1706,7 +1705,7 @@ def get_attrs(obj):
     """Helper for dir2 implementation."""
     if not hasattr(obj, '__dict__'):
         return []  # slots only
-    proxy_type = types.MappingProxyType if six.PY3 else types.DictProxyType
+    proxy_type = types.MappingProxyType
     if not isinstance(obj.__dict__, (dict, proxy_type)):
         print(type(obj.__dict__), obj)
         raise TypeError("%s.__dict__ is not a dictionary" % obj.__name__)
@@ -1739,29 +1738,20 @@ def dir2(obj):
     return list(attrs)
 
 
-if hasattr(six, "ensure_binary"):
-    ensure_binary = six.ensure_binary
-else:
-    # For older versions of six (<1.12), fallback to local
-    # implementation
+def ensure_binary(s, encoding='utf-8', errors='strict'):
+    """Coerce **s** to the bytes type.
+    For Python 3:
+        - `str` -> encoded to `bytes`
+        - `bytes` -> `bytes`
 
-    def ensure_binary(s, encoding='utf-8', errors='strict'):
-        """Coerce **s** to six.binary_type.
-        For Python 2:
-          - `unicode` -> encoded to `str`
-          - `str` -> `str`
-        For Python 3:
-          - `str` -> encoded to `bytes`
-          - `bytes` -> `bytes`
-
-        Code taken from https://github.com/benjaminp/six/blob/1.12.0/six.py#L853
-        """
-        if isinstance(s, str):
-            return s.encode(encoding, errors)
-        elif isinstance(s, bytes):
-            return s
-        else:
-            raise TypeError("not expecting type '%s'" % type(s))
+    Code taken from https://github.com/benjaminp/six/blob/1.12.0/six.py#L853
+    """
+    if isinstance(s, str):
+        return s.encode(encoding, errors)
+    elif isinstance(s, bytes):
+        return s
+    else:
+        raise TypeError("not expecting type '%s'" % type(s))
 
 
 class PyTangoHelpFormatter(HelpFormatter):

@@ -1,7 +1,6 @@
 """Test utilities"""
 
 import sys
-import six
 import enum
 try:
     import collections.abc as collections_abc  # python 3.3+

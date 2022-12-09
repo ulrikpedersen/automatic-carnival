@@ -17,7 +17,6 @@ __all__ = ("db_init",)
 
 __docformat__ = "restructuredtext"
 
-import six
 try:
     import collections.abc as collections_abc  # python 3.3+
 except ImportError:

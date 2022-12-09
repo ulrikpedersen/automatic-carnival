@@ -13,7 +13,6 @@
 
 import os
 import sys
-import six
 import logging
 import weakref
 try:

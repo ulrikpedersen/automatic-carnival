@@ -18,8 +18,6 @@ This is an experimental module. Not part of the official API.
 import weakref
 import functools
 
-import six
-
 import tango
 from tango import DeviceProxy as Device
 from tango import CmdArgType

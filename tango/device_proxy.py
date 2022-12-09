@@ -15,7 +15,6 @@ import time
 import textwrap
 import threading
 import enum
-import six
 try:
     import collections.abc as collections_abc  # python 3.3+
 except ImportError:

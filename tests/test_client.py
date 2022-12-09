@@ -23,7 +23,6 @@ from time import sleep
 
 import psutil
 import pytest
-import six
 from functools import partial
 from tango import DeviceProxy, DevFailed, GreenMode
 from tango import DeviceInfo, AttributeInfo, AttributeInfoEx
@@ -537,14 +536,7 @@ def test_no_cyclic_ref_for_proxy(green_mode_device_proxy, simple_device_fqdn):
 
 def assert_object_released_after_gc(weak_ref):
     gc.collect()
-    try:
-        assert weak_ref() is None
-    except AssertionError:
-        green_mode = weak_ref().get_green_mode()
-        if six.PY2 and green_mode != GreenMode.Synchronous:
-            pytest.xfail('Sometimes fails on Python 2 - unknown cause')
-        else:
-            raise
+    assert weak_ref() is None
 
 
 def assert_object_released_without_gc(weak_ref):
