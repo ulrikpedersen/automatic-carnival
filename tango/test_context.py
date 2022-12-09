@@ -4,7 +4,6 @@
 # Imports
 import os
 import sys
-import six
 import time
 import struct
 import socket
@@ -451,8 +450,15 @@ class MultiDeviceTestContext:
                     'Check stdout/stderr for more information.')
         try:
             self.host, self.port = args
-        except ValueError:
-            six.reraise(*args)
+        except ValueError as e:
+            # Warning: an assumption made here - if the args don't contain the
+            #          expected (host, port) items then we assume the args contain
+            #          exception info.
+            if len(args) == 3:
+                exc_type, exc_value, exc_traceback = args
+                raise exc_value.with_traceback(exc_traceback)
+            # In case the above assumption is wrong: re-raise the original exception
+            raise ValueError(*args) from e
         # Get server proxy
         self.server = DeviceProxy(self.get_server_access())
         self.server.ping()

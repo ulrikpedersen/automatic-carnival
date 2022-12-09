@@ -11,7 +11,6 @@
 
 # Imports
 import sys
-import six
 import functools
 from collections import namedtuple
 
@@ -122,7 +121,7 @@ class GeventTask:
     def result(self):
         self.done.wait()
         if self.exception:
-            six.reraise(*self.exception)
+            raise self.exception[1].with_traceback(self.exception[2])
         return self.value
 
 
