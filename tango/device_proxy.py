@@ -25,7 +25,7 @@ from ._tango import PipeInfo, PipeInfoList, constants
 from ._tango import CmdArgType, DevState
 
 from .utils import TO_TANGO_TYPE, scalar_to_array_type
-from .utils import is_pure_str, is_non_str_seq, is_integer, is_number
+from .utils import is_pure_str, is_non_str_seq, is_integer, is_number, is_seq
 from .utils import seq_2_StdStringVector, StdStringVector_2_seq
 from .utils import DbData_2_dict, obj_2_property
 from .utils import document_method as __document_method
@@ -282,23 +282,42 @@ def __get_attribute_value(self, attr_info, name):
     _, enum_class = attr_info
     attr_value = self.read_attribute(name).value
     if enum_class:
+        if is_non_str_seq(attr_value):
+            ret = []
+            for value in attr_value:
+                if is_non_str_seq(value):
+                    ret.append(tuple([enum_class(v) for v in value]))
+                else:
+                    ret.append(enum_class(value))
+            return tuple(ret)
+
         return enum_class(attr_value)
     else:
         return attr_value
 
+def __convert_str_to_enum(value, enum_class, attr_name):
+    try:
+        return enum_class[value]
+    except KeyError:
+        raise AttributeError(f'Invalid enum value {value} for attribute {attr_name} ' +
+                             f'Valid ones: {[m for m in enum_class.__members__.keys()]}')
 
 def __set_attribute_value(self, name, value):
     attr_info = self.__get_attr_cache().get(name.lower())
     if attr_info:
         # allow writing DevEnum attributes using string values
         _, enum_class = attr_info
-        if enum_class and is_pure_str(value):
-            try:
-                value = enum_class[value]
-            except KeyError:
-                raise AttributeError(
-                    f'Invalid enum value {value} for attribute {name}. '
-                    f'Valid ones: {[m for m in enum_class.__members__.keys()]}')
+        if enum_class:
+            if is_seq(value) and not is_pure_str(value):
+                org_value = value
+                value = []
+                for val in org_value:
+                    if is_seq(val) and not is_pure_str(val):
+                        value.append([__convert_str_to_enum(v, enum_class, name) if is_pure_str(v) else v for v in val])
+                    else:
+                        value.append(__convert_str_to_enum(val, enum_class, name) if is_pure_str(val) else val)
+            elif is_pure_str(value):
+                value = __convert_str_to_enum(value, enum_class, name)
     return self.write_attribute(name, value)
 
 

@@ -29,7 +29,7 @@ from .pipe_data import PipeData
 from .device_class import DeviceClass
 from .device_server import LatestDeviceImpl, get_worker, set_worker, run_in_executor
 from .utils import get_enum_labels
-from .utils import is_seq, is_non_str_seq, is_pure_str
+from .utils import is_seq, is_non_str_seq, is_pure_str, is_enum_seq, is_enum
 from .utils import scalar_to_array_type, TO_TANGO_TYPE
 from .green import get_green_mode, get_executor
 from .pyutil import Util
@@ -829,15 +829,21 @@ class attribute(AttrData):
         if 'dtype' in kwargs:
             dtype = kwargs['dtype']
             dformat = kwargs.get('dformat')
-            if inspect.isclass(dtype) and issubclass(dtype, enum.Enum):
-                if dformat and dformat != AttrDataFormat.SCALAR:
-                    raise TypeError(f"DevEnum types can only be scalar, not {dformat}.")
+            if is_enum(dtype) or is_enum_seq(dtype):
                 enum_labels = kwargs.get('enum_labels')
                 if enum_labels:
-                    raise TypeError(f"For dtype of enum.Enum the enum_labels must not "
-                                    f"be specified - dtype: {dtype}, enum_labels: {enum_labels}.")
-                kwargs['enum_labels'] = get_enum_labels(dtype)
+                    raise TypeError("For dtype of enum.Enum or (enum.Enum,) the enum_labels must not "
+                                    "be specified - dtype: {0}, enum_labels: {1}."
+                                    .format(dtype, enum_labels))
+                _dtype = dtype
                 dtype = CmdArgType.DevEnum
+
+                while is_enum_seq(_dtype):
+                    _dtype = _dtype[0]
+                    dtype = (dtype,)
+
+                kwargs['enum_labels'] = get_enum_labels(_dtype)
+
             kwargs['dtype'], kwargs['dformat'] = \
                 _get_tango_type_format(dtype, dformat)
         self.build_from_dict(kwargs)

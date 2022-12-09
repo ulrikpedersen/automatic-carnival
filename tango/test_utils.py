@@ -5,7 +5,7 @@ import enum
 import numpy as np
 
 # Local imports
-from . import DevState, GreenMode
+from . import DevState, GreenMode, AttrDataFormat
 from .server import Device
 from .test_context import MultiDeviceTestContext, DeviceTestContext
 from .utils import is_non_str_seq
@@ -228,6 +228,13 @@ if pytest:
         GreenMode.Asyncio,
         GreenMode.Gevent])
     def server_green_mode(request):
+        return request.param
+
+    @pytest.fixture(params=[
+        AttrDataFormat.SCALAR,
+        AttrDataFormat.SPECTRUM,
+        AttrDataFormat.IMAGE])
+    def attr_data_format(request):
         return request.param
 
     @pytest.fixture(params=['linux', 'win'])
