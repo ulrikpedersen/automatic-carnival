@@ -380,7 +380,6 @@ def setup_args():
 
     install_requires = [
         "numpy (>=1.13.3)",
-        "six (>=1.10)",
         "packaging",
     ]
 

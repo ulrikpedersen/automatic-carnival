@@ -50,7 +50,7 @@ RUN if [[ "${PYTHON_VERSION}" = "2."* ]]; then \
       export TANGO_TEST_PACKAGE=tango-test=$TANGO_TEST_VERSION; \
     fi && \
     mamba install --yes -c conda-forge -c tango-controls/label/dev -c conda-forge/label/cpptango_rc \
-      boost cppzmq cxx-compiler numpy six cpptango=$CPP_TANGO_VERSION $TANGO_TEST_PACKAGE $PYTHON_TEST_PACKAGES && \
+      boost cppzmq cxx-compiler numpy cpptango=$CPP_TANGO_VERSION $TANGO_TEST_PACKAGE $PYTHON_TEST_PACKAGES && \
     mamba clean --all --force-pkgs-dirs --yes
 
 # if we use cpptango dev/rc - we build TangoTest
