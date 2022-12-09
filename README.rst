@@ -36,7 +36,6 @@ General dependencies:
 Python dependencies:
 
 -  numpy_ >= 1.13.3
--  six_ >= 1.10
 
 Build dependencies:
 
@@ -44,7 +43,6 @@ Build dependencies:
 
 Optional dependencies:
 
-- futures_
 - gevent_
 
 .. note:: As a general rule, libtango_ and pytango_ should share the same major
@@ -151,9 +149,7 @@ All contributions,  `PR and bug reports`_ are welcome, please see: `How to Contr
 .. _libtango: http://tango-controls.org/downloads
 .. _Boost.Python: https://www.boost.org/doc/libs/release/libs/python/doc/html/index.html
 .. _numpy: http://pypi.python.org/pypi/numpy
-.. _six: http://pypi.python.org/pypi/six
 .. _setuptools: http://pypi.python.org/pypi/setuptools
-.. _futures: http://pypi.python.org/pypi/futures
 .. _gevent: http://pypi.python.org/pypi/gevent
 
 .. _ITango: http://pypi.python.org/pypi/itango
