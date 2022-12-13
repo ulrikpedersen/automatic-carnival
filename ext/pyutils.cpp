@@ -40,11 +40,10 @@ PyObject* from_char_to_python_str(const char* in, Py_ssize_t size /* =-1 */,
                                   const char* encoding /*=NULL defaults to latin-1 */,
                                   const char* errors /*="strict" */)
 {
-if (size < 0)
-{
-    size = strlen(in);
-}
-#ifdef PYTANGO_PY3K
+    if (size < 0)
+    {
+        size = strlen(in);
+    }
     if (!encoding)
     {
         return PyUnicode_DecodeLatin1(in, size, errors);
@@ -53,9 +52,7 @@ if (size < 0)
     {
         return PyUnicode_Decode(in, size, encoding, errors);
     }
-#else
-    return PyString_FromStringAndSize(in, size);
-#endif
+
 }
 
 void from_str_to_char(const bopy::object& in, std::string& out)
