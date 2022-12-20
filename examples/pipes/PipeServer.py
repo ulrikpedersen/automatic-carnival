@@ -19,7 +19,7 @@ class PipeServer(Device):
     @TestPipe.write
     def TestPipe(self, blob):
         self.__blob = blob
-        print blob
+        print(blob)
 
     def is_TestPipe_allowed(self, pipeReqType):
         """ pipeReqType is either READ_REQ or WRITE_REQ."""

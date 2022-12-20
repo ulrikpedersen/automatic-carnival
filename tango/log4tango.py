@@ -107,8 +107,8 @@ class LogIt:
 
     def __compact_item(self, k, v, maxlen=None):
         if maxlen is None:
-            return "{}={}".format(k, self.__compact(v))
-        return "{}={}".format(k, self.__compact(v, maxlen=maxlen))
+            return f"{k}={self.__compact(v)}"
+        return f"{k}={self.__compact(v, maxlen=maxlen)}"
 
     def __compact_dict(self, d, maxlen=None):
         return (self.__compact_item(k, v) for k, v in d.items())

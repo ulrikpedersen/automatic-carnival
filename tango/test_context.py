@@ -82,9 +82,8 @@ def device(path):
     try:
         module = import_module(module_name)
     except Exception:
-        raise ArgumentTypeError("Error importing {}.{}:\n{}"
-                                .format(module_name, device_name,
-                                        traceback.format_exc()))
+        raise ArgumentTypeError(f"Error importing {module_name}.{device_name}:\n"
+                                f"{traceback.format_exc()}")
     return getattr(module, device_name)
 
 
@@ -406,13 +405,13 @@ class MultiDeviceTestContext:
 
     def get_server_access(self):
         """Return the full server name."""
-        form = 'tango://{0}:{1}/{2}#{3}'
-        return form.format(self.host, self.port, self.server_name, self.nodb)
+        form = f'tango://{self.host}:{self.port}/{self.server_name}#{self.nodb}'
+        return form
 
     def get_device_access(self, device_name):
         """Return the full device name."""
-        form = 'tango://{0}:{1}/{2}#{3}'
-        return form.format(self.host, self.port, device_name, self.nodb)
+        form = f'tango://{self.host}:{self.port}/{device_name}#{self.nodb}'
+        return form
 
     def get_device(self, device_name):
         """Return the device proxy corresponding to the given device name.
@@ -441,9 +440,8 @@ class MultiDeviceTestContext:
                     'Check stdout/stderr for more information.')
             elif hasattr(self.thread, 'exitcode'):
                 raise RuntimeError(
-                    'The server process stopped with exitcode {}. '
-                    'Check stdout/stderr for more information.'
-                    ''.format(self.thread.exitcode))
+                    f'The server process stopped with exitcode {self.thread.exitcode}. '
+                    f'Check stdout/stderr for more information.')
             else:
                 raise RuntimeError(
                     'The server stopped without reporting. '
@@ -642,8 +640,8 @@ def run_device_test_context(args=None):
     context = DeviceTestContext(
         device, properties=properties, host=host, port=port, debug=debug)
     context.start()
-    msg = '{0} started on port {1} with properties {2}'
-    print(msg.format(device.__name__, context.port, properties))
+    msg = f'{device.__name__} started on port {context.port} with properties {properties}'
+    print(msg)
     print(f'Device access: {context.get_device_access()}')
     print(f'Server access: {context.get_server_access()}')
     context.join()

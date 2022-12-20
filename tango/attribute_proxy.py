@@ -327,10 +327,10 @@ class AttributeProxy:
         return self.__attr_proxy.name()
 
     def __str__(self):
-        return "AttributeProxy(%s)" % self.name()
+        return f"AttributeProxy({self.name()})"
 
     def __repr__(self):
-        return "AttributeProxy(%s)" % self.name()
+        return f"AttributeProxy({self.name()})"
 
 
 def _method_dev_and_name(dp_fn_name, doc=True):

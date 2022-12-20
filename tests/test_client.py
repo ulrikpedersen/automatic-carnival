@@ -138,16 +138,14 @@ def get_ports(pid):
 
 def start_server(server, inst, device):
     exe = find_executable(server)
-    cmd = ("{} {} -ORBendPoint giop:tcp::0 -nodb -dlist {}"
-           .format(exe, inst, device))
+    cmd = f"{exe} {inst} -ORBendPoint giop:tcp::0 -nodb -dlist {device}"
     proc = Popen(cmd.split(), close_fds=True)
     proc.poll()
     return proc
 
 
 def get_proxy(host, port, device, green_mode):
-    access = "tango://{}:{}/{}#dbase=no".format(
-        host, port, device)
+    access = f"tango://{host}:{port}/{device}#dbase=no"
     return device_proxy_map[green_mode](access)
 
 

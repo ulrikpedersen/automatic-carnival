@@ -246,9 +246,9 @@ def __DeviceProxy__refresh_cmd_cache(self):
     cmd_cache = {}
     for cmd in cmd_list:
         n = cmd.cmd_name.lower()
-        doc = "{}({}) -> {}\n\n".format(cmd.cmd_name, cmd.in_type, cmd.out_type)
-        doc += " -  in ({}): {}\n".format(cmd.in_type, cmd.in_type_desc)
-        doc += " - out ({}): {}\n".format(cmd.out_type, cmd.out_type_desc)
+        doc = f"{cmd.cmd_name}({cmd.in_type}) -> {cmd.out_type}\n\n"
+        doc += f" -  in ({cmd.in_type}): {cmd.in_type_desc}\n"
+        doc += f" - out ({cmd.out_type}): {cmd.out_type_desc}\n"
         cmd_cache[n] = cmd, doc
     self.__dict__['__cmd_cache'] = cmd_cache
 
@@ -407,8 +407,7 @@ def __DeviceProxy__setattr(self, name, value):
                 return super(DeviceProxy, self).__setattr__(name, value)
             else:
                 raise AttributeError(
-                    "Tried to set non-existent attr {!r} to {!r}".format(
-                        name, value)
+                    f"Tried to set non-existent attr {repr(name)} to {repr(value)}"
                 )
         except Exception as e:
             raise e from cause
@@ -1411,7 +1410,7 @@ def __DeviceProxy__get_events(self, event_id, callback=None, extract_as=ExtractA
     if callback is None:
         queuesize, event_type, attr_name = self.__get_event_map().get(event_id, (None, None, None))
         if event_type is None:
-            raise ValueError("Invalid event_id. You are not subscribed to event %s." % str(event_id))
+            raise ValueError(f"Invalid event_id. You are not subscribed to event {str(event_id)}.")
         if event_type in (EventType.CHANGE_EVENT,
                           EventType.QUALITY_EVENT,
                           EventType.PERIODIC_EVENT,
@@ -1454,7 +1453,7 @@ def __DeviceProxy___get_info_(self):
 
 def __DeviceProxy__str(self):
     info = self._get_info_()
-    return "{}({})".format(info.dev_class, self.dev_name())
+    return f"{info.dev_class}({self.dev_name()})"
 
 
 def __DeviceProxy__read_pipe(self, pipe_name, extract_as=ExtractAs.Numpy):
@@ -1492,8 +1491,8 @@ def __get_pipe_type_numpy_support(obj):
     except AttributeError:
         return __get_pipe_type_simple(obj)
     if ndim > 1:
-        raise TypeError('cannot translate numpy array with {} '
-                        'dimensions to tango type'.format(obj.ndim))
+        raise TypeError(f'cannot translate numpy array with {obj.ndim} '
+                        f'dimensions to tango type')
     tg_type = TO_TANGO_TYPE[dtype]
     if ndim > 0:
         tg_type = scalar_to_array_type(dtype)

@@ -277,19 +277,19 @@ def __DeviceClass__init__(self, name):
                 setattr(self, prop_name, pu.get_property_values(prop_name,
                                                                 self.class_property_list))
     except DevFailed as df:
-        print("PyDS: %s: A Tango error occured in the constructor:" % name)
+        print(f"PyDS: {name}: A Tango error occured in the constructor:")
         Except.print_exception(df)
     except Exception as e:
-        print("PyDS: %s: An error occured in the constructor:" % name)
+        print(f"PyDS: {name}: An error occured in the constructor:")
         print(str(e))
 
 
 def __DeviceClass__str__(self):
-    return '{}({})'.format(self.__class__.__name__, self.get_name())
+    return f'{self.__class__.__name__}({self.get_name()})'
 
 
 def __DeviceClass__repr__(self):
-    return '{}({})'.format(self.__class__.__name__, self.get_name())
+    return f'{self.__class__.__name__}({self.get_name()})'
 
 
 def __throw_create_attribute_exception(msg):
@@ -315,7 +315,7 @@ def __DeviceClass__create_user_default_attr_prop(self, attr_name, extra_info):
     p = UserDefaultAttrProp()
     for k, v in extra_info.items():
         k_lower = k.lower()
-        method_name = "set_%s" % k_lower.replace(' ', '_')
+        method_name = f"set_{k_lower.replace(' ', '_')}"
         if hasattr(p, method_name):
             method = getattr(p, method_name)
             method(str(v))
@@ -526,7 +526,7 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
               "class %s\nThe command method does not exist!" % (cmd_name, name)
         __throw_create_command_exception(msg)
 
-    is_allowed_name = "is_%s_allowed" % cmd_name
+    is_allowed_name = f"is_{cmd_name}_allowed"
     try:
         is_allowed = getattr(deviceimpl_class, is_allowed_name)
         if not isinstance(is_allowed, collections_abc.Callable):
@@ -555,10 +555,10 @@ def __DeviceClass__device_factory(self, device_list):
     info, klass = get_class_by_class(klass), get_constructed_class_by_class(klass)
 
     if info is None:
-        raise RuntimeError("Device class '%s' is not registered" % klass_name)
+        raise RuntimeError(f"Device class '{klass_name}' is not registered")
 
     if klass is None:
-        raise RuntimeError("Device class '%s' as not been constructed" % klass_name)
+        raise RuntimeError(f"Device class '{klass_name}' as not been constructed")
 
     deviceClassClass, deviceImplClass, deviceImplName = info
     deviceImplClass._device_class_instance = klass

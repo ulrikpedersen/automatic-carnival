@@ -3,7 +3,7 @@ from tango import DevState
 
 dev = tango.DeviceProxy('pipeServer/tango/1')
 blob = dev.read_pipe('TestPipe')
-print 'PipeClient.py: ', blob
+print('PipeClient.py: ', blob)
 
 blob = ('pipeWriteTest0', dict(x=5.9, y=15.1, anInt=-169, str="the test",
                                truth=False, state=DevState.FAULT))

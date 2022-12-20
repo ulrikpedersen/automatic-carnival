@@ -970,7 +970,7 @@ def __Database__get_service_list(self, filter='.*'):
 
 
 def __Database__str(self):
-    return "Database({}, {})".format(self.get_db_host(), self.get_db_port())
+    return f"Database({self.get_db_host()}, {self.get_db_port()})"
 
 
 def __init_Database():

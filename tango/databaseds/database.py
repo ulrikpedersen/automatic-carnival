@@ -136,7 +136,7 @@ def update_timing_stats(dev, time_before, time_after, cmd_name):
 
 
 def get_plugin(name):
-    fullname = '{}.{}'.format(db_access.__package__, name)
+    fullname = f'{db_access.__package__}.{name}'
     return __import__(fullname, None, None, fullname)
 
 
@@ -1806,12 +1806,10 @@ def __monkey_patch_database_class():
         klass = get_constructed_class_by_class(klass)
 
         if info is None:
-            raise RuntimeError("Device class '%s' is not " \
-                               "registered" % klass_name)
+            raise RuntimeError(f"Device class '{klass_name}' is not registered")
 
         if klass is None:
-            raise RuntimeError("Device class '%s' as not been " \
-                               "constructed" % klass_name)
+            raise RuntimeError(f"Device class '{klass_name}' as not been constructed")
 
         deviceClassClass, deviceImplClass, deviceImplName = info
         deviceImplClass._device_class_instance = klass

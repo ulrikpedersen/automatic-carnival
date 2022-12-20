@@ -140,13 +140,13 @@ class _DeviceHelper:
             return result
         result = self.get_cmd_info(name)
         if result is None:
-            raise KeyError("Unknown %s" % name)
+            raise KeyError(f"Unknown {name}")
         return result
 
     def set(self, name, value):
         result = self.get_attr_info(name)
         if result is None:
-            raise KeyError("Unknown attribute %s" % name)
+            raise KeyError(f"Unknown attribute {name}")
         if result.data_type == tango.DevEncoded:
             self.device.write_attribute(name, dumps(value))
         else:
@@ -166,12 +166,12 @@ class _DeviceHelper:
 
     def __getitem__(self, name):
         if self.get_attr_info(name) is None:
-            raise KeyError("Unknown attribute %s" % name)
+            raise KeyError(f"Unknown attribute {name}")
         return self.device[name]
 
     def __setitem__(self, name, value):
         if self.get_attr_info(name) is None:
-            raise KeyError("Unknown attribute %s" % name)
+            raise KeyError(f"Unknown attribute {name}")
         self.device[name] = value
 
     def __str__(self):

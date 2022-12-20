@@ -120,7 +120,7 @@ class PipeData:
 
         for k, v in extra_info.items():
             k_lower = k.lower()
-            method_name = "set_%s" % k_lower.replace(' ', '_')
+            method_name = f"set_{k_lower.replace(' ', '_')}"
             if hasattr(p, method_name):
                 method = getattr(p, method_name)
                 method(str(v))

@@ -108,7 +108,7 @@ def __Util__create_device(self, klass_name, device_name, alias=None, cb=None):
     # 1 - Make sure device name doesn't exist already in the database
     if device_exists:
         Except.throw_exception("PyAPI_DeviceAlreadyDefined",
-                               "The device %s is already defined in the database" % device_name,
+                               f"The device {device_name} is already defined in the database",
                                "Util.create_device")
 
     # 2 - Make sure the device class is known
@@ -121,7 +121,7 @@ def __Util__create_device(self, klass_name, device_name, alias=None, cb=None):
             break
     if klass is None:
         Except.throw_exception("PyAPI_UnknownDeviceClass",
-                               "The device class %s could not be found" % klass_name,
+                               f"The device class {klass_name} could not be found",
                                "Util.create_device")
 
     # 3 - Create entry in the database (with alias if necessary)
@@ -183,7 +183,7 @@ def __Util__delete_device(self, klass_name, device_name):
     # 1 - Make sure device name exists in the database
     if not device_exists:
         Except.throw_exception("PyAPI_DeviceNotDefined",
-                               "The device %s is not defined in the database" % device_name,
+                               f"The device {device_name} is not defined in the database",
                                "Util.delete_device")
 
     # 2 - Make sure device name is defined in this server
@@ -199,7 +199,7 @@ def __Util__delete_device(self, klass_name, device_name):
             break
     if not device_exists:
         Except.throw_exception("PyAPI_DeviceNotDefinedInServer",
-                               "The device %s is not defined in this server" % class_device_name,
+                               f"The device {class_device_name} is not defined in this server",
                                "Util.delete_device")
 
     db.delete_device(device_name)
@@ -970,7 +970,7 @@ def __doc_EnsureOmniThread():
                 eid = dp.subscribe_event(
                     "double_scalar", tango.EventType.PERIODIC_EVENT, cb)
                 while running:
-                    print("num events stored {}".format(len(cb.get_events())))
+                    print(f"num events stored {len(cb.get_events())}")
                     sleep(1)
                 dp.unsubscribe_event(eid)
         

@@ -236,25 +236,21 @@ def __requires(package_name, min_version=None, conflicts=(),
             package = __import(package_name)
             curr_version = LooseVersion(package.__version__)
         except ImportError:
-            msg = "Could not find package {} required by {}".format(
-                package_name, software_name)
+            msg = f"Could not find package {package_name} required by {software_name}"
             raise Exception(msg)
         except:
-            msg = "Error importing package {} required by {}".format(
-                package_name, software_name)
+            msg = f"Error importing package {package_name} required by {software_name}"
             raise Exception(msg)
 
     if min_version is not None:
         min_version = LooseVersion(min_version)
         if min_version > curr_version:
-            msg = "{} requires {} {} but {} installed".format(
-                software_name, package_name, min_version, curr_version)
+            msg = f"{software_name} requires {package_name} {min_version} but {curr_version} installed"
             raise Exception(msg)
 
     conflicts = map(LooseVersion, conflicts)
     if curr_version in conflicts:
-        msg = "{} cannot run with {} {}".format(
-            software_name, package_name, curr_version)
+        msg = f"{software_name} cannot run with {package_name} {curr_version}"
         raise Exception(msg)
     return True
 
@@ -408,8 +404,8 @@ def __get_tango_type_numpy_support(obj):
     try:
         ndim, dtype = obj.ndim, str(obj.dtype)
         if ndim > 2:
-            raise TypeError('cannot translate numpy array with {} '
-                            'dimensions to tango type'.format(obj.ndim))
+            raise TypeError(f'cannot translate numpy array with {obj.ndim} '
+                            f'dimensions to tango type')
         return TO_TANGO_TYPE[dtype], AttrDataFormat(ndim)
     except AttributeError:
         return __get_tango_type(obj)
@@ -442,21 +438,19 @@ def get_enum_labels(enum_cls):
     :raises EnumTypeError: in case the given class is invalid
     """
     if not issubclass(enum_cls, enum.Enum):
-        raise EnumTypeError("Input class '%s' must be derived from enum.Enum"
-                            % enum_cls)
+        raise EnumTypeError(f"Input class '{enum_cls}' must be derived from enum.Enum")
 
     # Check there are no duplicate labels
     try:
         enum.unique(enum_cls)
     except ValueError as exc:
-        raise EnumTypeError("Input class '%s' must be unique - %s"
-                            % (enum_cls, exc))
+        raise EnumTypeError(f"Input class '{enum_cls}' must be unique - {exc}")
 
     # Check the values start at 0, and increment by 1, since that is
     # assumed by tango's DEV_ENUM implementation.
     values = [member.value for member in enum_cls]
     if not values:
-        raise EnumTypeError("Input class '%s' has no members!" % enum_cls)
+        raise EnumTypeError(f"Input class '{enum_cls}' has no members!")
     expected_value = 0
     for value in values:
         if value != expected_value:
@@ -873,8 +867,7 @@ def DbData_2_dict(db_data, d=None):
         d = {}
     if not isinstance(db_data, DbData):
         raise TypeError(
-            'db_data must be a tango.DbData. A %s found instead' %
-            type(db_data))
+            f'db_data must be a tango.DbData. A {type(db_data)} found instead')
     for db_datum in db_data:
         d[db_datum.name] = db_datum.value_string
     return d
@@ -1172,8 +1165,7 @@ class CaselessList(list):
         It returns None or the entry."""
         if not isinstance(item, str):
             raise TypeError(
-                'Members of this object must be strings. '
-                'You supplied \"%s\"' % type(item))
+                f'Members of this object must be strings. You supplied "{type(item)}"')
         for entry in self:
             if item.lower() == entry.lower():
                 return entry
@@ -1210,8 +1202,7 @@ class CaselessList(list):
         """Adds an item to the list and checks it's a string."""
         if not isinstance(item, str):
             raise TypeError(
-                'Members of this object must be strings. '
-                'You supplied \"%s\"' % type(item))
+                f'Members of this object must be strings. You supplied "{type(item)}"')
         list.append(self, item)
 
     def extend(self, item):
@@ -1219,8 +1210,7 @@ class CaselessList(list):
         a string."""
         if not isinstance(item, list):
             raise TypeError(
-                'You can only extend lists with lists. '
-                'You supplied \"%s\"' % type(item))
+                f'You can only extend lists with lists. You supplied "{type(item)}"')
         for entry in item:
             if not isinstance(entry, str):
                 raise TypeError(
@@ -1252,8 +1242,7 @@ class CaselessList(list):
         maxindex = min(len(self), maxindex)
         if not isinstance(item, str):
             raise TypeError(
-                'Members of this object must be strings. '
-                'You supplied \"%s\"' % type(item))
+                f'Members of this object must be strings. You supplied "{type(item)}"')
         index = minindex
         while index < maxindex:
             index += 1
@@ -1266,8 +1255,7 @@ class CaselessList(list):
         Raises TypeError if x isn't a string."""
         if not isinstance(x, str):
             raise TypeError(
-                'Members of this object must be strings. '
-                'You supplied \"%s\"' % type(x))
+                f'Members of this object must be strings. You supplied "{type(x)}"')
         list.insert(self, i, x)
 
     def __setitem__(self, index, value):
@@ -1554,7 +1542,7 @@ class EventCallback:
         try:
             value = self._get_value(evt)
         except Exception as e:
-            value = "Unexpected exception in getting event value: %s" % str(e)
+            value = f"Unexpected exception in getting event value: {str(e)}"
         d = {"date": date, "reception_date": reception_date,
              "type": evt_type, "dev_name": dev_name, "name": attr_name,
              "value": value}
@@ -1582,8 +1570,7 @@ class EventCallback:
             return f"[{e.reason}] {e.desc}"
 
         if isinstance(evt, EventData):
-            return "[{}] {}".format(
-                evt.attr_value.quality, str(evt.attr_value.value))
+            return f"[{evt.attr_value.quality}] {str(evt.attr_value.value)}"
         elif isinstance(evt, AttrConfEventData):
             cfg = evt.attr_conf
             return f"label='{cfg.label}'; unit='{cfg.unit}'"
@@ -1681,23 +1668,22 @@ def from_version_str_to_int(version_str):
 def info():
     # Compile and Runtime are set by `tango.pytango_init.init`
     from .constants import Compile, Runtime
-    msg = """\
-PyTango {0.version_long} {0.version_info}
+    msg = f"""\
+PyTango {Release.version_long} {Release.version_info}
 PyTango compiled with:
-    Python : {1.PY_VERSION}
-    Numpy  : {1.NUMPY_VERSION}
-    Tango  : {1.TANGO_VERSION}
-    Boost  : {1.BOOST_VERSION}
+    Python : {Compile.PY_VERSION}
+    Numpy  : {Compile.NUMPY_VERSION}
+    Tango  : {Compile.TANGO_VERSION}
+    Boost  : {Compile.BOOST_VERSION}
 
 PyTango runtime is:
-    Python : {2.PY_VERSION}
-    Numpy  : {2.NUMPY_VERSION}
-    Tango  : {2.TANGO_VERSION}
+    Python : {Runtime.PY_VERSION}
+    Numpy  : {Runtime.NUMPY_VERSION}
+    Tango  : {Runtime.TANGO_VERSION}
 
 PyTango running on:
-{2.UNAME}
+{Runtime.UNAME}
 """
-    msg = msg.format(Release, Compile, Runtime)
     return msg
 
 
@@ -1708,7 +1694,7 @@ def get_attrs(obj):
     proxy_type = types.MappingProxyType
     if not isinstance(obj.__dict__, (dict, proxy_type)):
         print(type(obj.__dict__), obj)
-        raise TypeError("%s.__dict__ is not a dictionary" % obj.__name__)
+        raise TypeError(f"{obj.__name__}.__dict__ is not a dictionary")
     return obj.__dict__.keys()
 
 
@@ -1751,7 +1737,7 @@ def ensure_binary(s, encoding='utf-8', errors='strict'):
     elif isinstance(s, bytes):
         return s
     else:
-        raise TypeError("not expecting type '%s'" % type(s))
+        raise TypeError(f"not expecting type '{type(s)}'")
 
 
 class PyTangoHelpFormatter(HelpFormatter):

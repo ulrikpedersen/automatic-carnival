@@ -183,11 +183,11 @@ def add_lib_boost(dirs):
             # wasn't specified as an environment var, then try the
             # various options, being as Python version specific as possible
             suffixes = [
-                "{v[0]}{v[1]}".format(v=PYTHON_VERSION),
-                "-{v[0]}{v[1]}".format(v=PYTHON_VERSION),
-                "-py{v[0]}{v[1]}".format(v=PYTHON_VERSION),
-                "{v[0]}-py{v[0]}{v[1]}".format(v=PYTHON_VERSION),
-                "{v[0]}".format(v=PYTHON_VERSION),
+                f"{sys.version_info.major}{sys.version_info.minor}",
+                f"-{sys.version_info.major}{sys.version_info.minor}",
+                f"-py{sys.version_info.major}{sys.version_info.minor}",
+                f"{sys.version_info.major}-py{sys.version_info.major}{sys.version_info.minor}",
+                f"{sys.version_info.major}",
                 "",
             ]
             for suffix in suffixes:
@@ -253,13 +253,13 @@ class build(dftbuild):
         dbg = so + ".dbg"
         try:
             os.chdir(d)
-            stripped_cmd = 'file %s | grep -q "not stripped" || exit 1' % so
+            stripped_cmd = f'file {so} | grep -q "not stripped" || exit 1'
             not_stripped = os.system(stripped_cmd) == 0
             if not_stripped:
-                os.system("objcopy --only-keep-debug {} {}".format(so, dbg))
-                os.system("objcopy --strip-debug --strip-unneeded {}".format(so))
-                os.system("objcopy --add-gnu-debuglink={} {}".format(dbg, so))
-                os.system("chmod -x {}".format(dbg))
+                os.system(f"objcopy --only-keep-debug {so} {dbg}")
+                os.system(f"objcopy --strip-debug --strip-unneeded {so}")
+                os.system(f"objcopy --add-gnu-debuglink={dbg} {so}")
+                os.system(f"chmod -x {dbg}")
         finally:
             os.chdir(orig_dir)
 

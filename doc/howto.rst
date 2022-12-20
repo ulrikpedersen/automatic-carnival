@@ -152,11 +152,11 @@ Basic read/write attribute operations::
     # Read a scalar attribute. This will return a tango.DeviceAttribute
     # Member 'value' contains the attribute value
     scalar = tango_test.read_attribute("long_scalar")
-    print("Long_scalar value = {0}".format(scalar.value))
+    print(f"Long_scalar value = {scalar.value}")
 
     # PyTango provides a shorter way:
     scalar = tango_test.long_scalar
-    print("Long_scalar value = {0}".format(scalar))
+    print(f"Long_scalar value = {scalar}")
 
     # Read a spectrum attribute
     spectrum = tango_test.read_attribute("double_spectrum")
@@ -219,15 +219,15 @@ binding automagically manages the data types, and writing scripts is quite easy:
     # (DevString in this case is a command of the Tango_Test device)
 
     result = tango_test.command_inout("DevString", "First hello to device")
-    print("Result of execution of DevString command = {0}".format(result))
+    print(f"Result of execution of DevString command = {result}")
 
     # the same can be achieved with a helper method
     result = tango_test.DevString("Second Hello to device")
-    print("Result of execution of DevString command = {0}".format(result))
+    print(f"Result of execution of DevString command = {result}")
 
     # Please note that argin argument type is automatically managed by python
     result = tango_test.DevULong(12456)
-    print("Result of execution of DevULong command = {0}".format(result))
+    print(f"Result of execution of DevULong command = {result}")
 
 
 Execute commands with more complex types
@@ -247,7 +247,7 @@ structures::
     argin = ([1,2,3], ["Hello", "TangoTest device"])
 
     result = tango_test.DevVarLongStringArray(argin)
-    print("Result of execution of DevVarLongArray command = {0}".format(result))
+    print(f"Result of execution of DevVarLongArray command = {result}")
 
 Work with Groups
 ----------------
@@ -457,7 +457,7 @@ is shown below::
             eid = dp.subscribe_event(
                 "double_scalar", tango.EventType.PERIODIC_EVENT, cb)
             while running:
-                print("num events stored {}".format(len(cb.get_events())))
+                print(f"num events stored {len(cb.get_events())}")
                 sleep(1)
             dp.unsubscribe_event(eid)
 
@@ -937,7 +937,7 @@ point attribute with the specified name::
                 self.add_attribute(attr)
                 self.info_stream("Added dynamic attribute %r", attr_name)
             else:
-                raise ValueError("Already have an attribute called {!r}".format(attr_name))
+                raise ValueError(f"Already have an attribute called {repr(attr_name)}")
 
         def generic_read(self, attr):
             self.info_stream("Reading attribute %s", attr.get_name())

@@ -420,8 +420,7 @@ class _DeviceClass(DeviceClass):
 def __create_tango_deviceclass_klass(tango_device_klass, attrs=None):
     klass_name = tango_device_klass.__name__
     if not issubclass(tango_device_klass, (BaseDevice)):
-        msg = "{} device must inherit from " \
-              "tango.server.Device".format(klass_name)
+        msg = f"{klass_name} device must inherit from tango.server.Device"
         raise Exception(msg)
 
     if attrs is None:
@@ -795,13 +794,11 @@ class attribute(AttrData):
             dformat = kwargs.get('dformat')
             if inspect.isclass(dtype) and issubclass(dtype, enum.Enum):
                 if dformat and dformat != AttrDataFormat.SCALAR:
-                    raise TypeError("DevEnum types can only be scalar, not {}."
-                                    .format(dformat))
+                    raise TypeError(f"DevEnum types can only be scalar, not {dformat}.")
                 enum_labels = kwargs.get('enum_labels')
                 if enum_labels:
-                    raise TypeError("For dtype of enum.Enum the enum_labels must not "
-                                    "be specified - dtype: {}, enum_labels: {}."
-                                    .format(dtype, enum_labels))
+                    raise TypeError(f"For dtype of enum.Enum the enum_labels must not "
+                                    f"be specified - dtype: {dtype}, enum_labels: {enum_labels}.")
                 kwargs['enum_labels'] = get_enum_labels(dtype)
                 dtype = CmdArgType.DevEnum
             kwargs['dtype'], kwargs['dformat'] = \
@@ -1018,8 +1015,7 @@ def __build_command_doc(f, name, dtype_in, doc_in, dtype_out, doc_out):
             except:
                 pass
         msg = doc_in or '(not documented)'
-        doc += '\n\n:param {0}: {1}\n:type {0}: {2}'.format(
-            param_name, msg, dtype_in_str)
+        doc += f'\n\n:param {param_name}: {msg}\n:type {param_name}: {dtype_in_str}'
     if dtype_out is not None:
         dtype_out_str = str(dtype_out)
         if not isinstance(dtype_out, str):
@@ -1314,8 +1310,8 @@ def _get_class_green_mode(classes, green_mode):
         green_modes.add(device_green_mode)
     if len(green_modes) > 1:
         raise ValueError(
-            "Devices with mixed green modes cannot be run in the same device "
-            "server process. Modes: {}. Classes: {}.".format(green_modes, classes)
+            f"Devices with mixed green modes cannot be run in the same device "
+            f"server process. Modes: {green_modes}. Classes: {classes}."
         )
     elif len(green_modes) == 0:
         raise ValueError("No device classes specified - cannot run device server " 

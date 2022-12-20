@@ -63,8 +63,8 @@ def __get_pipe_type_numpy_support(obj):
     except AttributeError:
         return __get_pipe_type_simple(obj)
     if ndim > 1:
-        raise TypeError('cannot translate numpy array with {} '
-                        'dimensions to tango type'.format(obj.ndim))
+        raise TypeError(f'cannot translate numpy array with {obj.ndim} '
+                        f'dimensions to tango type')
     tg_type = TO_TANGO_TYPE[dtype]
     if ndim > 0:
         tg_type = scalar_to_array_type(dtype)

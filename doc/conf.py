@@ -26,8 +26,8 @@ try:
 except ImportError:
     from mock_tango_extension import tango
 from tango import Release
-print("Building documentation for PyTango {0}".format(Release.version_long))
-print("Using PyTango from: {0}".format(os.path.dirname(tango.__file__)))
+print(f"Building documentation for PyTango {Release.version_long}")
+print(f"Using PyTango from: {os.path.dirname(tango.__file__)}")
 
 needs_sphinx = "1.0"
 
