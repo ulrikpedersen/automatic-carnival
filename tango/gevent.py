@@ -32,9 +32,8 @@ def check_requirements():
                           "instead")
 
     if Version(gevent.__version__) < Version("1.0"):
-        raise ImportError("You need gevent >= 1.0. You are using %s. "
-                          "Consider using the futures green mode instead"
-                          % gevent_version)
+        raise ImportError(f"You need gevent >= 1.0. You are using {gevent_version}. "
+                          f"Consider using the futures green mode instead")
 
 
 check_requirements()

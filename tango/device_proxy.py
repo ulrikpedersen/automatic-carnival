@@ -300,8 +300,8 @@ def __set_attribute_value(self, name, value):
                 value = enum_class[value]
             except KeyError:
                 raise AttributeError(
-                    'Invalid enum value %s for attribute %s. Valid ones: %s' %
-                    (value, name, [m for m in enum_class.__members__.keys()]))
+                    f'Invalid enum value {value} for attribute {name}. '
+                    f'Valid ones: {[m for m in enum_class.__members__.keys()]}')
     return self.write_attribute(name, value)
 
 
@@ -1271,11 +1271,10 @@ def __DeviceProxy__subscribe_event_global(self, event_type, cb,
             evt_data = se.get(event_id)
             if evt_data is not None:
                 # Raise exception
-                desc = textwrap.dedent("""\
+                desc = textwrap.dedent(f"""\
                     Internal PyTango error:
-                    %s.subscribe_event(%s) already has key %d assigned to (%s, %s)
+                    {self}.subscribe_event({event_type}) already has key {event_id} assigned to ({evt_data[2]}, {evt_data[1]})
                     Please report error to PyTango""")
-                desc %= self, event_type, event_id, evt_data[2], evt_data[1]
                 Except.throw_exception(
                     "Py_InternalError", desc, "DeviceProxy.subscribe_event")
         se[event_id] = (cbfn, event_type, "dummy")
@@ -1316,9 +1315,8 @@ def __DeviceProxy__subscribe_event_attrib(self, attr_name, event_type,
         # Raise exception
         desc = textwrap.dedent("""\
             Internal PyTango error:
-            %s.subscribe_event(%s, %s) already has key %d assigned to (%s, %s)
+            {self}.subscribe_event({attr_name}, {event_type}) already has key {event_id} assigned to ({evt_data[2]}, {evt_data[1]})
             Please report error to PyTango""")
-        desc %= self, attr_name, event_type, event_id, evt_data[2], evt_data[1]
         Except.throw_exception(
             "Py_InternalError", desc, "DeviceProxy.subscribe_event")
 

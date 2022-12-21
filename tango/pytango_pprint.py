@@ -110,7 +110,8 @@ def __registerSeqStr():
 
 def __str__DevFailed(self):
     if isinstance(self.args, collections_abc.Sequence):
-        return 'DevFailed[\n%s]' % '\n'.join(map(str, self.args))
+        seq_str = '\n'.join(map(str, self.args))
+        return f'DevFailed[\n{seq_str}]'
     return f'DevFailed[{self.args}]'
 
 

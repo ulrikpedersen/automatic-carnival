@@ -454,9 +454,8 @@ def get_enum_labels(enum_cls):
     expected_value = 0
     for value in values:
         if value != expected_value:
-            raise EnumTypeError("Enum values for '%s' must start at 0 and "
-                                "increment by 1.  Values: %s"
-                                % (enum_cls, values))
+            raise EnumTypeError(f"Enum values for '{enum_cls}' must start at 0 and "
+                                f"increment by 1.  Values: {values}")
         expected_value += 1
 
     return [member.name for member in enum_cls]
@@ -1155,9 +1154,8 @@ class CaselessList(list):
         for entry in inlist:
             if not isinstance(entry, str):
                 raise TypeError(
-                    'Members of this object must be strings. '
-                    'You supplied \"%s\" which is \"%s\"' %
-                    (entry, type(entry)))
+                    f'Members of this object must be strings. '
+                    f'You supplied \"{entry}\" which is \"{type(entry)}\"')
             self.append(entry)
 
     def findentry(self, item):
@@ -1214,8 +1212,8 @@ class CaselessList(list):
         for entry in item:
             if not isinstance(entry, str):
                 raise TypeError(
-                    'Members of this object must be strings. '
-                    'You supplied \"%s\"' % type(entry))
+                    f'Members of this object must be strings. '
+                    f'You supplied \"{type(entry)}\"')
             list.append(self, entry)
 
     def count(self, item):
@@ -1269,8 +1267,8 @@ class CaselessList(list):
         if isinstance(index, int):
             if not isinstance(value, str):
                 raise TypeError(
-                    'Members of this object must be strings. '
-                    'You supplied \"%s\"' % type(value))
+                    f'Members of this object must be strings. '
+                    f'You supplied \"{type(value)}\"')
             list.__setitem__(self, index, value)
         elif isinstance(index, slice):
             if not hasattr(value, '__len__'):
@@ -1279,8 +1277,8 @@ class CaselessList(list):
             for entry in value:
                 if not isinstance(entry, str):
                     raise TypeError(
-                        'Members of this object must be strings. '
-                        'You supplied \"%s\"' % type(entry))
+                        f'Members of this object must be strings. '
+                        f'You supplied \"{type(entry)}\"')
             list.__setitem__(self, index, value)
         else:
             raise TypeError('Indexes must be integers or slice objects.')
@@ -1290,8 +1288,8 @@ class CaselessList(list):
         for entry in sequence:
             if not isinstance(entry, str):
                 raise TypeError(
-                    'Members of this object must be strings. '
-                    'You supplied \"%s\"' % type(entry))
+                    f'Members of this object must be strings. '
+                    f'You supplied \"{type(entry)}\"')
         list.__setslice__(self, i, j, sequence)
 
     def __getslice__(self, i, j):
@@ -1511,8 +1509,7 @@ class EventCallback:
         try:
             self._push_event(evt)
         except Exception as e:
-            print("Unexpected error in callback for %s: %s"
-                  % (str(evt), str(e)), file=self._fd)
+            print(f"Unexpected error in callback for {evt}: {e}", file=self._fd)
 
     def _push_event(self, evt):
         """Internal usage only"""

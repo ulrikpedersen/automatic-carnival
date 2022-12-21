@@ -323,9 +323,9 @@ def __DeviceClass__create_user_default_attr_prop(self, attr_name, extra_info):
             p.set_delta_t(str(v))
         elif k_lower not in ('display level', 'polling period', 'memorized'):
             name = self.get_name()
-            msg = "Wrong definition of attribute %s in " \
-                  "class %s\nThe object extra information '%s' " \
-                  "is not recognized!" % (attr_name, name, k)
+            msg = f"Wrong definition of attribute {attr_name} in " \
+                  f"class {name}\nThe object extra information '{k}' " \
+                  f"is not recognized!"
             self.__throw_create_attribute_exception(msg)
     return p
 
@@ -378,8 +378,8 @@ def __DeviceClass__command_factory(self):
     deviceimpl_class = class_info[1]
 
     if not hasattr(deviceimpl_class, "init_device"):
-        msg = "Wrong definition of class %s\n" \
-              "The init_device() method does not exist!" % name
+        msg = f"Wrong definition of class {name}\n" \
+              f"The init_device() method does not exist!"
         Except.throw_exception("PyDs_WrongCommandDefinition", msg, "command_factory()")
 
     for cmd_name, cmd_info in self.cmd_list.items():
@@ -394,74 +394,74 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
 
     # check parameter
     if not isinstance(cmd_info, collections_abc.Sequence):
-        msg = "Wrong data type for value for describing command %s in " \
-              "class %s\nMust be a sequence with 2 or 3 elements" % (cmd_name, name)
+        msg = f"Wrong data type for value for describing command {cmd_name} in " \
+              f"class {name}\nMust be a sequence with 2 or 3 elements"
         __throw_create_command_exception(msg)
 
     if len(cmd_info) < 2 or len(cmd_info) > 3:
-        msg = "Wrong number of argument for describing command %s in " \
-              "class %s\nMust be a sequence with 2 or 3 elements" % (cmd_name, name)
+        msg = f"Wrong number of argument for describing command {cmd_name} in " \
+              f"class {name}\nMust be a sequence with 2 or 3 elements"
         __throw_create_command_exception(msg)
 
     param_info, result_info = cmd_info[0], cmd_info[1]
 
     if not isinstance(param_info, collections_abc.Sequence):
-        msg = "Wrong data type in command argument for command %s in " \
-              "class %s\nCommand parameter (first element) must be a sequence" % (cmd_name, name)
+        msg = f"Wrong data type in command argument for command {cmd_name} in " \
+              f"class {name}\nCommand parameter (first element) must be a sequence"
         __throw_create_command_exception(msg)
 
     if len(param_info) < 1 or len(param_info) > 2:
-        msg = "Wrong data type in command argument for command %s in " \
-              "class %s\nSequence describing command parameters must contain " \
-              "1 or 2 elements"
+        msg = f"Wrong data type in command argument for command {cmd_name} in " \
+              f"class {name}\nSequence describing command parameters must contain " \
+              f"1 or 2 elements"
         __throw_create_command_exception(msg)
 
     param_type = CmdArgType.DevVoid
     try:
         param_type = CmdArgType(param_info[0])
     except:
-        msg = "Wrong data type in command argument for command %s in " \
-              "class %s\nCommand parameter type (first element in first " \
-              "sequence) must be a tango.CmdArgType"
+        msg = f"Wrong data type in command argument for command {cmd_name} in " \
+              f"class {name}\nCommand parameter type (first element in first " \
+              f"sequence) must be a tango.CmdArgType"
         __throw_create_command_exception(msg)
 
     param_desc = ""
     if len(param_info) > 1:
         param_desc = param_info[1]
         if not is_pure_str(param_desc):
-            msg = "Wrong data type in command parameter for command %s in " \
-                  "class %s\nCommand parameter description (second element " \
-                  "in first sequence), when given, must be a string"
+            msg = f"Wrong data type in command parameter for command {cmd_name} in " \
+                  f"class {name}\nCommand parameter description (second element " \
+                  f"in first sequence), when given, must be a string"
             __throw_create_command_exception(msg)
 
     # Check result
     if not isinstance(result_info, collections_abc.Sequence):
-        msg = "Wrong data type in command result for command %s in " \
-              "class %s\nCommand result (second element) must be a sequence" % (cmd_name, name)
+        msg = f"Wrong data type in command result for command {cmd_name} in " \
+              f"class {cmd_name}\nCommand result (second element) must be a sequence"
         __throw_create_command_exception(msg)
 
     if len(result_info) < 1 or len(result_info) > 2:
-        msg = "Wrong data type in command result for command %s in " \
-              "class %s\nSequence describing command result must contain " \
-              "1 or 2 elements" % (cmd_name, name)
+        msg = f"Wrong data type in command result for command {cmd_name} in " \
+              f"class {name}\nSequence describing command result must contain " \
+              f"1 or 2 elements"
         __throw_create_command_exception(msg)
 
     result_type = CmdArgType.DevVoid
     try:
         result_type = CmdArgType(result_info[0])
     except:
-        msg = "Wrong data type in command result for command %s in " \
-              "class %s\nCommand result type (first element in second " \
-              "sequence) must be a tango.CmdArgType" % (cmd_name, name)
+        msg = f"Wrong data type in command result for command {cmd_name} in " \
+              f"class {name}\nCommand result type (first element in second " \
+              f"sequence) must be a tango.CmdArgType"
         __throw_create_command_exception(msg)
 
     result_desc = ""
     if len(result_info) > 1:
         result_desc = result_info[1]
         if not is_pure_str(result_desc):
-            msg = "Wrong data type in command result for command %s in " \
-                  "class %s\nCommand parameter description (second element " \
-                  "in second sequence), when given, must be a string" % (cmd_name, name)
+            msg = f"Wrong data type in command result for command {cmd_name} in " \
+                  f"class {name}\nCommand parameter description (second element " \
+                  f"in second sequence), when given, must be a string"
             __throw_create_command_exception(msg)
 
     # If it is defined, get addictional dictionnary used for optional parameters
@@ -470,15 +470,15 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
     if len(cmd_info) == 3:
         extra_info = cmd_info[2]
         if not isinstance(extra_info, collections_abc.Mapping):
-            msg = "Wrong data type in command information for command %s in " \
-                  "class %s\nCommand information (third element in sequence), " \
-                  "when given, must be a dictionary" % (cmd_name, name)
+            msg = f"Wrong data type in command information for command {cmd_name} in " \
+                  f"class {name}\nCommand information (third element in sequence), " \
+                  f"when given, must be a dictionary"
             __throw_create_command_exception(msg)
 
         if len(extra_info) > 3:
-            msg = "Wrong data type in command information for command %s in " \
-                  "class %s\nThe optional dictionary can not have more than " \
-                  "three elements" % (cmd_name, name)
+            msg = f"Wrong data type in command information for command {cmd_name} in " \
+                  f"class {name}\nThe optional dictionary can not have more than " \
+                  f"three elements"
             __throw_create_command_exception(msg)
 
         for info_name, info_value in extra_info.items():
@@ -487,15 +487,15 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
                 try:
                     display_level = DispLevel(info_value)
                 except:
-                    msg = "Wrong data type in command information for command %s in " \
-                          "class %s\nCommand information for display level is not a " \
-                          "tango.DispLevel" % (cmd_name, name)
+                    msg = f"Wrong data type in command information for command {cmd_name} in " \
+                          f"class {name}\nCommand information for display level is not a " \
+                          f"tango.DispLevel"
                     __throw_create_command_exception(msg)
             elif info_name_lower == "default command":
                 if not is_pure_str(info_value):
-                    msg = "Wrong data type in command information for command %s in " \
-                          "class %s\nCommand information for default command is not a " \
-                          "string" % (cmd_name, name)
+                    msg = f"Wrong data type in command information for command {cmd_name} in " \
+                          f"class {name}\nCommand information for default command is not a " \
+                          f"string"
                     __throw_create_command_exception(msg)
                 v = info_value.lower()
                 default_command = v == 'true'
@@ -503,36 +503,36 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
                 try:
                     polling_period = int(info_value)
                 except:
-                    msg = "Wrong data type in command information for command %s in " \
-                          "class %s\nCommand information for polling period is not an " \
-                          "integer" % (cmd_name, name)
+                    msg = f"Wrong data type in command information for command {cmd_name} in " \
+                          f"class {name}\nCommand information for polling period is not an " \
+                          f"integer"
                     __throw_create_command_exception(msg)
             else:
-                msg = "Wrong data type in command information for command %s in " \
-                      "class %s\nCommand information has unknown key " \
-                      "%s" % (cmd_name, name, info_name)
+                msg = f"Wrong data type in command information for command {cmd_name} in " \
+                      f"class {cmd_name}\nCommand information has unknown key " \
+                      f"{info_name}"
                 __throw_create_command_exception(msg)
 
     # check that the method to be executed exists
     try:
         cmd = getattr(deviceimpl_class, cmd_name)
         if not isinstance(cmd, collections_abc.Callable):
-            msg = "Wrong definition of command %s in " \
-                  "class %s\nThe object exists in class but is not " \
-                  "a method!" % (cmd_name, name)
+            msg = f"Wrong definition of command {cmd_name} in " \
+                  f"class {name}\nThe object exists in class but is not " \
+                  f"a method!"
             __throw_create_command_exception(msg)
     except AttributeError:
-        msg = "Wrong definition of command %s in " \
-              "class %s\nThe command method does not exist!" % (cmd_name, name)
+        msg = f"Wrong definition of command {cmd_name} in " \
+              f"class {name}\nThe command method does not exist!"
         __throw_create_command_exception(msg)
 
     is_allowed_name = f"is_{cmd_name}_allowed"
     try:
         is_allowed = getattr(deviceimpl_class, is_allowed_name)
         if not isinstance(is_allowed, collections_abc.Callable):
-            msg = "Wrong definition of command %s in " \
-                  "class %s\nThe object '%s' exists in class but is " \
-                  "not a method!" % (cmd_name, name, is_allowed_name)
+            msg = f"Wrong definition of command {cmd_name} in " \
+                  f"class {name}\nThe object '{is_allowed_name}' exists in class but is " \
+                  f"not a method!"
             __throw_create_command_exception(msg)
     except:
         is_allowed_name = ""
