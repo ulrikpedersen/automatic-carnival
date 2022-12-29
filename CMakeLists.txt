@@ -13,11 +13,21 @@ project(
 include(cmake/project-is-top-level.cmake)
 include(cmake/variables.cmake)
 
-# ---- Declare library ----
+# ---- Dependencies -------
+find_package (Python 3.11 COMPONENTS Development)
+message(STATUS "Python version: ${Python_VERSION}")
+message(STATUS " - python include dir: ${Python_INCLUDE_DIRS}")
 
+set(BOOST_VERBOSE "ON")
+find_package(Boost 1.73 REQUIRED CONFIG COMPONENTS python3)
+message(STATUS "Boost version: ${Boost_VERSION}")
+
+# ---- Declare library ----
+# A python extension module library must be shared
 add_library(
-    pytango_pytango
+    pytango_pytango SHARED
     source/pytango.cpp
+    source/bpwrap.cpp
 )
 add_library(pytango::pytango ALIAS pytango_pytango)
 
@@ -41,7 +51,14 @@ set_target_properties(
     SOVERSION "${PROJECT_VERSION_MAJOR}"
     EXPORT_NAME pytango
     OUTPUT_NAME pytango
+    PREFIX ""
 )
+
+# .so suffix is default on linux and required for python to load
+# the extension module. On MacOS the default is .dylib so we have
+# to force the suffix here.
+# (what to do for Windows?)
+set_target_properties(pytango_pytango PROPERTIES SUFFIX ".so")  
 
 target_include_directories(
     pytango_pytango ${warning_guard}
@@ -56,6 +73,8 @@ target_include_directories(
 )
 
 target_compile_features(pytango_pytango PUBLIC cxx_std_14)
+
+target_link_libraries(pytango_pytango PRIVATE Python::Module Boost::python3)
 
 # ---- Install rules ----
 
