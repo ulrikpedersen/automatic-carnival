@@ -56,12 +56,13 @@ jobs:
       run: ctest --output-on-failure -j 2
 
     - name: Process coverage info
-      run: cmake --build cmakebuild/coverage -t coverage && cat cmakebuild/coverage/coverage.info
+      run: cmake --build cmakebuild/coverage -t coverage
 
     - name: Submit to codecov.io
       uses: codecov/codecov-action@v3
       with:
         file: cmakebuild/coverage/coverage.info
+        flags: ctest
 
   sanitize:
     needs: [lint]
