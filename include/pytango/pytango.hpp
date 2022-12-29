@@ -63,6 +63,7 @@ public:
    * @brief Returns a non-owning pointer to the string stored in this class
    */
   auto name() const -> const char*;
+  auto addnumbers(int a, int b) -> int;
 
 private:
   PYTANGO_SUPPRESS_C4251
