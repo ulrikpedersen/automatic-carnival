@@ -15,7 +15,7 @@ Built documentation can be found here: https://ulrikpedersen.github.io/automatic
 
 # Licensing
 
-See the [LICENSE]
+See the [LICENSE](LICENSE) file.
 
 ID: BSD-3-Clause
 
