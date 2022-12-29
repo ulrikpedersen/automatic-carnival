@@ -1,3 +1,6 @@
+[![codecov](https://codecov.io/gh/ulrikpedersen/automatic-carnival/branch/main/graph/badge.svg?token=KMMX7360UD)](https://codecov.io/gh/ulrikpedersen/automatic-carnival)
+
+
 # New build-system for pytango
 
 This is a playground to hack around with a new cmake-based build system for pytango
