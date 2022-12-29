@@ -1,0 +1,77 @@
+cmake_minimum_required(VERSION 3.14)
+
+include(cmake/prelude.cmake)
+
+project(
+    pytango
+    VERSION 9.4.1
+    DESCRIPTION "Python bindings for the Tango distributed control system"
+    HOMEPAGE_URL "https://pytango.readthedocs.io/"
+    LANGUAGES CXX
+)
+
+include(cmake/project-is-top-level.cmake)
+include(cmake/variables.cmake)
+
+# ---- Declare library ----
+
+add_library(
+    pytango_pytango
+    source/pytango.cpp
+)
+add_library(pytango::pytango ALIAS pytango_pytango)
+
+include(GenerateExportHeader)
+generate_export_header(
+    pytango_pytango
+    BASE_NAME pytango
+    EXPORT_FILE_NAME export/pytango/pytango_export.hpp
+    CUSTOM_CONTENT_FROM_VARIABLE pragma_suppress_c4251
+)
+
+if(NOT BUILD_SHARED_LIBS)
+  target_compile_definitions(pytango_pytango PUBLIC PYTANGO_STATIC_DEFINE)
+endif()
+
+set_target_properties(
+    pytango_pytango PROPERTIES
+    CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN YES
+    VERSION "${PROJECT_VERSION}"
+    SOVERSION "${PROJECT_VERSION_MAJOR}"
+    EXPORT_NAME pytango
+    OUTPUT_NAME pytango
+)
+
+target_include_directories(
+    pytango_pytango ${warning_guard}
+    PUBLIC
+    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+)
+
+target_include_directories(
+    pytango_pytango SYSTEM
+    PUBLIC
+    "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/export>"
+)
+
+target_compile_features(pytango_pytango PUBLIC cxx_std_14)
+
+# ---- Install rules ----
+
+if(NOT CMAKE_SKIP_INSTALL_RULES)
+  include(cmake/install-rules.cmake)
+endif()
+
+# ---- Developer mode ----
+
+if(NOT pytango_DEVELOPER_MODE)
+  return()
+elseif(NOT PROJECT_IS_TOP_LEVEL)
+  message(
+      AUTHOR_WARNING
+      "Developer mode is intended for developers of pytango"
+  )
+endif()
+
+include(cmake/dev-mode.cmake)
