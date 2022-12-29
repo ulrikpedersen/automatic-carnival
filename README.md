@@ -9,6 +9,10 @@ This is a playground to hack around with a new cmake-based build system for pyta
 
 See the [BUILDING](BUILDING.md) document.
 
+# Documentation
+
+Built documentation can be found here: https://ulrikpedersen.github.io/automatic-carnival/
+
 # Licensing
 
 See the [LICENSE]
