@@ -125,13 +125,13 @@ jobs:
         -D BUILD_SHARED_LIBS=${{ matrix.shared }}
 
     - name: Build
-      run: cmake --build build --config Release -j 2
+      run: cmake --build cmakebuild --config Release -j 2
 
     - name: Install
-      run: cmake --install build --config Release --prefix prefix
+      run: cmake --install cmakebuild --config Release --prefix prefix
 
     - name: Test
-      working-directory: build
+      working-directory: cmakebuild
       run: ctest --output-on-failure -C Release -j 2
 
   docs:
