@@ -20,7 +20,7 @@ install(
 )
 
 install(
-    TARGETS pytango_pytango
+    TARGETS pytango_pytango pytango_tango
     EXPORT pytangoTargets
     RUNTIME #
     COMPONENT pytango_Runtime
