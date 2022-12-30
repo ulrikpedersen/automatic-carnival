@@ -41,9 +41,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install LCov
+    - name: Install LCov and boost-python
       run: sudo apt-get update -q
-        && sudo apt-get install lcov -q -y
+        && sudo apt-get install lcov libboost-python1.74-dev -q -y
 
     - name: Configure
       run: cmake --preset=ci-coverage
@@ -71,6 +71,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
+    - name: Install dependencies - boost-python
+      run: sudo apt-get update -q
+        && sudo apt-get libboost-python1.74-dev -q -y
 
     - name: Configure
       env: { CXX: clang++-14 }
@@ -108,14 +112,18 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install static analyzers
+    - name: Install dependencies static analyzers and boost-python
       if: matrix.os == 'ubuntu-22.04'
       run: >-
-        sudo apt-get install clang-tidy-14 cppcheck -y -q
+        sudo apt-get install clang-tidy-14 cppcheck libboost-python1.74-dev -y -q
 
         sudo update-alternatives --install
         /usr/bin/clang-tidy clang-tidy
         /usr/bin/clang-tidy-14 140
+    
+    - name: Install boost-python
+      if: matrix.os == 'macos-12'
+      run: brew install boost-python3
 
     - name: Configure
       shell: pwsh
@@ -162,9 +170,9 @@ jobs:
     - name: Install m.css dependencies
       run: pip3 install jinja2 Pygments
 
-    - name: Install Doxygen
+    - name: Install Doxygen and boost-python
       run: sudo apt-get update -q
-        && sudo apt-get install doxygen -q -y
+        && sudo apt-get install doxygen libboost-python1.74-dev -q -y
 
     - name: Build docs
       run: cmake "-DPROJECT_SOURCE_DIR=$PWD" "-DPROJECT_BINARY_DIR=$PWD/cmakebuild"
