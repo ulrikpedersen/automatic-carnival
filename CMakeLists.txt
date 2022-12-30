@@ -14,7 +14,7 @@ include(cmake/project-is-top-level.cmake)
 include(cmake/variables.cmake)
 
 # ---- Dependencies -------
-find_package (Python 3.11 COMPONENTS Development)
+find_package (Python 3.10 COMPONENTS Development)
 message(STATUS "Python version: ${Python_VERSION}")
 message(STATUS " - python include dir: ${Python_INCLUDE_DIRS}")
 
