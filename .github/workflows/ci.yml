@@ -43,7 +43,7 @@ jobs:
 
     - name: Install LCov and boost-python
       run: sudo apt-get update -q
-        && sudo apt-get install lcov libboost-python1.74-dev -q -y
+        && sudo apt-get install lcov libboost-python-dev -q -y
 
     - name: Configure
       run: cmake --preset=ci-coverage
@@ -74,7 +74,7 @@ jobs:
 
     - name: Install dependencies - boost-python
       run: sudo apt-get update -q
-        && sudo apt-get libboost-python1.74-dev -q -y
+        && sudo apt-get libboost-python-dev -q -y
 
     - name: Configure
       env: { CXX: clang++-14 }
@@ -115,7 +115,7 @@ jobs:
     - name: Install dependencies static analyzers and boost-python
       if: matrix.os == 'ubuntu-22.04'
       run: >-
-        sudo apt-get install clang-tidy-14 cppcheck libboost-python1.74-dev -y -q
+        sudo apt-get install clang-tidy-14 cppcheck libboost-python-dev -y -q
 
         sudo update-alternatives --install
         /usr/bin/clang-tidy clang-tidy
@@ -172,7 +172,7 @@ jobs:
 
     - name: Install Doxygen and boost-python
       run: sudo apt-get update -q
-        && sudo apt-get install doxygen libboost-python1.74-dev -q -y
+        && sudo apt-get install doxygen libboost-python-dev -q -y
 
     - name: Build docs
       run: cmake "-DPROJECT_SOURCE_DIR=$PWD" "-DPROJECT_BINARY_DIR=$PWD/cmakebuild"
