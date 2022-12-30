@@ -101,11 +101,12 @@ jobs:
       matrix:
         os: [macos-12, ubuntu-22.04, windows-2022]
 
-        type: [shared, static]
+        # type: [shared, static]
+        type: [shared]
 
         include:
         - { type: shared, shared: YES }
-        - { type: static, shared: NO }
+        # - { type: static, shared: NO }
 
     runs-on: ${{ matrix.os }}
 
