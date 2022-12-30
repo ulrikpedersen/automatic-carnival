@@ -16,11 +16,11 @@ endif()
 # ---- Tests ----
 
 add_executable(pytango_test source/pytango_test.cpp)
-target_link_libraries(pytango_test PRIVATE pytango::pytango)
+target_link_libraries(pytango_test PRIVATE pytango::tango)
 target_compile_features(pytango_test PRIVATE cxx_std_14)
 
 add_test(NAME pytango_test COMMAND pytango_test)
-windows_set_path(pytango_test pytango::pytango)
+windows_set_path(pytango_test pytango::tango)
 
 # ---- End-of-file commands ----
 
