@@ -147,6 +147,7 @@ jobs:
         -D Boost_USE_DEBUG_RUNTIME=OFF
         -D Boost_USE_DEBUG_LIBS=OFF
         -D Boost_USE_RELEASE_LIBS=ON
+        -D Boost_PYTHON_VERSION=3.11
 
     - name: Configure (non-windows)
       if: matrix.os != 'windows-2022'
