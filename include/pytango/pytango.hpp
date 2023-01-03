@@ -1,4 +1,14 @@
-#pragma once
+#ifndef PYTANGO_H
+#define PYTANGO_H
+
+
+/* This needs to suppress only for MSVC */
+#if defined(_MSC_VER) && !defined(__ICL)
+#  define PYTANGO_SUPPRESS_C4251 _Pragma("warning(suppress:4251)")
+#else
+#  define PYTANGO_SUPPRESS_C4251
+#endif
+#define PYTANGO_EXPORT
 
 #include <string>
 
@@ -69,3 +79,5 @@ private:
   PYTANGO_SUPPRESS_C4251
   std::string m_name;
 };
+
+#endif /* PYTANGO_H */
