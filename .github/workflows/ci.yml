@@ -27,8 +27,6 @@ jobs:
 
 
   sanitize:
-    needs: [lint]
-
     runs-on: ubuntu-22.04
 
     steps:
@@ -57,8 +55,6 @@ jobs:
       run: ctest --output-on-failure -j 2
 
   test:
-    needs: [lint]
-
     strategy:
       matrix:
         os: [macos-12, ubuntu-22.04, ubuntu-20.04]
@@ -99,7 +95,6 @@ jobs:
       run: cmake --install cmakebuild --config Release --prefix prefix
 
     - name: Test
-      working-directory: cmakebuild
       env:
         PYTHONPATH: "$env:GITHUB_WORKSPACE/cmakebuild"
       run: python -c 'import pytango; print(pytango)'
