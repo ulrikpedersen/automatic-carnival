@@ -12,8 +12,6 @@
 
 #include <string>
 
-#include "pytango/pytango_export.hpp"
-
 /**
  * A note about the MSVC warning C4251:
  * This warning should be suppressed for private data members of the project's

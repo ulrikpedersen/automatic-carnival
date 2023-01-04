@@ -11,7 +11,6 @@ project(
 )
 
 include(cmake/project-is-top-level.cmake)
-include(cmake/variables.cmake)
 
 # ---- Dependencies -------
 find_package (Python 3.10 COMPONENTS Development)
@@ -37,14 +36,6 @@ add_library(pytango_tango
     source/pytango.cpp)
 add_library(pytango::tango ALIAS pytango_tango)
 
-include(GenerateExportHeader)
-generate_export_header(
-    pytango_tango
-    BASE_NAME pytango
-    EXPORT_FILE_NAME export/pytango/pytango_export.hpp
-    CUSTOM_CONTENT_FROM_VARIABLE pragma_suppress_c4251
-)
-
 if(NOT BUILD_SHARED_LIBS)
   target_compile_definitions(pytango_tango PUBLIC PYTANGO_STATIC_DEFINE)
 endif()
@@ -60,15 +51,9 @@ set_target_properties(
 )
 
 target_include_directories(
-    pytango_tango ${warning_guard}
+    pytango_tango 
     PUBLIC
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
-)
-
-target_include_directories(
-    pytango_tango SYSTEM
-    PUBLIC
-    "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/export>"
 )
 
 target_compile_features(pytango_tango PUBLIC cxx_std_14)
@@ -99,26 +84,14 @@ if ( CMAKE_SYSTEM_NAME MATCHES "Darwin" )
 endif()
 
 target_include_directories(
-    pytango_pytango ${warning_guard}
+    pytango_pytango
     PUBLIC
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
-)
-
-target_include_directories(
-    pytango_pytango SYSTEM
-    PUBLIC
-    "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/export>"
 )
 
 target_compile_features(pytango_pytango PUBLIC cxx_std_14)
 
 target_link_libraries(pytango_pytango PRIVATE pytango_tango Python::Module Boost::python3)
-
-# ---- Install rules ----
-
-if(NOT CMAKE_SKIP_INSTALL_RULES)
-  include(cmake/install-rules.cmake)
-endif()
 
 # ---- Developer mode ----
 
@@ -131,4 +104,3 @@ elseif(NOT PROJECT_IS_TOP_LEVEL)
   )
 endif()
 
-include(cmake/dev-mode.cmake)
