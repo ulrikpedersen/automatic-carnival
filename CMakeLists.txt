@@ -13,7 +13,7 @@ project(
 include(cmake/project-is-top-level.cmake)
 
 # ---- Dependencies -------
-find_package (Python 3.10 COMPONENTS Development)
+find_package (Python 3.8 COMPONENTS Development)
 message(STATUS "Python version: ${Python_VERSION}")
 message(STATUS " - python include dir: ${Python_INCLUDE_DIRS}")
 # Debugging:
@@ -28,7 +28,7 @@ MESSAGE(STATUS "Python::Python (Release) ${_lib}")
 # end-of-debugging
 
 set(BOOST_VERBOSE "ON")
-find_package(Boost 1.73 REQUIRED CONFIG COMPONENTS python3)
+find_package(Boost 1.71 REQUIRED CONFIG COMPONENTS python3)
 message(STATUS "Boost version: ${Boost_VERSION}")
 
 # ---- Declare library ----
