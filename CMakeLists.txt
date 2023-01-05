@@ -16,19 +16,13 @@ include(cmake/project-is-top-level.cmake)
 find_package (Python 3.8 COMPONENTS Development)
 message(STATUS "Python version: ${Python_VERSION}")
 message(STATUS " - python include dir: ${Python_INCLUDE_DIRS}")
-# Debugging:
-GET_TARGET_PROPERTY(_lib Python::Python IMPORTED_IMPLIB)
-MESSAGE(STATUS "Python::Python ${_lib}")
-
-GET_TARGET_PROPERTY(_lib Python::Python IMPORTED_IMPLIB_DEBUG)
-MESSAGE(STATUS "Python::Python (Debug) ${_lib}")
-
-GET_TARGET_PROPERTY(_lib Python::Python IMPORTED_IMPLIB_RELEASE)
-MESSAGE(STATUS "Python::Python (Release) ${_lib}")
-# end-of-debugging
 
 set(BOOST_VERBOSE "ON")
 find_package(Boost 1.71 REQUIRED CONFIG COMPONENTS python3)
+if(NOT Boost_PYTHON3_FOUND)
+    find_package(Boost 1.71 REQUIRED CONFIG COMPONENTS python38)
+endif()
+
 message(STATUS "Boost version: ${Boost_VERSION}")
 
 # ---- Declare library ----
