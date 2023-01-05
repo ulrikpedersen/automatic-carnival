@@ -74,11 +74,11 @@ jobs:
     - name: Install dependencies static analyzers and boost-python (Linux)
       if: runner.os == 'Linux'
       run: >-
-        sudo apt-get install clang-tidy-14 cppcheck libboost-python-dev -y -q
+        sudo apt-get install clang-tidy-12 cppcheck libboost-python-dev -y -q
 
         sudo update-alternatives --install
         /usr/bin/clang-tidy clang-tidy
-        /usr/bin/clang-tidy-14 140
+        /usr/bin/clang-tidy-12 120
     
     - name: Install boost-python (MacOS)
       if: runner.os == 'macOS'
