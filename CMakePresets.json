@@ -99,15 +99,15 @@
       "hidden": true
     },
     {
-      "name": "ci-macos",
+      "name": "ci-macOS",
       "inherits": ["ci-build", "ci-unix", "dev-mode"]
     },
     {
-      "name": "ci-ubuntu",
+      "name": "ci-Linux",
       "inherits": ["ci-build", "ci-unix", "clang-tidy", "cppcheck", "dev-mode"]
     },
     {
-      "name": "ci-windows",
+      "name": "ci-Windows",
       "inherits": ["ci-build", "ci-win64", "dev-mode"]
     }
   ]
