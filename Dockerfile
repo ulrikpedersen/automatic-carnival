@@ -3,9 +3,9 @@ FROM ubuntu:22.04
 RUN apt-get update -q && \
     apt-get install -y -q sudo \
     build-essential python3 python3-pip python3-venv gdb \
-    lcov doxygen clang-tidy-14 cppcheck \
+    lcov doxygen clang-tidy-12 cppcheck \
     libboost-python-dev
-RUN update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-14 140
+RUN update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-12 120
 # Create a non-root account 'developer' without a password
 # and give this account sudo access
 RUN useradd --create-home --shell /bin/bash developer \
@@ -31,8 +31,9 @@ ENV PYTHONPATH=cmakebuild/dev-unix/
 ENV PATH=${VIRTUAL_ENV}/bin:${PATH}
 CMD exec /bin/bash
 
-#
-# alternatively to the last RUN, one can share the source with the host system:
-#   docker build -t bp:latest . 
-#   docker run -t -i -v $PWD:/work/src bp:latest
-#   mkdir build && cd build && cmake ../src && make && make test
+# To build:
+# docker build . -t ubuntu2204-pytango-dev
+# To run interactively:
+# docker run -it --rm -v $(pwd):/src/pytango --name u22-pytango-dev ubuntu2204-pytango-dev
+# To run a configure/build/other command...
+# 
