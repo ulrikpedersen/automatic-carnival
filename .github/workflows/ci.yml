@@ -85,7 +85,7 @@ jobs:
       run: brew install boost-python3
 
     - name: Configure 
-      run: cmake "--preset=ci-$env:RUNNER_OS"
+      run: cmake "--preset=ci-$RUNNER_OS"
         -D BUILD_SHARED_LIBS=${{ matrix.shared }}
 
     - name: Build
