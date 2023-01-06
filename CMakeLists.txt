@@ -13,6 +13,11 @@ project(
 include(cmake/project-is-top-level.cmake)
 
 # ---- Dependencies -------
+find_package(PkgConfig REQUIRED)
+set(TANGO_ROOT "" CACHE STRING "Tango root installation path")
+list(APPEND CMAKE_PREFIX_PATH ${TANGO_ROOT})
+pkg_check_modules(TANGO REQUIRED IMPORTED_TARGET tango)
+
 find_package (Python 3.8 COMPONENTS Development)
 message(STATUS "Python version: ${Python_VERSION}")
 message(STATUS " - python include dir: ${Python_INCLUDE_DIRS}")
@@ -85,7 +90,7 @@ target_include_directories(
 
 target_compile_features(pytango_pytango PUBLIC cxx_std_14)
 
-target_link_libraries(pytango_pytango PRIVATE pytango_tango Python::Module Boost::python3)
+target_link_libraries(pytango_pytango PRIVATE pytango_tango Python::Module Boost::python3 PkgConfig::TANGO)
 
 # ---- Developer mode ----
 
