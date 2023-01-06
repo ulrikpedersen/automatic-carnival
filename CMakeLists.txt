@@ -31,35 +31,10 @@ endif()
 message(STATUS "Boost version: ${Boost_VERSION}")
 
 # ---- Declare library ----
-add_library(pytango_tango
-    source/pytango.cpp)
-add_library(pytango::tango ALIAS pytango_tango)
-
-if(NOT BUILD_SHARED_LIBS)
-  target_compile_definitions(pytango_tango PUBLIC PYTANGO_STATIC_DEFINE)
-endif()
-
-set_target_properties(
-    pytango_tango PROPERTIES
-    CXX_VISIBILITY_PRESET hidden
-    VISIBILITY_INLINES_HIDDEN YES
-    VERSION "${PROJECT_VERSION}"
-    SOVERSION "${PROJECT_VERSION_MAJOR}"
-    EXPORT_NAME tango
-    OUTPUT_NAME tango
-)
-
-target_include_directories(
-    pytango_tango 
-    PUBLIC
-    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
-)
-
-target_compile_features(pytango_tango PUBLIC cxx_std_14)
-
 # A python extension module library must be shared
 add_library(
     pytango_pytango SHARED
+    source/pytango.cpp
     source/bpwrap.cpp
 )
 add_library(pytango::pytango ALIAS pytango_pytango)
@@ -90,7 +65,7 @@ target_include_directories(
 
 target_compile_features(pytango_pytango PUBLIC cxx_std_14)
 
-target_link_libraries(pytango_pytango PRIVATE pytango_tango Python::Module Boost::python3 PkgConfig::TANGO)
+target_link_libraries(pytango_pytango PRIVATE Python::Module Boost::python3 PkgConfig::TANGO)
 
 # ---- Developer mode ----
 
