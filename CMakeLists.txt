@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.16)  # Ubuntu 20.04 ships with cmake 3.16.3
+# cmake_minimum_required(VERSION 3.17)  # cmake 3.17 added support for conda environments FindPython
+# cmake_minimum_required(VERSION 3.25)  # latest release. Available as pip install cmake
 
 include(cmake/prelude.cmake)
 
@@ -18,17 +20,26 @@ set(TANGO_ROOT "" CACHE STRING "Tango root installation path")
 list(APPEND CMAKE_PREFIX_PATH ${TANGO_ROOT})
 pkg_check_modules(TANGO REQUIRED IMPORTED_TARGET tango)
 
-find_package (Python 3.8 COMPONENTS Development)
-message(STATUS "Python version: ${Python_VERSION}")
-message(STATUS " - python include dir: ${Python_INCLUDE_DIRS}")
+# Find Python and NumPy
+# https://cmake.org/cmake/help/latest/module/FindPython.html
+find_package (Python 3.8 COMPONENTS Interpreter Development NumPy)
+message(STATUS "    Python version:  ${Python_VERSION}")
+message(STATUS "      - intepreter:  ${Python_EXECUTABLE}")
+message(STATUS "       - libraries:  ${Python_LIBRARIES}")
+message(STATUS "       - libraries:  ${Python_LIBRARY_DIRS}")
+message(STATUS "     NumPy version:  ${Python_NumPy_VERSION}")
+message(STATUS "     - include dir:  ${Python_NumPy_INCLUDE_DIRS}")
 
-set(BOOST_VERBOSE "ON")
-find_package(Boost 1.71 REQUIRED CONFIG COMPONENTS python3)
-if(NOT Boost_PYTHON3_FOUND)
-    find_package(Boost 1.71 REQUIRED CONFIG COMPONENTS python38)
-endif()
-
-message(STATUS "Boost version: ${Boost_VERSION}")
+# Find boost.python library.
+# Work around the boost python suffix issue for Boost versions < 1.73.
+# (See https://github.com/boostorg/boost_install/issues/31)
+# By default we search for the component "python3" which works for Boost >= 1.73
+# However, for example Ubuntu 20.04 ships with Boost 1.71 and here the developer/CI
+# can set and override the cache variable BOOST_PYTHON_SUFFIX to "38" (default "3")
+set(BOOST_PYTHON_SUFFIX "3" CACHE STRING "Sets the suffix on the Boost Python component to search for (default is 3). Set this only if your Boost version is < 1.73")
+set(Boost_VERBOSE "ON")
+find_package(Boost 1.71 REQUIRED COMPONENTS python${BOOST_PYTHON_SUFFIX} CONFIG)
+message(STATUS "Boost Python version: ${Boost_PYTHON_VERSION}")
 
 # ---- Declare library ----
 # A python extension module library must be shared
@@ -65,7 +76,7 @@ target_include_directories(
 
 target_compile_features(pytango_pytango PUBLIC cxx_std_14)
 
-target_link_libraries(pytango_pytango PRIVATE Python::Module Boost::python3 PkgConfig::TANGO)
+target_link_libraries(pytango_pytango PRIVATE Python::Module Python::NumPy Boost::python PkgConfig::TANGO)
 
 # ---- Developer mode ----
 
