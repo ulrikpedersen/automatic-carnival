@@ -21,7 +21,7 @@ from tango.gevent import DeviceProxy as gevent_DeviceProxy
 from tango.futures import DeviceProxy as futures_DeviceProxy
 from tango.asyncio import DeviceProxy as asyncio_DeviceProxy
 
-MAX_RETRIES = 50
+MAX_RETRIES = 200
 DELAY_PER_RETRY = 0.05
 
 # Helpers
