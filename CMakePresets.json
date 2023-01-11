@@ -2,7 +2,7 @@
   "version": 2,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 14,
+    "minor": 16,
     "patch": 0
   },
   "configurePresets": [
@@ -44,16 +44,6 @@
       }
     },
     {
-      "name": "ci-std",
-      "description": "This preset makes sure the project actually builds with at least the specified standard",
-      "hidden": true,
-      "cacheVariables": {
-        "CMAKE_CXX_EXTENSIONS": "OFF",
-        "CMAKE_CXX_STANDARD": "14",
-        "CMAKE_CXX_STANDARD_REQUIRED": "ON"
-      }
-    },
-    {
       "name": "flags-unix",
       "hidden": true,
       "cacheVariables": {
@@ -70,16 +60,16 @@
     },
     {
       "name": "ci-unix",
-      "generator": "Unix Makefiles",
+      "generator": "Ninja",
       "hidden": true,
-      "inherits": ["flags-unix", "ci-std"],
+      "inherits": ["flags-unix"],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
       "name": "ci-win64",
-      "inherits": ["flags-windows", "ci-std"],
+      "inherits": ["flags-windows"],
       "generator": "Visual Studio 17 2022",
       "architecture": "x64",
       "hidden": true
@@ -100,7 +90,7 @@
     },
     {
       "name": "ci-macOS",
-      "inherits": ["ci-build", "ci-unix", "dev-mode"]
+      "inherits": ["ci-build", "ci-unix", "dev-mode"],
     },
     {
       "name": "ci-Linux",
