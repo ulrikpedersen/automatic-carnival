@@ -400,6 +400,7 @@ def setup_args():
             "pytest-forked",
             "tomli < 2.0",
             "typing-extensions < 4.0",
+            "iniconfig < 2.0",
         ]
     else:
         tests_require += ["pytest", "pytest-forked"]
