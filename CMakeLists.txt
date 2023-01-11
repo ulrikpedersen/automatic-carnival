@@ -87,6 +87,8 @@ target_compile_features(pytango_pytango PUBLIC cxx_std_14)
 
 target_link_libraries(pytango_pytango PRIVATE Python::Module Python::NumPy Boost::python PkgConfig::TANGO)
 
+install(TARGETS pytango_pytango LIBRARY DESTINATION pytango)
+
 # ---- Developer mode ----
 
 if(NOT pytango_DEVELOPER_MODE)
