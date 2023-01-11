@@ -90,7 +90,7 @@
     },
     {
       "name": "ci-macOS",
-      "inherits": ["ci-build", "ci-unix", "dev-mode"],
+      "inherits": ["ci-build", "ci-unix", "dev-mode"]
     },
     {
       "name": "ci-Linux",
