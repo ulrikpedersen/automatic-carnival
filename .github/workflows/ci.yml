@@ -99,4 +99,37 @@ jobs:
         PYTHONPATH: "$env:GITHUB_WORKSPACE/cmakebuild"
       run: python -c 'import pytango; print(pytango)'
 
-  
+  package:
+    strategy:
+      matrix:
+        os: [macos-12, ubuntu-22.04]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies static analyzers and boost-python (Linux)
+      if: runner.os == 'Linux'
+      run: >-
+        sudo apt-get install clang-tidy-12 cppcheck libboost-python-dev unzip -y -q
+
+        sudo update-alternatives --install
+        /usr/bin/clang-tidy clang-tidy
+        /usr/bin/clang-tidy-12 120
+    
+    - name: Install boost-python (MacOS)
+      if: runner.os == 'macOS'
+      run: brew install boost-python3
+
+    - name: Build Wheel
+      env:
+        CMAKE_ARGS: "--preset=ci-$RUNNER_OS"
+        CMAKE_GENERATOR: "Ninja"
+      run: python -m build
+
+    - name: Check Build
+      run: cd dist/ && ls && unzip *.whl && ldd pytango/*.so
+
+    - name: Install Wheel
+      run: python -m pip install dist/*.whl && python -c 'import pytango; print(pytango)'  
