@@ -129,7 +129,7 @@ jobs:
 
     - name: Build Wheel
       env:
-        CMAKE_ARGS: "--preset=ci-$RUNNER_OS"
+        CMAKE_ARGS: "--preset=ci-${{ runner.os }}"
         CMAKE_GENERATOR: "Ninja"
       run: python -m build
 
