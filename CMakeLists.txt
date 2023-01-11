@@ -41,6 +41,15 @@ set(Boost_VERBOSE "ON")
 find_package(Boost 1.71 REQUIRED COMPONENTS python${BOOST_PYTHON_SUFFIX} CONFIG)
 message(STATUS "Boost Python version: ${Boost_PYTHON_VERSION}")
 
+# Just a sanity check: the python used to build pytango should match the
+# version used to build libboost_python.
+# cmake hack: using VERSION_EQUAL would be better but Python reports a full MAJOR.MINOR.PATCH
+#             version number whereas boost-python only reports MAJOR.MINOR. MATCHES works but
+#             we're pretending that the shorter version string is a regex.
+if(NOT ${Python_VERSION} MATCHES ${Boost_PYTHON_VERSION})
+    message(WARNING "The interpreter/library python version (${Python_VERSION}) does not match the version of python that libboost_python was built with (${Boost_PYTHON_VERSION})")
+endif()
+
 # ---- Declare library ----
 # A python extension module library must be shared
 add_library(
