@@ -1155,7 +1155,7 @@ class CaselessList(list):
             if not isinstance(entry, str):
                 raise TypeError(
                     f'Members of this object must be strings. '
-                    f'You supplied \"{entry}\" which is \"{type(entry)}\"')
+                    f'You supplied "{entry}" which is "{type(entry)}"')
             self.append(entry)
 
     def findentry(self, item):
@@ -1213,7 +1213,7 @@ class CaselessList(list):
             if not isinstance(entry, str):
                 raise TypeError(
                     f'Members of this object must be strings. '
-                    f'You supplied \"{type(entry)}\"')
+                    f'You supplied "{type(entry)}"')
             list.append(self, entry)
 
     def count(self, item):
@@ -1268,7 +1268,7 @@ class CaselessList(list):
             if not isinstance(value, str):
                 raise TypeError(
                     f'Members of this object must be strings. '
-                    f'You supplied \"{type(value)}\"')
+                    f'You supplied "{type(value)}"')
             list.__setitem__(self, index, value)
         elif isinstance(index, slice):
             if not hasattr(value, '__len__'):
@@ -1278,7 +1278,7 @@ class CaselessList(list):
                 if not isinstance(entry, str):
                     raise TypeError(
                         f'Members of this object must be strings. '
-                        f'You supplied \"{type(entry)}\"')
+                        f'You supplied "{type(entry)}"')
             list.__setitem__(self, index, value)
         else:
             raise TypeError('Indexes must be integers or slice objects.')
@@ -1289,7 +1289,7 @@ class CaselessList(list):
             if not isinstance(entry, str):
                 raise TypeError(
                     f'Members of this object must be strings. '
-                    f'You supplied \"{type(entry)}\"')
+                    f'You supplied "{type(entry)}"')
         list.__setslice__(self, i, j, sequence)
 
     def __getslice__(self, i, j):
@@ -1539,7 +1539,7 @@ class EventCallback:
         try:
             value = self._get_value(evt)
         except Exception as e:
-            value = f"Unexpected exception in getting event value: {str(e)}"
+            value = f"Unexpected exception in getting event value: {e}"
         d = {"date": date, "reception_date": reception_date,
              "type": evt_type, "dev_name": dev_name, "name": attr_name,
              "value": value}
@@ -1567,7 +1567,7 @@ class EventCallback:
             return f"[{e.reason}] {e.desc}"
 
         if isinstance(evt, EventData):
-            return f"[{evt.attr_value.quality}] {str(evt.attr_value.value)}"
+            return f"[{evt.attr_value.quality}] {evt.attr_value.value}"
         elif isinstance(evt, AttrConfEventData):
             cfg = evt.attr_conf
             return f"label='{cfg.label}'; unit='{cfg.unit}'"

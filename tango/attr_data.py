@@ -291,7 +291,7 @@ class AttrData:
         try:
             memorized = extra_info.get("memorized", "false").lower()
         except:
-            throw_ex(f"Wrong memorized value. for attribute {attr_name} in class {name}."
+            throw_ex(f"Wrong memorized value for attribute {attr_name} in class {name}."
                      f"Allowed valued are the strings \"true\", \"false\" and "
                      f"\"true_without_hard_applied\" (case insensitive)")
         if memorized == "true":
