@@ -1313,7 +1313,7 @@ def __DeviceProxy__subscribe_event_attrib(self, attr_name, event_type,
             se[event_id] = (cb, event_type, attr_name)
             return event_id
         # Raise exception
-        desc = textwrap.dedent("""\
+        desc = textwrap.dedent(f"""\
             Internal PyTango error:
             {self}.subscribe_event({attr_name}, {event_type}) already has key {event_id} assigned to ({evt_data[2]}, {evt_data[1]})
             Please report error to PyTango""")

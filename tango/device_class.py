@@ -437,7 +437,7 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
     # Check result
     if not isinstance(result_info, collections_abc.Sequence):
         msg = f"Wrong data type in command result for command {cmd_name} in " \
-              f"class {cmd_name}\nCommand result (second element) must be a sequence"
+              f"class {name}\nCommand result (second element) must be a sequence"
         __throw_create_command_exception(msg)
 
     if len(result_info) < 1 or len(result_info) > 2:
@@ -509,7 +509,7 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
                     __throw_create_command_exception(msg)
             else:
                 msg = f"Wrong data type in command information for command {cmd_name} in " \
-                      f"class {cmd_name}\nCommand information has unknown key " \
+                      f"class {name}\nCommand information has unknown key " \
                       f"{info_name}"
                 __throw_create_command_exception(msg)
 
