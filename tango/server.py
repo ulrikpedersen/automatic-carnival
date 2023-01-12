@@ -15,10 +15,7 @@
 import sys
 import copy
 import enum
-try:
-    from inspect import getfullargspec as inspect_getargspec  # python 3.0+
-except ImportError:
-    from inspect import getargspec as inspect_getargspec
+from inspect import getfullargspec
 import inspect
 import logging
 import functools
@@ -99,7 +96,7 @@ def set_complex_value(attr, value):
 
 
 def _get_wrapped_read_method(attribute, read_method):
-    read_args = inspect_getargspec(read_method)
+    read_args = getfullargspec(read_method)
     nb_args = len(read_args.args)
 
     green_mode = attribute.read_green_mode
@@ -221,7 +218,7 @@ def __patch_attr_methods(tango_device_klass, attribute):
 
 
 def _get_wrapped_pipe_read_method(pipe, read_method):
-    read_args = inspect_getargspec(read_method)
+    read_args = getfullargspec(read_method)
     nb_args = len(read_args.args)
 
     green_mode = pipe.read_green_mode
@@ -1002,7 +999,7 @@ class pipe(PipeData):
 def __build_command_doc(f, name, dtype_in, doc_in, dtype_out, doc_out):
     doc = f"'{name}' TANGO command"
     if dtype_in is not None:
-        arg_spec = inspect_getargspec(f)
+        arg_spec = getfullargspec(f)
         if len(arg_spec.args) > 1:
             # arg[0] should be self and arg[1] the command argument
             param_name = arg_spec.args[1]
