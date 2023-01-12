@@ -121,7 +121,7 @@ class GeventTask:
     def result(self):
         self.done.wait()
         if self.exception:
-            raise self.exception[1].with_traceback(self.exception[2])
+            raise self.exception[1]
         return self.value
 
 

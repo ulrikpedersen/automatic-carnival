@@ -454,7 +454,7 @@ class MultiDeviceTestContext:
             #          exception info.
             if len(args) == 3:
                 exc_type, exc_value, exc_traceback = args
-                raise exc_value.with_traceback(exc_traceback)
+                raise exc_value
             # In case the above assumption is wrong: re-raise the original exception
             raise ValueError(*args) from e
         # Get server proxy
