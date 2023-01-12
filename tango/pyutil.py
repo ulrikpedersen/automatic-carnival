@@ -30,10 +30,7 @@ from .utils import document_static_method as __document_static_method
 from .utils import PyTangoHelpFormatter
 from .globals import class_list, cpp_class_list, get_constructed_classes
 
-try:
-    import collections.abc as collections_abc  # python 3.3+
-except ImportError:
-    import collections as collections_abc
+import collections.abc
 
 
 def __simplify_device_name(dev_name):
@@ -90,7 +87,7 @@ def __Util__create_device(self, klass_name, device_name, alias=None, cb=None):
                    device name (str). Default value is None meaning no callback
 
         Return     : None"""
-    if cb is not None and not isinstance(cb, collections_abc.Callable):
+    if cb is not None and not isinstance(cb, collections.abc.Callable):
         Except.throw_exception("PyAPI_InvalidParameter",
                                "The optional cb parameter must be a python callable",
                                "Util.create_device")

@@ -36,16 +36,13 @@ from .device_server import AttributeAlarm, EventProperties
 from .device_server import ChangeEventProp, PeriodicEventProp, ArchiveEventProp
 from .device_server import AttributeConfig, AttributeConfig_2
 from .device_server import AttributeConfig_3, AttributeConfig_5
-try:
-    import collections.abc as collections_abc  # python 3.3+
-except ImportError:
-    import collections as collections_abc
+import collections.abc
 
 
 def __inc_param(obj, name):
     ret = not name.startswith('_')
     ret &= name not in ('except_flags',)
-    ret &= not isinstance(getattr(obj, name), collections_abc.Callable)
+    ret &= not isinstance(getattr(obj, name), collections.abc.Callable)
     return ret
 
 
@@ -109,7 +106,7 @@ def __registerSeqStr():
 
 
 def __str__DevFailed(self):
-    if isinstance(self.args, collections_abc.Sequence):
+    if isinstance(self.args, collections.abc.Sequence):
         seq_str = '\n'.join(map(str, self.args))
         return f'DevFailed[\n{seq_str}]'
     return f'DevFailed[{self.args}]'

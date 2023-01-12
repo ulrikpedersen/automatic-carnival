@@ -2,10 +2,7 @@
 
 import sys
 import enum
-try:
-    import collections.abc as collections_abc  # python 3.3+
-except ImportError:
-    import collections as collections_abc
+import collections.abc
 
 # Local imports
 from . import DevState, GreenMode
@@ -159,7 +156,7 @@ if numpy and pytest:
         if isinstance(a, str):
             assert a == b
             return
-        if isinstance(a, collections_abc.Sequence) and len(a) and isinstance(a[0], str):
+        if isinstance(a, collections.abc.Sequence) and len(a) and isinstance(a[0], str):
             assert list(a) == list(b)
             return
         try:

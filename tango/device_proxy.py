@@ -15,10 +15,7 @@ import time
 import textwrap
 import threading
 import enum
-try:
-    import collections.abc as collections_abc  # python 3.3+
-except ImportError:
-    import collections as collections_abc
+import collections.abc
 
 from ._tango import StdStringVector, DbData, DbDatum, AttributeInfo
 from ._tango import AttributeInfoEx, AttributeInfoList, AttributeInfoListEx
@@ -498,7 +495,7 @@ def __DeviceProxy__read_attributes_asynch(self, attr_names, cb=None,
         return self.__read_attributes_asynch(attr_names)
 
     cb2 = __CallBackAutoDie()
-    if isinstance(cb, collections_abc.Callable):
+    if isinstance(cb, collections.abc.Callable):
         cb2.attr_read = cb
     else:
         cb2.attr_read = cb.attr_read
@@ -569,7 +566,7 @@ def __DeviceProxy__write_attributes_asynch(self, attr_values, cb=None):
         return self.__write_attributes_asynch(attr_values)
 
     cb2 = __CallBackAutoDie()
-    if isinstance(cb, collections_abc.Callable):
+    if isinstance(cb, collections.abc.Callable):
         cb2.attr_write = cb
     else:
         cb2.attr_write = cb.attr_write
@@ -645,7 +642,7 @@ def __DeviceProxy__get_property(self, propname, value=None):
         new_value.append(propname)
         self._get_property(new_value)
         return DbData_2_dict(new_value)
-    elif isinstance(propname, collections_abc.Sequence):
+    elif isinstance(propname, collections.abc.Sequence):
         if isinstance(propname, DbData):
             self._get_property(propname)
             return DbData_2_dict(propname)
@@ -736,7 +733,7 @@ def __DeviceProxy__delete_property(self, value):
     elif isinstance(value, DbDatum):
         new_value = DbData()
         new_value.append(value)
-    elif isinstance(value, collections_abc.Sequence):
+    elif isinstance(value, collections.abc.Sequence):
         new_value = DbData()
         for e in value:
             if isinstance(e, DbDatum):
@@ -744,7 +741,7 @@ def __DeviceProxy__delete_property(self, value):
             else:
                 e = ensure_binary(e, 'latin-1')
                 new_value.append(DbDatum(e))
-    elif isinstance(value, collections_abc.Mapping):
+    elif isinstance(value, collections.abc.Mapping):
         new_value = DbData()
         for k, v in value.items():
             if isinstance(v, DbDatum):
@@ -794,7 +791,7 @@ def __DeviceProxy__get_property_list(self, filter, array=None):
     if isinstance(array, StdStringVector):
         self._get_property_list(filter, array)
         return array
-    elif isinstance(array, collections_abc.Sequence):
+    elif isinstance(array, collections.abc.Sequence):
         new_array = StdStringVector()
         self._get_property_list(filter, new_array)
         StdStringVector_2_seq(new_array, array)
@@ -837,7 +834,7 @@ def __DeviceProxy__get_attribute_config(self, value):
     """
     if isinstance(value, StdStringVector) or is_pure_str(value):
         return self._get_attribute_config(value)
-    elif isinstance(value, collections_abc.Sequence):
+    elif isinstance(value, collections.abc.Sequence):
         v = seq_2_StdStringVector(value)
         return self._get_attribute_config(v)
 
@@ -879,7 +876,7 @@ def __DeviceProxy__get_attribute_config_ex(self, value):
         v = StdStringVector()
         v.append(value)
         return self._get_attribute_config_ex(v)
-    elif isinstance(value, collections_abc.Sequence):
+    elif isinstance(value, collections.abc.Sequence):
         v = seq_2_StdStringVector(value)
         return self._get_attribute_config_ex(v)
 
@@ -927,7 +924,7 @@ def __DeviceProxy__get_command_config(self, value=(constants.AllCmd,)):
     """
     if isinstance(value, StdStringVector) or is_pure_str(value):
         return self._get_command_config(value)
-    elif isinstance(value, collections_abc.Sequence):
+    elif isinstance(value, collections.abc.Sequence):
         v = seq_2_StdStringVector(value)
         return self._get_command_config(v)
 
@@ -982,7 +979,7 @@ def __DeviceProxy__get_pipe_config(self, value=None):
         value = [constants.AllPipe]
     if isinstance(value, StdStringVector) or is_pure_str(value):
         return self._get_pipe_config(value)
-    elif isinstance(value, collections_abc.Sequence):
+    elif isinstance(value, collections.abc.Sequence):
         v = seq_2_StdStringVector(value)
         return self._get_pipe_config(v)
 
@@ -1051,7 +1048,7 @@ def __DeviceProxy__set_attribute_config(self, value):
         v = value
     elif isinstance(value, AttributeInfoListEx):
         v = value
-    elif isinstance(value, collections_abc.Sequence):
+    elif isinstance(value, collections.abc.Sequence):
         if not len(value):
             return
         if isinstance(value[0], AttributeInfoEx):
@@ -1103,7 +1100,7 @@ def __DeviceProxy__set_pipe_config(self, value):
         v.append(value)
     elif isinstance(value, PipeInfoList):
         v = value
-    elif isinstance(value, collections_abc.Sequence):
+    elif isinstance(value, collections.abc.Sequence):
         if not len(value):
             return
         if isinstance(value[0], PipeInfo):
@@ -1250,12 +1247,12 @@ def __DeviceProxy__subscribe_event_global(self, event_type, cb,
     if event_type != EventType.INTERFACE_CHANGE_EVENT:
         raise TypeError("This method is only for Interface Change Events")
     else:
-        if isinstance(cb, collections_abc.Callable):
+        if isinstance(cb, collections.abc.Callable):
             cbfn = __CallBackPushEvent()
             cbfn.push_event = green_callback(
                 cb, obj=self, green_mode=green_mode)
         elif hasattr(cb, "push_event") and isinstance(
-                cb.push_event, collections_abc.Callable):
+                cb.push_event, collections.abc.Callable):
             cbfn = __CallBackPushEvent()
             cbfn.push_event = green_callback(
                 cb.push_event, obj=self, green_mode=green_mode)
@@ -1287,12 +1284,12 @@ def __DeviceProxy__subscribe_event_attrib(self, attr_name, event_type,
                                           extract_as=ExtractAs.Numpy,
                                           green_mode=None):
 
-    if isinstance(cb_or_queuesize, collections_abc.Callable):
+    if isinstance(cb_or_queuesize, collections.abc.Callable):
         cb = __CallBackPushEvent()
         cb.push_event = green_callback(
             cb_or_queuesize, obj=self, green_mode=green_mode)
     elif hasattr(cb_or_queuesize, "push_event") and \
-            isinstance(cb_or_queuesize.push_event, collections_abc.Callable):
+            isinstance(cb_or_queuesize.push_event, collections.abc.Callable):
         cb = __CallBackPushEvent()
         cb.push_event = green_callback(
             cb_or_queuesize.push_event, obj=self, green_mode=green_mode)
@@ -1424,11 +1421,11 @@ def __DeviceProxy__get_events(self, event_id, callback=None, extract_as=ExtractA
         else:
             assert (False)
             raise ValueError("Unknown event_type: " + str(event_type))
-    elif isinstance(callback, collections_abc.Callable):
+    elif isinstance(callback, collections.abc.Callable):
         cb = __CallBackPushEvent()
         cb.push_event = callback
         return self.__get_callback_events(event_id, cb, extract_as)
-    elif hasattr(callback, 'push_event') and isinstance(callback.push_event, collections_abc.Callable):
+    elif hasattr(callback, 'push_event') and isinstance(callback.push_event, collections.abc.Callable):
         cb = __CallBackPushEvent()
         cb.push_event = callback.push_event
         return self.__get_callback_events(event_id, cb, extract_as)

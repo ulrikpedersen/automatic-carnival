@@ -22,10 +22,7 @@ import enum
 
 from argparse import HelpFormatter
 
-try:
-    import collections.abc as collections_abc  # python 3.3+
-except ImportError:
-    import collections as collections_abc
+import collections.abc
 
 from ._tango import StdStringVector, StdDoubleVector, \
     DbData, DbDatum, DbDevInfos, DbDevExportInfos, CmdArgType, AttrDataFormat, \
@@ -351,7 +348,7 @@ except NameError:
 
 __int_klasses = int,
 __number_klasses = numbers.Number,
-__seq_klasses = collections_abc.Sequence, bytearray, StdStringVector
+__seq_klasses = collections.abc.Sequence, bytearray, StdStringVector
 
 __use_unicode = False
 try:
@@ -1050,7 +1047,7 @@ def obj_2_property(value):
         value = new_value
     elif is_non_str_seq(value):
         value = seq_2_DbData(value)
-    elif isinstance(value, collections_abc.Mapping):
+    elif isinstance(value, collections.abc.Mapping):
         new_value = DbData()
         for k, v in value.items():
             if isinstance(v, DbDatum):
