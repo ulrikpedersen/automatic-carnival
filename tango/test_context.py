@@ -405,13 +405,11 @@ class MultiDeviceTestContext:
 
     def get_server_access(self):
         """Return the full server name."""
-        form = f'tango://{self.host}:{self.port}/{self.server_name}#{self.nodb}'
-        return form
+        return f'tango://{self.host}:{self.port}/{self.server_name}#{self.nodb}'
 
     def get_device_access(self, device_name):
         """Return the full device name."""
-        form = f'tango://{self.host}:{self.port}/{device_name}#{self.nodb}'
-        return form
+        return f'tango://{self.host}:{self.port}/{device_name}#{self.nodb}'
 
     def get_device(self, device_name):
         """Return the device proxy corresponding to the given device name.
