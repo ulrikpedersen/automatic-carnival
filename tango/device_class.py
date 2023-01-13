@@ -28,12 +28,10 @@ from ._tango import Except, DevFailed, DeviceClass, CmdArgType, \
     DispLevel, UserDefaultAttrProp
 from .pyutil import Util
 
-from .utils import is_pure_str, is_non_str_seq, seqStr_2_obj, obj_2_str, \
-    is_array
+from .utils import is_pure_str, is_non_str_seq, seqStr_2_obj, obj_2_str, is_array
 from .utils import document_method as __document_method
 
-from .globals import get_class, get_class_by_class, \
-    get_constructed_class_by_class
+from .globals import get_class, get_class_by_class, get_constructed_class_by_class
 from .attr_data import AttrData
 from .pipe_data import PipeData
 
@@ -466,7 +464,7 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
             __throw_create_command_exception(msg)
 
     # If it is defined, get addictional dictionnary used for optional parameters
-    display_level, default_command, polling_period = DispLevel.OPERATOR, False, -1
+    display_level, default_command, polling_period, is_allowed = DispLevel.OPERATOR, False, -1, None
 
     if len(cmd_info) == 3:
         extra_info = cmd_info[2]
@@ -476,7 +474,7 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
                   "when given, must be a dictionary" % (cmd_name, name)
             __throw_create_command_exception(msg)
 
-        if len(extra_info) > 3:
+        if len(extra_info) > 4:
             msg = "Wrong data type in command information for command %s in " \
                   "class %s\nThe optional dictionary can not have more than " \
                   "three elements" % (cmd_name, name)
@@ -508,6 +506,13 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
                           "class %s\nCommand information for polling period is not an " \
                           "integer" % (cmd_name, name)
                     __throw_create_command_exception(msg)
+            elif info_name_lower == "is allowed":
+                is_allowed = info_value
+                if not is_pure_str(is_allowed):
+                    msg = "Wrong data type in command information for command %s in " \
+                          "class %s\nCommand information for is allowed function name" \
+                          "is not an string" % (cmd_name, name)
+                    __throw_create_command_exception(msg)
             else:
                 msg = "Wrong data type in command information for command %s in " \
                       "class %s\nCommand information has unknown key " \
@@ -527,10 +532,14 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
               "class %s\nThe command method does not exist!" % (cmd_name, name)
         __throw_create_command_exception(msg)
 
-    is_allowed_name = "is_%s_allowed" % cmd_name
+    if is_allowed is None:
+        is_allowed_name = "is_%s_allowed" % cmd_name
+    else:
+        is_allowed_name = is_allowed
+
     try:
-        is_allowed = getattr(deviceimpl_class, is_allowed_name)
-        if not isinstance(is_allowed, collections_abc.Callable):
+        is_allowed_function = getattr(deviceimpl_class, is_allowed_name)
+        if not isinstance(is_allowed_function, collections_abc.Callable):
             msg = "Wrong definition of command %s in " \
                   "class %s\nThe object '%s' exists in class but is " \
                   "not a method!" % (cmd_name, name, is_allowed_name)
