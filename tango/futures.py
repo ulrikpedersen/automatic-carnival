@@ -12,7 +12,7 @@
 """This module exposes a futures version of :class:`tango.DeviceProxy` and
 :class:`tango.AttributeProxy"""
 
-__all__ = ("DeviceProxy", "AttributeProxy", "check_requirements")
+__all__ = ("DeviceProxy", "AttributeProxy")
 
 from functools import partial
 
@@ -20,20 +20,8 @@ from tango import GreenMode
 from tango.device_proxy import get_device_proxy
 from tango.attribute_proxy import get_attribute_proxy
 
+import concurrent.futures
 
-def check_requirements():
-    try:
-        import concurrent.futures  # noqa: F401
-    except ImportError:
-        import sys
-        if sys.version_info[0] < 3:
-            raise ImportError(
-                "No module named concurrent. You need to "
-                "install the futures backport module to have "
-                "access to PyTango futures green mode")
-
-
-check_requirements()
 
 DeviceProxy = partial(get_device_proxy, green_mode=GreenMode.Futures)
 DeviceProxy.__doc__ = """

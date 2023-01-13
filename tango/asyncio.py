@@ -18,29 +18,11 @@ from ._tango import GreenMode
 from .device_proxy import get_device_proxy
 from .attribute_proxy import get_attribute_proxy
 
-__all__ = ("DeviceProxy", "AttributeProxy", "check_requirements")
+__all__ = ("DeviceProxy", "AttributeProxy")
 
+import asyncio
+import concurrent.futures
 
-def check_requirements():
-    try:
-        import asyncio
-    except ImportError:
-        try:
-            import trollius as asyncio
-        except ImportError:
-            raise ImportError(
-                "Not able to import asyncio or its backport trollius")
-    try:
-        import concurrent.futures
-    except ImportError:
-        raise ImportError(
-            "No module named concurrent. You need to "
-            "install the futures backport module to have "
-            "access to PyTango futures green mode")
-    return asyncio, concurrent.futures
-
-
-check_requirements()
 
 DeviceProxy = partial(get_device_proxy,
                       green_mode=GreenMode.Asyncio)
