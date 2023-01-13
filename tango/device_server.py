@@ -20,6 +20,8 @@ import functools
 import inspect
 import os
 
+from inspect import getfullargspec
+
 from ._tango import (
     DeviceImpl, Device_3Impl, Device_4Impl, Device_5Impl,
     DevFailed, Attribute, WAttribute, AttrWriteType,
@@ -28,7 +30,7 @@ from ._tango import (
     DispLevel, UserDefaultAttrProp, StdStringVector)
 
 from .utils import document_method as __document_method
-from .utils import copy_doc, get_latest_device_class
+from .utils import copy_doc, get_latest_device_class, is_pure_str
 from .green import get_executor
 from .attr_data import AttrData
 
@@ -55,9 +57,9 @@ def set_worker(worker):
 def get_worker():
     return _WORKER
 
-# patcher for dynamic attribute
 
-def __run_in_executor(fn):
+# patcher for methods
+def run_in_executor(fn):
     if not hasattr(fn, 'wrapped_with_executor'):
         @functools.wraps(fn)
         def wrapper(*args, **kwargs):
@@ -466,7 +468,7 @@ def _ensure_user_method_can_be_called(obj, name, user_method):
         # If server run in async mode, all calls must be wrapped with async executor:
         user_method_cannot_be_run_directly = get_worker().asynchronous
         if user_method_cannot_be_run_directly:
-            setattr(obj, name, __run_in_executor(user_method))
+            setattr(obj, name, run_in_executor(user_method))
 
     # else user hasn't provided a method, which may be OK (e.g., using named lookup, or
     # unnecessary method like a write for a read-only attribute).
@@ -502,12 +504,30 @@ def __DeviceImpl__add_command(self, cmd, device_level=True):
         :raises DevFailed:
     """
     config = dict(cmd.__tango_command__[1][2])
-    if config and ("Display level" in config):
-        disp_level = config["Display level"]
+    disp_level = DispLevel.OPERATOR
+
+    cmd_name = cmd.__name__
+    fisallowed = "is_{0}_allowed".format(cmd_name)
+
+    if config:
+        if "Display level" in config:
+            disp_level = config["Display level"]
+
+        if "Is allowed" in config:
+            fisallowed = config["Is allowed"]
+
+    if is_pure_str(fisallowed):
+        fisallowed = getattr(self, fisallowed, None)
+
+    if fisallowed is not None:
+        fisallowed_name = f"__wrapped_{getattr(fisallowed, '__name__', f'is_{cmd_name}_allowed')}__"
+        if len(getfullargspec(fisallowed).args) > 1:
+            fisallowed = functools.partial(fisallowed, self)
+        setattr(self, fisallowed_name, run_in_executor(fisallowed))
     else:
-        disp_level = DispLevel.OPERATOR
-    self._add_command(cmd.__name__, cmd.__tango_command__[1], disp_level,
-                      device_level)
+        fisallowed_name = ''
+
+    self._add_command(cmd_name, cmd.__tango_command__[1], fisallowed_name, disp_level, device_level)
     return cmd
 
 

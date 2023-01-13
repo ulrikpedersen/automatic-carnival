@@ -33,9 +33,9 @@ from ._tango import DevFailed, GreenMode, SerialModel
 from .attr_data import AttrData
 from .pipe_data import PipeData
 from .device_class import DeviceClass
-from .device_server import LatestDeviceImpl, get_worker, set_worker
+from .device_server import LatestDeviceImpl, get_worker, set_worker, run_in_executor
 from .utils import get_enum_labels
-from .utils import is_seq, is_non_str_seq
+from .utils import is_seq, is_non_str_seq, is_pure_str
 from .utils import scalar_to_array_type, TO_TANGO_TYPE
 from .green import get_green_mode, get_executor
 from .pyutil import Util
@@ -342,6 +342,35 @@ def __patch_pipe_methods(tango_device_klass, pipe):
         __patch_pipe_write_method(tango_device_klass, pipe)
 
 
+def __patch_is_command_allowed_method(tango_device_klass, is_allowed_method, cmd_name):
+    """
+    :param tango_device_klass: a DeviceImpl class
+    :type tango_device_klass: class
+    :param is_allowed_method: a callable to check if command is allowed
+    :type is_allowed_method: callable
+    :param cmd_name: command name
+    :type cmd_name: str
+    """
+
+    method_name = getattr(is_allowed_method, '__name__', f'is_{cmd_name}_allowed')
+
+    method_args = inspect_getargspec(is_allowed_method)
+    nb_args = len(method_args.args)
+
+    if not nb_args:
+        @functools.wraps(is_allowed_method)
+        def method(self):
+            return is_allowed_method()
+    else:
+        method = is_allowed_method
+
+    method_name = f"__wrapped_{method_name}__"
+
+    setattr(tango_device_klass, method_name, run_in_executor(method))
+
+    return method_name
+
+
 def __patch_standard_device_methods(klass):
     # TODO allow to force non green mode
 
@@ -469,6 +498,17 @@ def __create_tango_deviceclass_klass(tango_device_klass, attrs=None):
             if hasattr(attr_obj, "__tango_command__"):
                 cmd_name, cmd_info = attr_obj.__tango_command__
                 cmd_list[cmd_name] = cmd_info
+                if "Is allowed" in cmd_info[2]:
+                    is_allowed_method = cmd_info[2]["Is allowed"]
+                else:
+                    is_allowed_method = f"is_{cmd_name}_allowed"
+
+                if is_pure_str(is_allowed_method):
+                    is_allowed_method = getattr(tango_device_klass, is_allowed_method, None)
+
+                if is_allowed_method is not None:
+                    cmd_info[2]["Is allowed"] = __patch_is_command_allowed_method(tango_device_klass,
+                                                                                  is_allowed_method, cmd_name)
 
     __patch_standard_device_methods(tango_device_klass)
 
@@ -1038,7 +1078,7 @@ def __build_command_doc(f, name, dtype_in, doc_in, dtype_out, doc_out):
 def command(f=None, dtype_in=None, dformat_in=None, doc_in="",
             dtype_out=None, dformat_out=None, doc_out="",
             display_level=None, polling_period=None,
-            green_mode=None):
+            green_mode=None, fisallowed=None):
     """
     Declares a new tango command in a :class:`Device`.
     To be used like a decorator in the methods you want to declare as
@@ -1093,12 +1133,17 @@ def command(f=None, dtype_in=None, dformat_in=None, doc_in="",
         set green mode on this specific command. Default value is None meaning
         use the server green mode. Set it to GreenMode.Synchronous to force
         a non green command in a green server.
+    :param fisallowed: is allowed method for command
+    :type fisallowed: str or callable
 
     .. versionadded:: 8.1.7
         added green_mode option
 
     .. versionadded:: 9.2.0
         added display_level and polling_period optional argument
+
+    .. versionadded:: 9.4.0
+        added fisallowed option
     """
     if f is None:
         return functools.partial(
@@ -1106,7 +1151,7 @@ def command(f=None, dtype_in=None, dformat_in=None, doc_in="",
             dtype_in=dtype_in, dformat_in=dformat_in, doc_in=doc_in,
             dtype_out=dtype_out, dformat_out=dformat_out, doc_out=doc_out,
             display_level=display_level, polling_period=polling_period,
-            green_mode=green_mode)
+            green_mode=green_mode, fisallowed=fisallowed)
     name = f.__name__
 
     dtype_format_in = _get_tango_type_format(dtype_in, dformat_in)
@@ -1120,6 +1165,8 @@ def command(f=None, dtype_in=None, dformat_in=None, doc_in="",
         config_dict['Display level'] = display_level
     if polling_period is not None:
         config_dict['Polling period'] = polling_period
+    if fisallowed is not None:
+        config_dict['Is allowed'] = fisallowed
 
     if green_mode == GreenMode.Synchronous:
         cmd = f
