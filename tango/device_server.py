@@ -2249,19 +2249,19 @@ def __doc_WAttribute():
         :rtype: int
     """)
 
-    #    document_method("set_write_value", """
-    #    set_write_value(self, data, dim_x = 1, dim_y = 0)
-    #
-    #        Set the writable attribute value.
-    #
-    #        :param data: the data to be set. Data must be compatible with the attribute type and format.
-    #                     for SPECTRUM and IMAGE attributes, data can be any type of sequence of elements
-    #                     compatible with the attribute type
-    #        :param dim_x: the attribute set value x length. Default value is 1
-    #        :type dim_x: int
-    #        :param dim_y: the attribute set value y length. Default value is 0
-    #        :type dim_y: int
-    #    """)
+    document_method("set_write_value", """
+    set_write_value(self, data, dim_x = 1, dim_y = 0)
+    
+       Set the writable attribute value.
+    
+       :param data: the data to be set. Data must be compatible with the attribute type and format.
+                    for SPECTRUM and IMAGE attributes, data can be any type of sequence of elements
+                    compatible with the attribute type
+       :param dim_x: optional, the attribute set value x length
+       :type dim_x: int
+       :param dim_y: optional, the attribute set value y length
+       :type dim_y: int
+    """)
 
     document_method("get_write_value", """
     get_write_value(self, lst)  <= DEPRECATED
