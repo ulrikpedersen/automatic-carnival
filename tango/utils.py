@@ -516,7 +516,7 @@ def is_enum(obj):
 
 def is_enum_seq(obj):
     if is_non_str_seq(obj):
-        while is_non_str_seq(obj):
+        while is_non_str_seq(obj) and len(obj):
             obj = obj[0]
         return is_enum(obj)
     return False

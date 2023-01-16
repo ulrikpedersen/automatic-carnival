@@ -45,12 +45,16 @@ API_VERSION = 2
 def _get_tango_type_format(dtype=None, dformat=None):
     if dformat is None:
         dformat = AttrDataFormat.SCALAR
-        if is_non_str_seq(dtype):
+        if is_non_str_seq(dtype) and len(dtype):
             dtype = dtype[0]
             dformat = AttrDataFormat.SPECTRUM
             if is_non_str_seq(dtype):
                 dtype = dtype[0]
                 dformat = AttrDataFormat.IMAGE
+            else:
+                raise RuntimeError('Image attribute type must be specified as ((<dtype>,),)')
+        else:
+            raise RuntimeError('Spectrum attribute type must be specified as (<dtype>,)')
     return TO_TANGO_TYPE[dtype], dformat
 
 
@@ -832,9 +836,8 @@ class attribute(AttrData):
             if is_enum(dtype) or is_enum_seq(dtype):
                 enum_labels = kwargs.get('enum_labels')
                 if enum_labels:
-                    raise TypeError("For dtype of enum.Enum or (enum.Enum,) the enum_labels must not "
-                                    "be specified - dtype: {0}, enum_labels: {1}."
-                                    .format(dtype, enum_labels))
+                    raise TypeError(f"For dtype of enum.Enum, (enum.Enum,) or ((enum.Enum,),) the enum_labels must not "
+                                    "be specified - dtype: {dtype}, enum_labels: {enum_labels}.")
                 _dtype = dtype
                 dtype = CmdArgType.DevEnum
 
