@@ -19,7 +19,7 @@ from tango.server import _get_tango_type_format, command, attribute, device_prop
 from tango.test_utils import DeviceTestContext, MultiDeviceTestContext, \
     GoodEnum, BadEnumNonZero, BadEnumSkipValues, BadEnumDuplicates, \
     assert_close, DEVICE_SERVER_ARGUMENTS, os_system
-from tango.utils import EnumTypeError, get_enum_labels, is_pure_str
+from tango.utils import EnumTypeError, get_enum_labels, is_pure_str, is_non_str_seq
 
 # Asyncio imports
 try:
@@ -401,6 +401,30 @@ def test_read_write_attribute(typed_values, server_green_mode):
         for value in values:
             proxy.attr = value
             assert_close(proxy.attr, expected(value))
+
+def test_read_write_wvalue_attribute(typed_values, server_green_mode):
+    dtype, values, expected = typed_values
+
+    class TestDevice(Device):
+        green_mode = server_green_mode
+
+        @attribute(dtype=dtype, max_dim_x=10, access=AttrWriteType.READ_WRITE)
+        def attr(self):
+            return self.value
+
+        @attr.write
+        def attr(self, value):
+            self.value = value
+            if is_non_str_seq(value):
+                self.get_device_attr().get_w_attr_by_name('attr').set_write_value(value, len(value))
+            else:
+                self.get_device_attr().get_w_attr_by_name('attr').set_write_value(value)
+
+
+    with DeviceTestContext(TestDevice) as proxy:
+        for value in values:
+            proxy.attr = value
+            assert_close(proxy.attr, expected(proxy.read_attribute('attr').w_value))
 
 
 def test_read_write_attribute_enum(server_green_mode):
