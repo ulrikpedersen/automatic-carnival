@@ -42,19 +42,21 @@ API_VERSION = 2
 
 # Helpers
 
-def _get_tango_type_format(dtype=None, dformat=None):
+def _get_tango_type_format(dtype=None, dformat=None, caller=None):
     if dformat is None:
         dformat = AttrDataFormat.SCALAR
-        if is_non_str_seq(dtype) and len(dtype):
-            dtype = dtype[0]
-            dformat = AttrDataFormat.SPECTRUM
-            if is_non_str_seq(dtype):
+        if is_non_str_seq(dtype):
+            if len(dtype):
                 dtype = dtype[0]
-                dformat = AttrDataFormat.IMAGE
-            else:
-                raise RuntimeError('Image attribute type must be specified as ((<dtype>,),)')
-        else:
-            raise RuntimeError('Spectrum attribute type must be specified as (<dtype>,)')
+                dformat = AttrDataFormat.SPECTRUM
+                if is_non_str_seq(dtype):
+                    if len(dtype):
+                        dtype = dtype[0]
+                        dformat = AttrDataFormat.IMAGE
+                    elif caller == 'attribute':
+                        raise RuntimeError('Image attribute type must be specified as ((<dtype>,),)')
+            elif caller == 'attribute':
+                raise RuntimeError('Spectrum attribute type must be specified as (<dtype>,)')
     return TO_TANGO_TYPE[dtype], dformat
 
 
@@ -847,8 +849,7 @@ class attribute(AttrData):
 
                 kwargs['enum_labels'] = get_enum_labels(_dtype)
 
-            kwargs['dtype'], kwargs['dformat'] = \
-                _get_tango_type_format(dtype, dformat)
+            kwargs['dtype'], kwargs['dformat'] = _get_tango_type_format(dtype, dformat, caller='attribute')
         self.build_from_dict(kwargs)
 
     def get_attribute(self, obj):
