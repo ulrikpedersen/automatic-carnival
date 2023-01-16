@@ -24,10 +24,11 @@ Note:
 
 ## Build, install and test PyTango in a container
 
-Run an instance of the container, volume mounting an external PyTango repo into the container.  For example:
+Run an instance of the container, volume mounting an external PyTango repo into the container.  For example
+(assuming PYTHON_VERSION and CPP_TANGO_VERSION are still set as above):
 
 ```shell script
-docker run -it --rm -v ~/tango-src/pytango:/opt/pytango pytango-dev:py3.10-tango9.4.0
+docker run -it --rm -v ~/tango-src/pytango:/opt/pytango pytango-dev:py${PYTHON_VERSION}-tango${CPP_TANGO_VERSION}
 ```
 
 Inside the container:
@@ -68,8 +69,17 @@ Running tests:
 
 ### Visual Studio Code
 
-Developing in a container from within VScode requires installation of the "Remote Containers" extension.
+Developing in a container from within VScode requires installation of the 
+["Dev Containers" extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+(formerly known as - and still sometimes referred to - as "Remote Containers").
 
-When opening the pytango folder in VScode, the Remote Containers extension will detect the presence of a `devcontainer.json` container configuration file, and will offer to reopen the folder in the container. The first time this is done, it will take a long time because the docker image must be built; after that first time, the image is cached.
+When opening the pytango folder in VScode, the Dev Containers extension will detect the presence of a `devcontainer.json` container configuration file, and will offer to reopen the folder in the container. The first time this is done, it will take a long time because the docker image must be built; after that first time, the image is cached.
 
 Once in the container, your `pytango` folder will be mounted at `/workspaces/pytango`.
+
+With VS Code in the Dev Container mode and opening a Terminal; you will find yourself in the pytango source dir, ready to build and test:
+
+```shell script
+python setup.py build
+python setup.py test
+```

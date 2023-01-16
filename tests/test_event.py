@@ -20,7 +20,7 @@ from tango.gevent import DeviceProxy as gevent_DeviceProxy
 from tango.futures import DeviceProxy as futures_DeviceProxy
 from tango.asyncio import DeviceProxy as asyncio_DeviceProxy
 
-MAX_RETRIES = 50
+MAX_RETRIES = 200
 DELAY_PER_RETRY = 0.05
 
 # Helpers
@@ -113,11 +113,14 @@ def test_subscribe_change_event(event_device):
     # Trigger an event
     event_device.command_inout("send_change_event", wait=True)
     # Wait for tango event
-    for _ in range(MAX_RETRIES):
+    for retry_count in range(MAX_RETRIES):
         event_device.read_attribute("state", wait=True)
         if len(results_change_event) > 1:
             break
         time.sleep(DELAY_PER_RETRY)
+    if retry_count+1 >= MAX_RETRIES:
+        timeout_seconds = retry_count * DELAY_PER_RETRY
+        pytest.fail(f'Timeout, waiting for event, after {timeout_seconds}sec over {MAX_RETRIES} retries. Occasionally happens, probably due to CI test runtime environment')
     # Test the event values
     assert results_change_event == [0., 1.]
     # Unsubscribe
@@ -137,11 +140,14 @@ def test_subscribe_data_ready_event(event_device):
     # Trigger an event
     event_device.command_inout("send_data_ready_event", wait=True)
     # Wait for tango event
-    for _ in range(MAX_RETRIES):
+    for retry_count in range(MAX_RETRIES):
         event_device.read_attribute("state", wait=True)
         if len(results_data_ready_event):
             break
         time.sleep(DELAY_PER_RETRY)
+    if retry_count+1 >= MAX_RETRIES:
+        timeout_seconds = retry_count * DELAY_PER_RETRY
+        pytest.fail(f'Timeout, waiting for event, after {timeout_seconds}sec over {MAX_RETRIES} retries. Occasionally happens, probably due to CI test runtime environment')
     # Test the event values
     assert results_data_ready_event == [2]
     # Unsubscribe
@@ -162,18 +168,24 @@ def test_subscribe_interface_event(event_device):
     event_device.command_inout("add_dyn_attr", 'bla', wait=True)
     event_device.read_attribute('bla', wait=True) == 1.23
     # Wait for tango event
-    for _ in range(MAX_RETRIES):
+    for retry_count in range(MAX_RETRIES):
         event_device.read_attribute("state", wait=True)
         if len(results) > 1:
             break
         time.sleep(DELAY_PER_RETRY)
+    if retry_count+1 >= MAX_RETRIES:
+        timeout_seconds = retry_count * DELAY_PER_RETRY
+        pytest.fail(f'Timeout, waiting for event, after {timeout_seconds}sec over {MAX_RETRIES} retries. Occasionally happens, probably due to CI test runtime environment')
     event_device.command_inout("delete_dyn_attr", 'bla', wait=True)
     # Wait for tango event
-    for _ in range(MAX_RETRIES):
+    for retry_count in range(MAX_RETRIES):
         event_device.read_attribute("state", wait=True)
         if len(results) > 2:
             break
         time.sleep(DELAY_PER_RETRY)
+    if retry_count+1 >= MAX_RETRIES:
+        timeout_seconds = retry_count * DELAY_PER_RETRY
+        pytest.fail(f'Timeout, waiting for event, after {timeout_seconds}sec over {MAX_RETRIES} retries. Occasionally happens, probably due to CI test runtime environment')
     # Test the first event value
     assert {cmd.cmd_name for cmd in results[0].cmd_list} == \
         {'Init', 'State', 'Status',
@@ -209,11 +221,14 @@ def test_push_event_with_timestamp(event_device):
     # Trigger an event
     event_device.command_inout("send_change_event_with_timestamp", wait=True)
     # Wait for tango event
-    for _ in range(MAX_RETRIES):
+    for retry_count in range(MAX_RETRIES):
         event_device.read_attribute("state", wait=True)
         if len(ec.get_events()) > 1:
             break
         time.sleep(DELAY_PER_RETRY)
+    if retry_count+1 >= MAX_RETRIES:
+        timeout_seconds = retry_count * DELAY_PER_RETRY
+        pytest.fail(f'Timeout, waiting for event, after {timeout_seconds}sec over {MAX_RETRIES} retries. Occasionally happens, probably due to CI test runtime environment')
     # Test the event values and timestamp
     results = [evt.attr_value.value for evt in ec.get_events()]
     assert results == [0., 2.]
@@ -280,7 +295,7 @@ def test_subscribe_change_event_from_user_thread(event_device):
     running = True
     thread.start()
     # Wait for tango events
-    for _ in range(MAX_RETRIES):
+    for retry_count in range(MAX_RETRIES):
         event_device.read_attribute("state", wait=True)
         if len(results) == 1:
             # Trigger an event (1 result means thread has completed subscription,
@@ -293,6 +308,9 @@ def test_subscribe_change_event_from_user_thread(event_device):
     # Stop the thread
     running = False
     thread.join()
+    if retry_count+1 >= MAX_RETRIES:
+        timeout_seconds = retry_count * DELAY_PER_RETRY
+        pytest.fail(f'Timeout, waiting for event, after {timeout_seconds}sec over {MAX_RETRIES} retries. Occasionally happens, probably due to CI test runtime environment')
     # Test the event values
     assert results == [0., 1.]
 

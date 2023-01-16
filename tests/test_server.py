@@ -94,6 +94,233 @@ def test_identity_command(typed_values, server_green_mode):
             assert_close(proxy.identity(value), expected(value))
 
 
+def test_command_isallowed(server_green_mode):
+
+    is_allowed = None
+
+    def sync_allowed():
+        return is_allowed
+
+    async def async_allowed():
+        return is_allowed
+
+    class IsAllowedCallableClass:
+
+        def __init__(self):
+            self._is_allowed = None
+
+        def __call__(self, device):
+            return self._is_allowed
+
+        def make_allowed(self, yesno):
+            self._is_allowed = yesno
+
+    is_allowed_callable_class = IsAllowedCallableClass()
+
+    class TestDevice(Device):
+        green_mode = server_green_mode
+
+        def __init__(self, *args, **kwargs):
+            super(TestDevice, self).__init__(*args, **kwargs)
+            self._is_allowed = True
+
+        @command(dtype_in=int, dtype_out=int)
+        def identity(self, arg):
+            return arg
+
+        @command(dtype_in=int, dtype_out=int, fisallowed="is_identity_allowed")
+        def identity_kwarg_string(self, arg):
+            return arg
+
+        @command(dtype_in=int, dtype_out=int,
+                 fisallowed=sync_allowed if server_green_mode != GreenMode.Asyncio else async_allowed)
+        def identity_kwarg_callable(self, arg):
+            return arg
+
+        @command(dtype_in=int, dtype_out=int,
+                 fisallowed=is_allowed_callable_class)
+        def identity_kwarg_callable_class(self, arg):
+            return arg
+
+        @command(dtype_in=int, dtype_out=int)
+        def identity_always_allowed(self, arg):
+            return arg
+
+        @command(dtype_in=bool)
+        def make_allowed(self, yesno):
+            self._is_allowed = yesno
+
+        synchronous_code = textwrap.dedent("""\
+            def is_identity_allowed(self):
+                return self._is_allowed
+            """)
+
+        asynchronous_code = synchronous_code.replace("def ", "async def ")
+
+        if server_green_mode != GreenMode.Asyncio:
+            exec(synchronous_code)
+        else:
+            exec(asynchronous_code)
+
+    with DeviceTestContext(TestDevice) as proxy:
+
+        proxy.make_allowed(True)
+        is_allowed_callable_class.make_allowed(True)
+        is_allowed = True
+
+        assert_close(proxy.identity(1), 1)
+        assert_close(proxy.identity_kwarg_string(1), 1)
+        assert_close(proxy.identity_kwarg_callable(1), 1)
+        assert_close(proxy.identity_kwarg_callable_class(1), 1)
+        assert_close(proxy.identity_always_allowed(1), 1)
+
+        proxy.make_allowed(False)
+        is_allowed_callable_class.make_allowed(False)
+        is_allowed = False
+
+        with pytest.raises(DevFailed):
+            proxy.identity(1)
+
+        with pytest.raises(DevFailed):
+            proxy.identity_kwarg_string(1)
+
+        with pytest.raises(DevFailed):
+            proxy.identity_kwarg_callable(1)
+
+        with pytest.raises(DevFailed):
+            proxy.identity_kwarg_callable_class(1)
+
+        assert_close(proxy.identity_always_allowed(1), 1)
+
+
+@pytest.fixture(params=[True, False])
+def device_command_level(request):
+    return request.param
+
+
+def test_dynamic_command(server_green_mode, device_command_level):
+
+    is_allowed = None
+
+    def sync_allowed():
+        return is_allowed
+
+    async def async_allowed():
+        return is_allowed
+
+    class IsAllowedCallable:
+
+        def __init__(self):
+            self._is_allowed = None
+
+        def __call__(self, device):
+            return self._is_allowed
+
+        def make_allowed(self, yesno):
+            self._is_allowed = yesno
+
+    is_allowed_callable_class = IsAllowedCallable()
+
+    class TestDevice(Device):
+        green_mode = server_green_mode
+
+        def __init__(self, *args, **kwargs):
+            super(TestDevice, self).__init__(*args, **kwargs)
+            self._is_allowed = True
+
+        def identity(self, arg):
+            return arg
+
+        def identity_kwarg_string(self, arg):
+            return arg
+
+        def identity_kwarg_callable(self, arg):
+            return arg
+
+        def identity_kwarg_callable_outside_class(self, arg):
+            return arg
+
+        def identity_kwarg_callable_class(self, arg):
+            return arg
+
+        def identity_always_allowed(self, arg):
+            return arg
+
+        @command()
+        def add_dyn_cmd(self):
+            cmd = command(f=self.identity, dtype_in=int, dtype_out=int)
+            self.add_command(cmd, device_command_level)
+
+            cmd = command(f=self.identity_kwarg_string, dtype_in=int, dtype_out=int,
+                          fisallowed="is_identity_allowed")
+            self.add_command(cmd, device_command_level)
+
+            cmd = command(f=self.identity_kwarg_callable, dtype_in=int, dtype_out=int,
+                          fisallowed=self.is_identity_allowed)
+            self.add_command(cmd, device_command_level)
+
+            cmd = command(f=self.identity_kwarg_callable_outside_class, dtype_in=int, dtype_out=int,
+                          fisallowed=sync_allowed if server_green_mode != GreenMode.Asyncio else async_allowed)
+            self.add_command(cmd, device_command_level)
+
+            cmd = command(f=self.identity_kwarg_callable_class, dtype_in=int, dtype_out=int,
+                          fisallowed=is_allowed_callable_class)
+            self.add_command(cmd, device_command_level)
+
+            cmd = command(f=self.identity_always_allowed, dtype_in=int, dtype_out=int)
+            self.add_command(cmd, device_command_level)
+
+        @command(dtype_in=bool)
+        def make_allowed(self, yesno):
+            self._is_allowed = yesno
+
+        synchronous_code = textwrap.dedent("""\
+                def is_identity_allowed(self):
+                    return self._is_allowed
+                """)
+
+        asynchronous_code = synchronous_code.replace("def ", "async def ")
+
+        if server_green_mode != GreenMode.Asyncio:
+            exec(synchronous_code)
+        else:
+            exec(asynchronous_code)
+
+    with DeviceTestContext(TestDevice) as proxy:
+        proxy.add_dyn_cmd()
+
+        proxy.make_allowed(True)
+        is_allowed_callable_class.make_allowed(True)
+        is_allowed = True
+
+        assert_close(proxy.identity(1), 1)
+        assert_close(proxy.identity_kwarg_string(1), 1)
+        assert_close(proxy.identity_kwarg_callable(1), 1)
+        assert_close(proxy.identity_kwarg_callable_outside_class(1), 1)
+        assert_close(proxy.identity_kwarg_callable_class(1), 1)
+        assert_close(proxy.identity_always_allowed(1), 1)
+
+        proxy.make_allowed(False)
+        is_allowed_callable_class.make_allowed(False)
+        is_allowed = False
+
+        with pytest.raises(DevFailed):
+            proxy.identity(1)
+
+        with pytest.raises(DevFailed):
+            proxy.identity_kwarg_string(1)
+
+        with pytest.raises(DevFailed):
+            proxy.identity_kwarg_callable(1)
+
+        with pytest.raises(DevFailed):
+            proxy.identity_kwarg_callable_outside_class(1)
+
+        with pytest.raises(DevFailed):
+            proxy.identity_kwarg_callable_class(1)
+
+        assert_close(proxy.identity_always_allowed(1), 1)
+
 def test_polled_command(server_green_mode):
 
     dct = {'Polling1': 100,
@@ -149,7 +376,6 @@ def test_wrong_command_result(server_green_mode):
             proxy.cmd_int_err()
         with pytest.raises(DevFailed):
             proxy.cmd_str_list_err()
-
 
 
 # Test attributes
@@ -319,7 +545,6 @@ def test_attribute_access_with_default_method_names(server_green_mode):
             proxy.attr_rw = "writing_not_allowed"
         with pytest.raises(DevFailed):
             _ = proxy.attr_rw
-
 
 
 def test_read_write_dynamic_attribute(typed_values, server_green_mode):
