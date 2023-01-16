@@ -348,7 +348,7 @@ def __patch_is_command_allowed_method(tango_device_klass, is_allowed_method, cmd
 
     method_name = getattr(is_allowed_method, '__name__', f'is_{cmd_name}_allowed')
 
-    method_args = inspect_getargspec(is_allowed_method)
+    method_args = getfullargspec(is_allowed_method)
     nb_args = len(method_args.args)
 
     if not nb_args:
