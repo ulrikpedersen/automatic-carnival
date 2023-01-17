@@ -58,7 +58,7 @@ class Release:
                        'mapping.'
     license = 'LGPL'
     authors = {'Coutinho': ('Tiago Coutinho', 'coutinho@esrf.fr')}
-    author_lines = "\n".join(["%s <%s>" % x for x in authors.values()])
+    author_lines = "\n".join([f"{x[0]} <{x[1]}>" for x in authors.values()])
     url = 'http://gitlab.com/tango-controls/pytango'
     download_url = 'http://pypi.python.org/pypi/pytango'
     platform = ['Linux', 'Windows XP/Vista/7/8/10']

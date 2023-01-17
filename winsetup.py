@@ -15,7 +15,6 @@
 #          Microsoft Visual Studio and not from the command line
 # ------------------------------------------------------------------------------
 
-from __future__ import print_function
 
 import sys
 import os
@@ -48,28 +47,24 @@ def main():
         plat_name = 'win-amd64'
 
     try:
-        cmd_line = '%s %s ' % (executable, setup_name)
-        cmd_line += 'build_py --force --no-compile ' \
-                    '--build-lib=%s ' \
-                    % (build_dir,)
+        cmd_line = f'{executable} {setup_name} '
+        cmd_line += f'build_py --force --no-compile --build-lib={build_dir} '
         cmd_line += 'build_scripts --force '
-        cmd_line += 'install_lib --skip-build --no-compile ' \
-                    '--build-dir=%s ' \
-                    % (build_dir, )
+        cmd_line += f'install_lib --skip-build --no-compile --build-dir={build_dir} '
 #        cmd_line += 'bdist_msi --skip-build --target-version=%s ' \
 #                    '--bdist-dir=%s ' \
 #                    '--dist-dir=%s ' \
 #                    '--plat-name=%s ' % (ver, bdist_dir, dist_dir, plat_name)
-        cmd_line += 'bdist_wininst --skip-build --target-version=%s ' \
-                    '--bdist-dir=%s ' \
-                    '--dist-dir=%s ' \
-                    '--title="PyTango 9" ' \
-                    '--bitmap="%s" ' \
-                    '--plat-name=%s ' % (ver, bdist_dir, dist_dir, bitmap, plat_name)
-        cmd_line += 'bdist_wheel --skip-build ' \
-                    '--bdist-dir=%s ' \
-                    '--dist-dir=%s ' \
-                    '--plat-name=%s ' % (bdist_dir, dist_dir, plat_name)
+        cmd_line += f'bdist_wininst --skip-build --target-version={ver} ' \
+                    f'--bdist-dir={bdist_dir} ' \
+                    f'--dist-dir={dist_dir} ' \
+                    f'--title="PyTango 9" ' \
+                    f'--bitmap="{bitmap}" ' \
+                    f'--plat-name={plat_name} '
+        cmd_line += f'bdist_wheel --skip-build ' \
+                    f'--bdist-dir={bdist_dir} ' \
+                    f'--dist-dir={dist_dir} ' \
+                    f'--plat-name={plat_name} '
         os.system(cmd_line)
     except:
         print("Failed:")

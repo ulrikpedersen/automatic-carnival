@@ -1,5 +1,3 @@
-
-
 # Imports
 from concurrent.futures import Future
 

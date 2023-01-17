@@ -37,20 +37,15 @@ RUN mamba init bash && \
 
 # create conda environment in one step
 # - install cpptango and PyTango extension build requirements
-# - depending on Python we need different test utilities
 # - depending on cppTango version, we may get TangoTest from conda-forge, or build from source
-RUN if [[ "${PYTHON_VERSION}" = "2."* ]]; then \
-      export PYTHON_TEST_PACKAGES="trollius futures 'pyparsing<3' 'pytest<5' 'pytest-forked<1.4' 'gevent!=1.5a1' psutil enum34"; \
-    else \
-      export PYTHON_TEST_PACKAGES="pytest pytest-forked 'gevent!=1.5a1' psutil"; \
-    fi && \
+RUN export PYTHON_TEST_PACKAGES="pytest pytest-forked 'gevent!=1.5a1' psutil" && \
     if [[ "${CPP_TANGO_VERSION}" = *"dev"* ]] || [[ "${CPP_TANGO_VERSION}" = *"rc"* ]]; then \
       export TANGO_TEST_PACKAGE=""; \
     else \
       export TANGO_TEST_PACKAGE=tango-test=$TANGO_TEST_VERSION; \
     fi && \
     mamba install --yes -c conda-forge -c tango-controls/label/dev -c conda-forge/label/cpptango_rc \
-      boost cppzmq cxx-compiler numpy six cpptango=$CPP_TANGO_VERSION $TANGO_TEST_PACKAGE $PYTHON_TEST_PACKAGES && \
+      boost cppzmq cxx-compiler numpy cpptango=$CPP_TANGO_VERSION $TANGO_TEST_PACKAGE $PYTHON_TEST_PACKAGES && \
     mamba clean --all --force-pkgs-dirs --yes
 
 # if we use cpptango dev/rc - we build TangoTest

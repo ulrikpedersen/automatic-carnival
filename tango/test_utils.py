@@ -1,12 +1,8 @@
 """Test utilities"""
 
 import sys
-import six
 import enum
-try:
-    import collections.abc as collections_abc  # python 3.3+
-except ImportError:
-    import collections as collections_abc
+import collections.abc
 
 # Local imports
 from . import DevState, GreenMode
@@ -149,7 +145,7 @@ DEVICE_SERVER_ARGUMENTS = (
 def repr_type(x):
     if not isinstance(x, tuple):
         return x.__name__
-    return '({},)'.format(x[0].__name__)
+    return f'({x[0].__name__},)'
 
 
 # Numpy helpers
@@ -157,10 +153,10 @@ def repr_type(x):
 if numpy and pytest:
 
     def assert_close(a, b):
-        if isinstance(a, six.string_types):
+        if isinstance(a, str):
             assert a == b
             return
-        if isinstance(a, collections_abc.Sequence) and len(a) and isinstance(a[0], six.string_types):
+        if isinstance(a, collections.abc.Sequence) and len(a) and isinstance(a[0], str):
             assert list(a) == list(b)
             return
         try:
@@ -175,10 +171,10 @@ if pytest:
     def create_result(dtype, value):
         if dtype == str:
             if PY3:
-                if isinstance(value, six.binary_type):
+                if isinstance(value, bytes):
                     return value.decode('latin-1')
             else:
-                if isinstance(value, six.text_type):
+                if isinstance(value, str):
                     return value.encode('latin-1')
         elif dtype == (str,):
             return [create_result(str, v) for v in value]

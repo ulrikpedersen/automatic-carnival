@@ -11,17 +11,11 @@
 
 """Server helper classes for writing Tango device servers."""
 
-from __future__ import with_statement
-from __future__ import print_function
-from __future__ import absolute_import
 
 import sys
 import copy
 import enum
-try:
-    from inspect import getfullargspec as inspect_getargspec  # python 3.0+
-except ImportError:
-    from inspect import getargspec as inspect_getargspec
+from inspect import getfullargspec
 import inspect
 import logging
 import functools
@@ -102,7 +96,7 @@ def set_complex_value(attr, value):
 
 
 def _get_wrapped_read_method(attribute, read_method):
-    read_args = inspect_getargspec(read_method)
+    read_args = getfullargspec(read_method)
     nb_args = len(read_args.args)
 
     green_mode = attribute.read_green_mode
@@ -149,14 +143,14 @@ def __patch_read_method(tango_device_klass, attribute):
     """
     read_method = getattr(attribute, "fget", None)
     if read_method:
-        method_name = "__read_{0}__".format(attribute.attr_name)
+        method_name = f"__read_{attribute.attr_name}__"
         attribute.read_method_name = method_name
     else:
         method_name = attribute.read_method_name
         read_method = getattr(tango_device_klass, method_name)
 
     read_attr = _get_wrapped_read_method(attribute, read_method)
-    method_name = "__read_{0}_wrapper__".format(attribute.attr_name)
+    method_name = f"__read_{attribute.attr_name}_wrapper__"
     attribute.read_method_name = method_name
 
     setattr(tango_device_klass, method_name, read_attr)
@@ -193,7 +187,7 @@ def __patch_write_method(tango_device_klass, attribute):
     """
     write_method = getattr(attribute, "fset", None)
     if write_method:
-        method_name = "__write_{0}__".format(attribute.attr_name)
+        method_name = f"__write_{attribute.attr_name}__"
         attribute.write_method_name = method_name
     else:
         method_name = attribute.write_method_name
@@ -224,7 +218,7 @@ def __patch_attr_methods(tango_device_klass, attribute):
 
 
 def _get_wrapped_pipe_read_method(pipe, read_method):
-    read_args = inspect_getargspec(read_method)
+    read_args = getfullargspec(read_method)
     nb_args = len(read_args.args)
 
     green_mode = pipe.read_green_mode
@@ -271,14 +265,14 @@ def __patch_pipe_read_method(tango_device_klass, pipe):
     """
     read_method = getattr(pipe, "fget", None)
     if read_method:
-        method_name = "__read_{0}__".format(pipe.pipe_name)
+        method_name = f"__read_{pipe.pipe_name}__"
         pipe.read_method_name = method_name
     else:
         method_name = pipe.read_method_name
         read_method = getattr(tango_device_klass, method_name)
 
     read_pipe = _get_wrapped_pipe_read_method(pipe, read_method)
-    method_name = "__read_{0}_wrapper__".format(pipe.pipe_name)
+    method_name = f"__read_{pipe.pipe_name}_wrapper__"
     pipe.read_method_name = method_name
 
     setattr(tango_device_klass, method_name, read_pipe)
@@ -315,7 +309,7 @@ def __patch_pipe_write_method(tango_device_klass, pipe):
     """
     write_method = getattr(pipe, "fset", None)
     if write_method:
-        method_name = "__write_{0}__".format(pipe.pipe_name)
+        method_name = f"__write_{pipe.pipe_name}__"
         pipe.write_method_name = method_name
     else:
         method_name = pipe.write_method_name
@@ -354,7 +348,7 @@ def __patch_is_command_allowed_method(tango_device_klass, is_allowed_method, cmd
 
     method_name = getattr(is_allowed_method, '__name__', f'is_{cmd_name}_allowed')
 
-    method_args = inspect_getargspec(is_allowed_method)
+    method_args = getfullargspec(is_allowed_method)
     nb_args = len(method_args.args)
 
     if not nb_args:
@@ -452,8 +446,7 @@ class _DeviceClass(DeviceClass):
 def __create_tango_deviceclass_klass(tango_device_klass, attrs=None):
     klass_name = tango_device_klass.__name__
     if not issubclass(tango_device_klass, (BaseDevice)):
-        msg = "{0} device must inherit from " \
-              "tango.server.Device".format(klass_name)
+        msg = f"{klass_name} device must inherit from tango.server.Device"
         raise Exception(msg)
 
     if attrs is None:
@@ -648,7 +641,7 @@ class BaseDevice(LatestDeviceImpl):
                 properties = self.device_property_list[prop_name]
                 mandatory = properties[3]
                 if mandatory and value is None:
-                    msg = "Device property {0} is mandatory ".format(prop_name)
+                    msg = f"Device property {prop_name} is mandatory "
                     raise Exception(msg)
         except DevFailed as df:
             print(80 * "-")
@@ -830,7 +823,7 @@ class attribute(AttrData):
                         if fget.__doc__ is not None:
                             kwargs['doc'] = fget.__doc__
                 kwargs['fget'] = fget
-        super(attribute, self).__init__(self.name, class_name)
+        super().__init__(self.name, class_name)
         self.__doc__ = kwargs.get('doc', kwargs.get('description',
                                                     'TANGO attribute'))
         if 'dtype' in kwargs:
@@ -838,13 +831,11 @@ class attribute(AttrData):
             dformat = kwargs.get('dformat')
             if inspect.isclass(dtype) and issubclass(dtype, enum.Enum):
                 if dformat and dformat != AttrDataFormat.SCALAR:
-                    raise TypeError("DevEnum types can only be scalar, not {0}."
-                                    .format(dformat))
+                    raise TypeError(f"DevEnum types can only be scalar, not {dformat}.")
                 enum_labels = kwargs.get('enum_labels')
                 if enum_labels:
-                    raise TypeError("For dtype of enum.Enum the enum_labels must not "
-                                    "be specified - dtype: {0}, enum_labels: {1}."
-                                    .format(dtype, enum_labels))
+                    raise TypeError(f"For dtype of enum.Enum the enum_labels must not "
+                                    f"be specified - dtype: {dtype}, enum_labels: {enum_labels}.")
                 kwargs['enum_labels'] = get_enum_labels(dtype)
                 dtype = CmdArgType.DevEnum
             kwargs['dtype'], kwargs['dformat'] = \
@@ -1003,7 +994,7 @@ class pipe(PipeData):
                         kwargs['doc'] = fget.__doc__
             kwargs['fget'] = fget
 
-        super(pipe, self).__init__(name, class_name)
+        super().__init__(name, class_name)
         self.__doc__ = kwargs.get('doc', kwargs.get('description',
                                                     'TANGO pipe'))
         self.build_from_dict(kwargs)
@@ -1046,9 +1037,9 @@ class pipe(PipeData):
 
 
 def __build_command_doc(f, name, dtype_in, doc_in, dtype_out, doc_out):
-    doc = "'{0}' TANGO command".format(name)
+    doc = f"'{name}' TANGO command"
     if dtype_in is not None:
-        arg_spec = inspect_getargspec(f)
+        arg_spec = getfullargspec(f)
         if len(arg_spec.args) > 1:
             # arg[0] should be self and arg[1] the command argument
             param_name = arg_spec.args[1]
@@ -1061,8 +1052,7 @@ def __build_command_doc(f, name, dtype_in, doc_in, dtype_out, doc_out):
             except:
                 pass
         msg = doc_in or '(not documented)'
-        doc += '\n\n:param {0}: {1}\n:type {0}: {2}'.format(
-            param_name, msg, dtype_in_str)
+        doc += f'\n\n:param {param_name}: {msg}\n:type {param_name}: {dtype_in_str}'
     if dtype_out is not None:
         dtype_out_str = str(dtype_out)
         if not isinstance(dtype_out, str):
@@ -1071,7 +1061,7 @@ def __build_command_doc(f, name, dtype_in, doc_in, dtype_out, doc_out):
             except:
                 pass
         msg = doc_out or '(not documented)'
-        doc += '\n\n:return: {0}\n:rtype: {1}'.format(msg, dtype_out_str)
+        doc += f'\n\n:return: {msg}\n:rtype: {dtype_out_str}'
     return doc
 
 
@@ -1188,7 +1178,7 @@ def command(f=None, dtype_in=None, dformat_in=None, doc_in="",
     return cmd
 
 
-class _BaseProperty(object):
+class _BaseProperty:
     def __init__(self, dtype, doc='', default_value=None, update_db=False):
         self.name = None
         dtype = from_typeformat_to_type(*_get_tango_type_format(dtype))
@@ -1242,7 +1232,7 @@ class device_property(_BaseProperty):
     """
     def __init__(self, dtype, doc='', mandatory=False,
                  default_value=None, update_db=False):
-        super(device_property, self).__init__(dtype, doc, default_value,
+        super().__init__(dtype, doc, default_value,
                                               update_db)
         self.mandatory = mandatory
         if mandatory and default_value is not None:
@@ -1364,8 +1354,8 @@ def _get_class_green_mode(classes, green_mode):
         green_modes.add(device_green_mode)
     if len(green_modes) > 1:
         raise ValueError(
-            "Devices with mixed green modes cannot be run in the same device "
-            "server process. Modes: {}. Classes: {}.".format(green_modes, classes)
+            f"Devices with mixed green modes cannot be run in the same device "
+            f"server process. Modes: {green_modes}. Classes: {classes}."
         )
     elif len(green_modes) == 0:
         raise ValueError("No device classes specified - cannot run device server " 

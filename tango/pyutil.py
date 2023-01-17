@@ -30,10 +30,7 @@ from .utils import document_static_method as __document_static_method
 from .utils import PyTangoHelpFormatter
 from .globals import class_list, cpp_class_list, get_constructed_classes
 
-try:
-    import collections.abc as collections_abc  # python 3.3+
-except ImportError:
-    import collections as collections_abc
+import collections.abc
 
 
 def __simplify_device_name(dev_name):
@@ -90,7 +87,7 @@ def __Util__create_device(self, klass_name, device_name, alias=None, cb=None):
                    device name (str). Default value is None meaning no callback
 
         Return     : None"""
-    if cb is not None and not isinstance(cb, collections_abc.Callable):
+    if cb is not None and not isinstance(cb, collections.abc.Callable):
         Except.throw_exception("PyAPI_InvalidParameter",
                                "The optional cb parameter must be a python callable",
                                "Util.create_device")
@@ -108,7 +105,7 @@ def __Util__create_device(self, klass_name, device_name, alias=None, cb=None):
     # 1 - Make sure device name doesn't exist already in the database
     if device_exists:
         Except.throw_exception("PyAPI_DeviceAlreadyDefined",
-                               "The device %s is already defined in the database" % device_name,
+                               f"The device {device_name} is already defined in the database",
                                "Util.create_device")
 
     # 2 - Make sure the device class is known
@@ -121,7 +118,7 @@ def __Util__create_device(self, klass_name, device_name, alias=None, cb=None):
             break
     if klass is None:
         Except.throw_exception("PyAPI_UnknownDeviceClass",
-                               "The device class %s could not be found" % klass_name,
+                               f"The device class {klass_name} could not be found",
                                "Util.create_device")
 
     # 3 - Create entry in the database (with alias if necessary)
@@ -183,11 +180,11 @@ def __Util__delete_device(self, klass_name, device_name):
     # 1 - Make sure device name exists in the database
     if not device_exists:
         Except.throw_exception("PyAPI_DeviceNotDefined",
-                               "The device %s is not defined in the database" % device_name,
+                               f"The device {device_name} is not defined in the database",
                                "Util.delete_device")
 
     # 2 - Make sure device name is defined in this server
-    class_device_name = "%s::%s" % (klass_name, device_name)
+    class_device_name = f"{klass_name}::{device_name}"
     ds = self.get_dserver_device()
     dev_names = ds.query_device()
     device_exists = False
@@ -199,7 +196,7 @@ def __Util__delete_device(self, klass_name, device_name):
             break
     if not device_exists:
         Except.throw_exception("PyAPI_DeviceNotDefinedInServer",
-                               "The device %s is not defined in this server" % class_device_name,
+                               f"The device {class_device_name} is not defined in this server",
                                "Util.delete_device")
 
     db.delete_device(device_name)
@@ -283,7 +280,7 @@ def parse_args(args):
     parsed_args = parser.parse_args(args[1:])
 
     if parsed_args.port and parsed_args.ORBendPoint is None:
-        parsed_args.ORBendPoint = 'giop:tcp:{:s}:{:s}'.format(parsed_args.host, parsed_args.port)
+        parsed_args.ORBendPoint = f'giop:tcp:{parsed_args.host:s}:{parsed_args.port:s}'
 
     if parsed_args.nodb and parsed_args.ORBendPoint is None:
         raise SystemExit('-nodb option should used with [-host] -port or -ORBendPoint options')
@@ -297,20 +294,20 @@ def parse_args(args):
 
     # -v4 has priority on -vvvv
     if verbose is not None:
-        args += ['-v{}'.format(verbose)]
+        args += [f'-v{verbose}']
     elif parsed_args.verbose is not None:
-        args += ['-v{}'.format(parsed_args.verbose)]
+        args += [f'-v{parsed_args.verbose}']
 
     # we add back only exist options
     for key, value in parsed_args.__dict__.items():
         if type(value) == bool:
             if value:
-                args += ["-{:s}".format(key)]
+                args += [f"-{key:s}"]
         elif value is not None:
             if key == 'file':
-                args += ["-{:s}={:s}".format(key, value)]
+                args += [f"-{key:s}={value:s}"]
             elif key not in ['host', 'port', 'verbose', 'instance_name', 'ORB_not_used']:
-                args += ["-{:s}".format(key), "{:s}".format(value)]
+                args += [f"-{key:s}", f"{value:s}"]
 
     return args
 
@@ -970,7 +967,7 @@ def __doc_EnsureOmniThread():
                 eid = dp.subscribe_event(
                     "double_scalar", tango.EventType.PERIODIC_EVENT, cb)
                 while running:
-                    print("num events stored {}".format(len(cb.get_events())))
+                    print(f"num events stored {len(cb.get_events())}")
                     sleep(1)
                 dp.unsubscribe_event(eid)
         

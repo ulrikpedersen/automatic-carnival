@@ -13,7 +13,6 @@
 This is an internal PyTango module.
 """
 
-from __future__ import print_function
 
 import copy
 import functools
@@ -84,14 +83,14 @@ def get_source_location():
 
 
 class LatestDeviceImpl(get_latest_device_class()):
-    __doc__ = """\
-    Latest implementation of the TANGO device base class (alias for {0}).
+    __doc__ = f"""\
+    Latest implementation of the TANGO device base class (alias for {get_latest_device_class().__name__}).
 
     It inherits from CORBA classes where all the network layer is implemented.
-    """.format(get_latest_device_class().__name__)
+    """
 
 
-class AttributeAlarm(object):
+class AttributeAlarm:
     """This class represents the python interface for the Tango IDL object
     AttributeAlarm."""
 
@@ -105,7 +104,7 @@ class AttributeAlarm(object):
         self.extensions = []
 
 
-class ChangeEventProp(object):
+class ChangeEventProp:
     """This class represents the python interface for the Tango IDL object
     ChangeEventProp."""
 
@@ -115,7 +114,7 @@ class ChangeEventProp(object):
         self.extensions = []
 
 
-class PeriodicEventProp(object):
+class PeriodicEventProp:
     """This class represents the python interface for the Tango IDL object
     PeriodicEventProp."""
 
@@ -124,7 +123,7 @@ class PeriodicEventProp(object):
         self.extensions = []
 
 
-class ArchiveEventProp(object):
+class ArchiveEventProp:
     """This class represents the python interface for the Tango IDL object
     ArchiveEventProp."""
 
@@ -135,7 +134,7 @@ class ArchiveEventProp(object):
         self.extensions = []
 
 
-class EventProperties(object):
+class EventProperties:
     """This class represents the python interface for the Tango IDL object
     EventProperties."""
 
@@ -145,7 +144,7 @@ class EventProperties(object):
         self.arch_event = ArchiveEventProp()
 
 
-class MultiAttrProp(object):
+class MultiAttrProp:
     """This class represents the python interface for the Tango IDL object
     MultiAttrProp."""
 
@@ -192,7 +191,7 @@ def _init_attr_config(attr_cfg):
     attr_cfg.extensions = []
 
 
-class AttributeConfig(object):
+class AttributeConfig:
     """This class represents the python interface for the Tango IDL object
     AttributeConfig."""
 
@@ -202,7 +201,7 @@ class AttributeConfig(object):
         self.max_alarm = ''
 
 
-class AttributeConfig_2(object):
+class AttributeConfig_2:
     """This class represents the python interface for the Tango IDL object
     AttributeConfig_2."""
 
@@ -213,7 +212,7 @@ class AttributeConfig_2(object):
         self.max_alarm = ''
 
 
-class AttributeConfig_3(object):
+class AttributeConfig_3:
     """This class represents the python interface for the Tango IDL object
     AttributeConfig_3."""
 
@@ -225,7 +224,7 @@ class AttributeConfig_3(object):
         self.sys_extensions = []
 
 
-class AttributeConfig_5(object):
+class AttributeConfig_5:
     """This class represents the python interface for the Tango IDL object
     AttributeConfig_5."""
 
@@ -292,7 +291,7 @@ def __Attribute__set_properties(self, attr_cfg, dev=None):
 
 
 def __Attribute__str(self):
-    return '%s(%s)' % (self.__class__.__name__, self.get_name())
+    return f'{self.__class__.__name__}({self.get_name()})'
 
 
 def __init_Attribute():
@@ -394,7 +393,7 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
 
     att_name = attr.get_name()
 
-    r_name = 'read_%s' % att_name
+    r_name = f'read_{att_name}'
     if r_meth is None:
         if attr_data is not None:
             r_name = attr_data.read_method_name
@@ -411,7 +410,7 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
                                ):
         _ensure_user_method_can_be_called(self, r_name, r_meth)
 
-    w_name = 'write_%s' % att_name
+    w_name = f'write_{att_name}'
     if w_meth is None:
         if attr_data is not None:
             w_name = attr_data.write_method_name
@@ -428,7 +427,7 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
                                ):
         _ensure_user_method_can_be_called(self, w_name, w_meth)
 
-    ia_name = 'is_%s_allowed' % att_name
+    ia_name = f'is_{att_name}_allowed'
     if is_allo_meth is None:
         if attr_data is not None:
             ia_name = attr_data.is_allowed_name
@@ -456,12 +455,12 @@ def _ensure_user_method_can_be_called(obj, name, user_method):
             bound_user_method = getattr(obj, name, None)
             if bound_user_method is None:
                 raise ValueError(
-                    "User-supplied method for attributes must be "
-                    "available as a bound method on the Device class. "
-                    "When accessing Tango attributes, the PyTango extension "
-                    "code, PyAttr::read, uses the name of the method "
-                    "to get a reference to it from the Device object. "
-                    "{} was not found on {}.".format(name, obj)
+                    f"User-supplied method for attributes must be "
+                    f"available as a bound method on the Device class. "
+                    f"When accessing Tango attributes, the PyTango extension "
+                    f"code, PyAttr::read, uses the name of the method "
+                    f"to get a reference to it from the Device object. "
+                    f"{name} was not found on {obj}."
                 )
             user_method = bound_user_method
 
@@ -680,7 +679,7 @@ def __DeviceImpl__fatal(self):
 
 
 def __DeviceImpl__str(self):
-    return '%s(%s)' % (self.__class__.__name__, self.get_name())
+    return f'{self.__class__.__name__}({self.get_name()})'
 
 
 def __init_DeviceImpl():
@@ -847,7 +846,7 @@ def __UserDefaultAttrProp_set_enum_labels(self, enum_labels):
 
 
 def __Attr__str(self):
-    return '%s(%s)' % (self.__class__.__name__, self.get_name())
+    return f'{self.__class__.__name__}({self.get_name()})'
 
 
 def __init_Attr():

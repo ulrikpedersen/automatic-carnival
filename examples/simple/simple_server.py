@@ -33,7 +33,7 @@ class MyClass:
     def func5(self, nap_time):
         import time
         time.sleep(nap_time)
-        return "Finished sleep for {0}s".format(nap_time)
+        return f"Finished sleep for {nap_time}s"
 
 
 my_object = MyClass()

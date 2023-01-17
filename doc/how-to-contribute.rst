@@ -30,13 +30,13 @@ It also uses autodoc_ importing docstrings from tango package.
 Theme is not important, a theme prepared for Tango Community can be also used.
 
 To test the docs locally requires Python >= 3.6:
-      - ``$ python -m pip install six numpy sphinx sphinx_rtd_theme``
+      - ``$ python -m pip install numpy sphinx sphinx_rtd_theme``
       - ``$ python -m sphinx doc build/sphinx``
 
 To test the docs locally in a Sphinx Docker container:
       - ``(host) $ cd /path/to/pytango``
       - ``(host) $ docker run --rm -ti -v $PWD:/docs sphinxdoc/sphinx bash``
-      - ``(container) $ python -m pip install six numpy sphinx_rtd_theme``
+      - ``(container) $ python -m pip install numpy sphinx_rtd_theme``
       - ``(container) $ python -m sphinx doc build/sphinx``
 
 After building, open the ``build/doc/index.html`` page in your browser.

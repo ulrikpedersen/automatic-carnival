@@ -15,11 +15,7 @@ import time
 import textwrap
 import threading
 import enum
-import six
-try:
-    import collections.abc as collections_abc  # python 3.3+
-except ImportError:
-    import collections as collections_abc
+import collections.abc
 
 from ._tango import StdStringVector, DbData, DbDatum, AttributeInfo
 from ._tango import AttributeInfoEx, AttributeInfoList, AttributeInfoListEx
@@ -104,7 +100,7 @@ def get_device_proxy(*args, **kwargs):
     return DeviceProxy(*args, **kwargs)
 
 
-class __TangoInfo(object):
+class __TangoInfo:
     """Helper class for copying DeviceInfo, or when DeviceProxy.info() fails."""
 
     def __init__(
@@ -167,7 +163,7 @@ def __check_read_pipe(dev_pipe):
 def __init_device_proxy_internals(proxy):
     if proxy.__dict__.get('_initialized', False):
         return
-    executors = dict((key, None) for key in GreenMode.names)
+    executors = {key: None for key in GreenMode.names}
     proxy.__dict__['_green_mode'] = None
     proxy.__dict__['_initialized'] = True
     proxy.__dict__['_executors'] = executors
@@ -247,9 +243,9 @@ def __DeviceProxy__refresh_cmd_cache(self):
     cmd_cache = {}
     for cmd in cmd_list:
         n = cmd.cmd_name.lower()
-        doc = "%s(%s) -> %s\n\n" % (cmd.cmd_name, cmd.in_type, cmd.out_type)
-        doc += " -  in (%s): %s\n" % (cmd.in_type, cmd.in_type_desc)
-        doc += " - out (%s): %s\n" % (cmd.out_type, cmd.out_type_desc)
+        doc = f"{cmd.cmd_name}({cmd.in_type}) -> {cmd.out_type}\n\n"
+        doc += f" -  in ({cmd.in_type}): {cmd.in_type_desc}\n"
+        doc += f" - out ({cmd.out_type}): {cmd.out_type_desc}\n"
         cmd_cache[n] = cmd, doc
     self.__dict__['__cmd_cache'] = cmd_cache
 
@@ -301,8 +297,8 @@ def __set_attribute_value(self, name, value):
                 value = enum_class[value]
             except KeyError:
                 raise AttributeError(
-                    'Invalid enum value %s for attribute %s. Valid ones: %s' %
-                    (value, name, [m for m in enum_class.__members__.keys()]))
+                    f'Invalid enum value {value} for attribute {name}. '
+                    f'Valid ones: {[m for m in enum_class.__members__.keys()]}')
     return self.write_attribute(name, value)
 
 
@@ -313,7 +309,7 @@ def __DeviceProxy__getattr(self, name):
         # ticket http://ipython.scipy.org/ipython/ipython/ticket/229 someday
         # and the ugly trait_names could be removed.
         if name.startswith("_") or name == 'trait_names':
-            six.raise_from(AttributeError(name), cause)
+            raise AttributeError(name) from cause
 
         name_l = name.lower()
 
@@ -357,7 +353,7 @@ def __DeviceProxy__getattr(self, name):
         if name_l in self.__get_pipe_cache():
             return self.read_pipe(name)
 
-        six.raise_from(AttributeError(name), cause)
+        raise AttributeError(name) from cause
     finally:
         del cause
 
@@ -368,10 +364,7 @@ def __DeviceProxy__setattr(self, name, value):
         name_l = name.lower()
 
         if name_l in self.__get_cmd_cache():
-            six.raise_from(
-                TypeError('Cannot set the value of a command'),
-                cause,
-            )
+            raise TypeError('Cannot set the value of a command') from cause
 
         if name_l in self.__get_attr_cache():
             return __set_attribute_value(self, name, value)
@@ -386,7 +379,7 @@ def __DeviceProxy__setattr(self, name, value):
                 cause = e
 
         if name_l in self.__get_cmd_cache():
-            six.raise_from(TypeError('Cannot set the value of a command'), cause)
+            raise TypeError('Cannot set the value of a command') from cause
 
         try:
             self.__refresh_attr_cache()
@@ -411,11 +404,10 @@ def __DeviceProxy__setattr(self, name, value):
                 return super(DeviceProxy, self).__setattr__(name, value)
             else:
                 raise AttributeError(
-                    "Tried to set non-existent attr {!r} to {!r}".format(
-                        name, value)
+                    f"Tried to set non-existent attr {repr(name)} to {repr(value)}"
                 )
         except Exception as e:
-            six.raise_from(e, cause)
+            raise e from cause
     finally:
         del cause
 
@@ -503,7 +495,7 @@ def __DeviceProxy__read_attributes_asynch(self, attr_names, cb=None,
         return self.__read_attributes_asynch(attr_names)
 
     cb2 = __CallBackAutoDie()
-    if isinstance(cb, collections_abc.Callable):
+    if isinstance(cb, collections.abc.Callable):
         cb2.attr_read = cb
     else:
         cb2.attr_read = cb.attr_read
@@ -574,7 +566,7 @@ def __DeviceProxy__write_attributes_asynch(self, attr_values, cb=None):
         return self.__write_attributes_asynch(attr_values)
 
     cb2 = __CallBackAutoDie()
-    if isinstance(cb, collections_abc.Callable):
+    if isinstance(cb, collections.abc.Callable):
         cb2.attr_write = cb
     else:
         cb2.attr_write = cb.attr_write
@@ -650,7 +642,7 @@ def __DeviceProxy__get_property(self, propname, value=None):
         new_value.append(propname)
         self._get_property(new_value)
         return DbData_2_dict(new_value)
-    elif isinstance(propname, collections_abc.Sequence):
+    elif isinstance(propname, collections.abc.Sequence):
         if isinstance(propname, DbData):
             self._get_property(propname)
             return DbData_2_dict(propname)
@@ -741,7 +733,7 @@ def __DeviceProxy__delete_property(self, value):
     elif isinstance(value, DbDatum):
         new_value = DbData()
         new_value.append(value)
-    elif isinstance(value, collections_abc.Sequence):
+    elif isinstance(value, collections.abc.Sequence):
         new_value = DbData()
         for e in value:
             if isinstance(e, DbDatum):
@@ -749,7 +741,7 @@ def __DeviceProxy__delete_property(self, value):
             else:
                 e = ensure_binary(e, 'latin-1')
                 new_value.append(DbDatum(e))
-    elif isinstance(value, collections_abc.Mapping):
+    elif isinstance(value, collections.abc.Mapping):
         new_value = DbData()
         for k, v in value.items():
             if isinstance(v, DbDatum):
@@ -799,7 +791,7 @@ def __DeviceProxy__get_property_list(self, filter, array=None):
     if isinstance(array, StdStringVector):
         self._get_property_list(filter, array)
         return array
-    elif isinstance(array, collections_abc.Sequence):
+    elif isinstance(array, collections.abc.Sequence):
         new_array = StdStringVector()
         self._get_property_list(filter, new_array)
         StdStringVector_2_seq(new_array, array)
@@ -842,7 +834,7 @@ def __DeviceProxy__get_attribute_config(self, value):
     """
     if isinstance(value, StdStringVector) or is_pure_str(value):
         return self._get_attribute_config(value)
-    elif isinstance(value, collections_abc.Sequence):
+    elif isinstance(value, collections.abc.Sequence):
         v = seq_2_StdStringVector(value)
         return self._get_attribute_config(v)
 
@@ -884,7 +876,7 @@ def __DeviceProxy__get_attribute_config_ex(self, value):
         v = StdStringVector()
         v.append(value)
         return self._get_attribute_config_ex(v)
-    elif isinstance(value, collections_abc.Sequence):
+    elif isinstance(value, collections.abc.Sequence):
         v = seq_2_StdStringVector(value)
         return self._get_attribute_config_ex(v)
 
@@ -932,7 +924,7 @@ def __DeviceProxy__get_command_config(self, value=(constants.AllCmd,)):
     """
     if isinstance(value, StdStringVector) or is_pure_str(value):
         return self._get_command_config(value)
-    elif isinstance(value, collections_abc.Sequence):
+    elif isinstance(value, collections.abc.Sequence):
         v = seq_2_StdStringVector(value)
         return self._get_command_config(v)
 
@@ -987,7 +979,7 @@ def __DeviceProxy__get_pipe_config(self, value=None):
         value = [constants.AllPipe]
     if isinstance(value, StdStringVector) or is_pure_str(value):
         return self._get_pipe_config(value)
-    elif isinstance(value, collections_abc.Sequence):
+    elif isinstance(value, collections.abc.Sequence):
         v = seq_2_StdStringVector(value)
         return self._get_pipe_config(v)
 
@@ -1056,7 +1048,7 @@ def __DeviceProxy__set_attribute_config(self, value):
         v = value
     elif isinstance(value, AttributeInfoListEx):
         v = value
-    elif isinstance(value, collections_abc.Sequence):
+    elif isinstance(value, collections.abc.Sequence):
         if not len(value):
             return
         if isinstance(value[0], AttributeInfoEx):
@@ -1108,7 +1100,7 @@ def __DeviceProxy__set_pipe_config(self, value):
         v.append(value)
     elif isinstance(value, PipeInfoList):
         v = value
-    elif isinstance(value, collections_abc.Sequence):
+    elif isinstance(value, collections.abc.Sequence):
         if not len(value):
             return
         if isinstance(value[0], PipeInfo):
@@ -1255,12 +1247,12 @@ def __DeviceProxy__subscribe_event_global(self, event_type, cb,
     if event_type != EventType.INTERFACE_CHANGE_EVENT:
         raise TypeError("This method is only for Interface Change Events")
     else:
-        if isinstance(cb, collections_abc.Callable):
+        if isinstance(cb, collections.abc.Callable):
             cbfn = __CallBackPushEvent()
             cbfn.push_event = green_callback(
                 cb, obj=self, green_mode=green_mode)
         elif hasattr(cb, "push_event") and isinstance(
-                cb.push_event, collections_abc.Callable):
+                cb.push_event, collections.abc.Callable):
             cbfn = __CallBackPushEvent()
             cbfn.push_event = green_callback(
                 cb.push_event, obj=self, green_mode=green_mode)
@@ -1276,11 +1268,10 @@ def __DeviceProxy__subscribe_event_global(self, event_type, cb,
             evt_data = se.get(event_id)
             if evt_data is not None:
                 # Raise exception
-                desc = textwrap.dedent("""\
+                desc = textwrap.dedent(f"""\
                     Internal PyTango error:
-                    %s.subscribe_event(%s) already has key %d assigned to (%s, %s)
+                    {self}.subscribe_event({event_type}) already has key {event_id} assigned to ({evt_data[2]}, {evt_data[1]})
                     Please report error to PyTango""")
-                desc %= self, event_type, event_id, evt_data[2], evt_data[1]
                 Except.throw_exception(
                     "Py_InternalError", desc, "DeviceProxy.subscribe_event")
         se[event_id] = (cbfn, event_type, "dummy")
@@ -1293,12 +1284,12 @@ def __DeviceProxy__subscribe_event_attrib(self, attr_name, event_type,
                                           extract_as=ExtractAs.Numpy,
                                           green_mode=None):
 
-    if isinstance(cb_or_queuesize, collections_abc.Callable):
+    if isinstance(cb_or_queuesize, collections.abc.Callable):
         cb = __CallBackPushEvent()
         cb.push_event = green_callback(
             cb_or_queuesize, obj=self, green_mode=green_mode)
     elif hasattr(cb_or_queuesize, "push_event") and \
-            isinstance(cb_or_queuesize.push_event, collections_abc.Callable):
+            isinstance(cb_or_queuesize.push_event, collections.abc.Callable):
         cb = __CallBackPushEvent()
         cb.push_event = green_callback(
             cb_or_queuesize.push_event, obj=self, green_mode=green_mode)
@@ -1319,11 +1310,10 @@ def __DeviceProxy__subscribe_event_attrib(self, attr_name, event_type,
             se[event_id] = (cb, event_type, attr_name)
             return event_id
         # Raise exception
-        desc = textwrap.dedent("""\
+        desc = textwrap.dedent(f"""\
             Internal PyTango error:
-            %s.subscribe_event(%s, %s) already has key %d assigned to (%s, %s)
+            {self}.subscribe_event({attr_name}, {event_type}) already has key {event_id} assigned to ({evt_data[2]}, {evt_data[1]})
             Please report error to PyTango""")
-        desc %= self, attr_name, event_type, event_id, evt_data[2], evt_data[1]
         Except.throw_exception(
             "Py_InternalError", desc, "DeviceProxy.subscribe_event")
 
@@ -1415,7 +1405,7 @@ def __DeviceProxy__get_events(self, event_id, callback=None, extract_as=ExtractA
     if callback is None:
         queuesize, event_type, attr_name = self.__get_event_map().get(event_id, (None, None, None))
         if event_type is None:
-            raise ValueError("Invalid event_id. You are not subscribed to event %s." % str(event_id))
+            raise ValueError(f"Invalid event_id. You are not subscribed to event {str(event_id)}.")
         if event_type in (EventType.CHANGE_EVENT,
                           EventType.QUALITY_EVENT,
                           EventType.PERIODIC_EVENT,
@@ -1431,11 +1421,11 @@ def __DeviceProxy__get_events(self, event_id, callback=None, extract_as=ExtractA
         else:
             assert (False)
             raise ValueError("Unknown event_type: " + str(event_type))
-    elif isinstance(callback, collections_abc.Callable):
+    elif isinstance(callback, collections.abc.Callable):
         cb = __CallBackPushEvent()
         cb.push_event = callback
         return self.__get_callback_events(event_id, cb, extract_as)
-    elif hasattr(callback, 'push_event') and isinstance(callback.push_event, collections_abc.Callable):
+    elif hasattr(callback, 'push_event') and isinstance(callback.push_event, collections.abc.Callable):
         cb = __CallBackPushEvent()
         cb.push_event = callback.push_event
         return self.__get_callback_events(event_id, cb, extract_as)
@@ -1458,7 +1448,7 @@ def __DeviceProxy___get_info_(self):
 
 def __DeviceProxy__str(self):
     info = self._get_info_()
-    return "%s(%s)" % (info.dev_class, self.dev_name())
+    return f"{info.dev_class}({self.dev_name()})"
 
 
 def __DeviceProxy__read_pipe(self, pipe_name, extract_as=ExtractAs.Numpy):
@@ -1496,8 +1486,8 @@ def __get_pipe_type_numpy_support(obj):
     except AttributeError:
         return __get_pipe_type_simple(obj)
     if ndim > 1:
-        raise TypeError('cannot translate numpy array with {0} '
-                        'dimensions to tango type'.format(obj.ndim))
+        raise TypeError(f'cannot translate numpy array with {obj.ndim} '
+                        f'dimensions to tango type')
     tg_type = TO_TANGO_TYPE[dtype]
     if ndim > 0:
         tg_type = scalar_to_array_type(dtype)

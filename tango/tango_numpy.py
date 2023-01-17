@@ -21,10 +21,7 @@ from ._tango import Except, Attribute, AttributeInfo, constants
 from ._tango import CmdArgType as ArgType
 
 from .attribute_proxy import AttributeProxy
-try:
-    import collections.abc as collections_abc  # python 3.3+
-except ImportError:
-    import collections as collections_abc
+import collections.abc
 
 
 def _numpy_invalid(*args, **kwds):
@@ -42,7 +39,7 @@ def _define_numpy():
     try:
         import numpy
 
-        class NumpyType(object):
+        class NumpyType:
 
             DevShort = numpy.int16
             DevLong = numpy.int32
@@ -105,7 +102,7 @@ def _define_numpy():
                         - sequence:
                 """
                 np_type = NumpyType.tango_to_numpy(tg_type)
-                if isinstance(dim_x, collections_abc.Sequence):
+                if isinstance(dim_x, collections.abc.Sequence):
                     return numpy.array(dim_x, dtype=np_type)
                 else:
                     return numpy.ndarray(shape=(dim_x,), dtype=np_type)

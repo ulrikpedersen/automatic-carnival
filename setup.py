@@ -183,11 +183,11 @@ def add_lib_boost(dirs):
             # wasn't specified as an environment var, then try the
             # various options, being as Python version specific as possible
             suffixes = [
-                "{v[0]}{v[1]}".format(v=PYTHON_VERSION),
-                "-{v[0]}{v[1]}".format(v=PYTHON_VERSION),
-                "-py{v[0]}{v[1]}".format(v=PYTHON_VERSION),
-                "{v[0]}-py{v[0]}{v[1]}".format(v=PYTHON_VERSION),
-                "{v[0]}".format(v=PYTHON_VERSION),
+                f"{sys.version_info.major}{sys.version_info.minor}",
+                f"-{sys.version_info.major}{sys.version_info.minor}",
+                f"-py{sys.version_info.major}{sys.version_info.minor}",
+                f"{sys.version_info.major}-py{sys.version_info.major}{sys.version_info.minor}",
+                f"{sys.version_info.major}",
                 "",
             ]
             for suffix in suffixes:
@@ -253,13 +253,13 @@ class build(dftbuild):
         dbg = so + ".dbg"
         try:
             os.chdir(d)
-            stripped_cmd = 'file %s | grep -q "not stripped" || exit 1' % so
+            stripped_cmd = f'file {so} | grep -q "not stripped" || exit 1'
             not_stripped = os.system(stripped_cmd) == 0
             if not_stripped:
-                os.system("objcopy --only-keep-debug %s %s" % (so, dbg))
-                os.system("objcopy --strip-debug --strip-unneeded %s" % (so,))
-                os.system("objcopy --add-gnu-debuglink=%s %s" % (dbg, so))
-                os.system("chmod -x %s" % (dbg,))
+                os.system(f"objcopy --only-keep-debug {so} {dbg}")
+                os.system(f"objcopy --strip-debug --strip-unneeded {so}")
+                os.system(f"objcopy --add-gnu-debuglink={dbg} {so}")
+                os.system(f"chmod -x {dbg}")
         finally:
             os.chdir(orig_dir)
 
@@ -320,7 +320,7 @@ class check_tests_errors(Command):
             raise Exception("Provided summary.json file does not exists.")
 
     def run(self):
-        with open(self.summary_file, "r") as f:
+        with open(self.summary_file) as f:
             summary = json.load(f)
             for test in summary:
                 if test["outcome"] in ["failed", "Failed", "fail", "error", "Error"]:
@@ -380,7 +380,6 @@ def setup_args():
 
     install_requires = [
         "numpy (>=1.13.3)",
-        "six (>=1.10)",
         "packaging",
     ]
 

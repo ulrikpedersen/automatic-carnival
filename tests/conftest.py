@@ -23,7 +23,7 @@ def pytest_sessionfinish(session):
                 f.write(
                     "pytest -c pytest_empty_config.txt -v "
                 )  # this empty file is created by appveyor
-                f.write('"{}"\n'.format(item.nodeid))
+                f.write(f'"{item.nodeid}"\n')
                 # Abort if pytest could not execute properly
                 # From: https://docs.pytest.org/en/7.1.x/reference/exit-codes.html
                 #   Exit code 0: All tests were collected and passed successfully

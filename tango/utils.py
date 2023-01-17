@@ -13,22 +13,16 @@
 This is an internal PyTango module.
 """
 
-from __future__ import with_statement
-from __future__ import print_function
 
 import os
 import sys
-import six
 import types
 import numbers
 import enum
 
 from argparse import HelpFormatter
 
-try:
-    import collections.abc as collections_abc  # python 3.3+
-except ImportError:
-    import collections as collections_abc
+import collections.abc
 
 from ._tango import StdStringVector, StdDoubleVector, \
     DbData, DbDatum, DbDevInfos, DbDevExportInfos, CmdArgType, AttrDataFormat, \
@@ -239,25 +233,21 @@ def __requires(package_name, min_version=None, conflicts=(),
             package = __import(package_name)
             curr_version = LooseVersion(package.__version__)
         except ImportError:
-            msg = "Could not find package {0} required by {1}".format(
-                package_name, software_name)
+            msg = f"Could not find package {package_name} required by {software_name}"
             raise Exception(msg)
         except:
-            msg = "Error importing package {0} required by {1}".format(
-                package_name, software_name)
+            msg = f"Error importing package {package_name} required by {software_name}"
             raise Exception(msg)
 
     if min_version is not None:
         min_version = LooseVersion(min_version)
         if min_version > curr_version:
-            msg = "{0} requires {1} {2} but {3} installed".format(
-                software_name, package_name, min_version, curr_version)
+            msg = f"{software_name} requires {package_name} {min_version} but {curr_version} installed"
             raise Exception(msg)
 
     conflicts = map(LooseVersion, conflicts)
     if curr_version in conflicts:
-        msg = "{0} cannot run with {1} {2}".format(
-            software_name, package_name, curr_version)
+        msg = f"{software_name} cannot run with {package_name} {curr_version}"
         raise Exception(msg)
     return True
 
@@ -338,7 +328,7 @@ def get_tango_device_classes():
         __device_classes = [_tango.DeviceImpl]
         i = 2
         while True:
-            dc = "Device_{0}Impl".format(i)
+            dc = f"Device_{i}Impl"
             try:
                 __device_classes.append(getattr(_tango, dc))
                 i = i + 1
@@ -358,7 +348,7 @@ except NameError:
 
 __int_klasses = int,
 __number_klasses = numbers.Number,
-__seq_klasses = collections_abc.Sequence, bytearray, StdStringVector
+__seq_klasses = collections.abc.Sequence, bytearray, StdStringVector
 
 __use_unicode = False
 try:
@@ -411,8 +401,8 @@ def __get_tango_type_numpy_support(obj):
     try:
         ndim, dtype = obj.ndim, str(obj.dtype)
         if ndim > 2:
-            raise TypeError('cannot translate numpy array with {0} '
-                            'dimensions to tango type'.format(obj.ndim))
+            raise TypeError(f'cannot translate numpy array with {obj.ndim} '
+                            f'dimensions to tango type')
         return TO_TANGO_TYPE[dtype], AttrDataFormat(ndim)
     except AttributeError:
         return __get_tango_type(obj)
@@ -445,27 +435,24 @@ def get_enum_labels(enum_cls):
     :raises EnumTypeError: in case the given class is invalid
     """
     if not issubclass(enum_cls, enum.Enum):
-        raise EnumTypeError("Input class '%s' must be derived from enum.Enum"
-                            % enum_cls)
+        raise EnumTypeError(f"Input class '{enum_cls}' must be derived from enum.Enum")
 
     # Check there are no duplicate labels
     try:
         enum.unique(enum_cls)
     except ValueError as exc:
-        raise EnumTypeError("Input class '%s' must be unique - %s"
-                            % (enum_cls, exc))
+        raise EnumTypeError(f"Input class '{enum_cls}' must be unique - {exc}")
 
     # Check the values start at 0, and increment by 1, since that is
     # assumed by tango's DEV_ENUM implementation.
     values = [member.value for member in enum_cls]
     if not values:
-        raise EnumTypeError("Input class '%s' has no members!" % enum_cls)
+        raise EnumTypeError(f"Input class '{enum_cls}' has no members!")
     expected_value = 0
     for value in values:
         if value != expected_value:
-            raise EnumTypeError("Enum values for '%s' must start at 0 and "
-                                "increment by 1.  Values: %s"
-                                % (enum_cls, values))
+            raise EnumTypeError(f"Enum values for '{enum_cls}' must start at 0 and "
+                                f"increment by 1.  Values: {values}")
         expected_value += 1
 
     return [member.name for member in enum_cls]
@@ -876,8 +863,7 @@ def DbData_2_dict(db_data, d=None):
         d = {}
     if not isinstance(db_data, DbData):
         raise TypeError(
-            'db_data must be a tango.DbData. A %s found instead' %
-            type(db_data))
+            f'db_data must be a tango.DbData. A {type(db_data)} found instead')
     for db_datum in db_data:
         d[db_datum.name] = db_datum.value_string
     return d
@@ -996,7 +982,7 @@ def scalar_to_array_type(tg_type):
     try:
         return _scalar_to_array_type[tg_type]
     except KeyError:
-        raise ValueError("Invalid tango scalar type: {0}".format(tg_type))
+        raise ValueError(f"Invalid tango scalar type: {tg_type}")
 
 
 def str_2_obj(obj_str, tg_type=None):
@@ -1061,7 +1047,7 @@ def obj_2_property(value):
         value = new_value
     elif is_non_str_seq(value):
         value = seq_2_DbData(value)
-    elif isinstance(value, collections_abc.Mapping):
+    elif isinstance(value, collections.abc.Mapping):
         new_value = DbData()
         for k, v in value.items():
             if isinstance(v, DbDatum):
@@ -1107,7 +1093,7 @@ def document_method(klass, method_name, d, add=True):
     if add:
         cpp_doc = meth.__doc__
         if cpp_doc:
-            func.__doc__ = "%s\n%s" % (d, cpp_doc)
+            func.__doc__ = f"{d}\n{cpp_doc}"
             return
     func.__doc__ = d
 
@@ -1123,7 +1109,7 @@ def document_static_method(klass, method_name, d, add=True):
     if add:
         cpp_doc = meth.__doc__
         if cpp_doc:
-            meth.__doc__ = "%s\n%s" % (d, cpp_doc)
+            meth.__doc__ = f"{d}\n{cpp_doc}"
             return
     meth.__doc__ = d
 
@@ -1165,9 +1151,8 @@ class CaselessList(list):
         for entry in inlist:
             if not isinstance(entry, str):
                 raise TypeError(
-                    'Members of this object must be strings. '
-                    'You supplied \"%s\" which is \"%s\"' %
-                    (entry, type(entry)))
+                    f'Members of this object must be strings. '
+                    f'You supplied "{entry}" which is "{type(entry)}"')
             self.append(entry)
 
     def findentry(self, item):
@@ -1175,8 +1160,7 @@ class CaselessList(list):
         It returns None or the entry."""
         if not isinstance(item, str):
             raise TypeError(
-                'Members of this object must be strings. '
-                'You supplied \"%s\"' % type(item))
+                f'Members of this object must be strings. You supplied "{type(item)}"')
         for entry in self:
             if item.lower() == entry.lower():
                 return entry
@@ -1213,8 +1197,7 @@ class CaselessList(list):
         """Adds an item to the list and checks it's a string."""
         if not isinstance(item, str):
             raise TypeError(
-                'Members of this object must be strings. '
-                'You supplied \"%s\"' % type(item))
+                f'Members of this object must be strings. You supplied "{type(item)}"')
         list.append(self, item)
 
     def extend(self, item):
@@ -1222,13 +1205,12 @@ class CaselessList(list):
         a string."""
         if not isinstance(item, list):
             raise TypeError(
-                'You can only extend lists with lists. '
-                'You supplied \"%s\"' % type(item))
+                f'You can only extend lists with lists. You supplied "{type(item)}"')
         for entry in item:
             if not isinstance(entry, str):
                 raise TypeError(
-                    'Members of this object must be strings. '
-                    'You supplied \"%s\"' % type(entry))
+                    f'Members of this object must be strings. '
+                    f'You supplied "{type(entry)}"')
             list.append(self, entry)
 
     def count(self, item):
@@ -1255,8 +1237,7 @@ class CaselessList(list):
         maxindex = min(len(self), maxindex)
         if not isinstance(item, str):
             raise TypeError(
-                'Members of this object must be strings. '
-                'You supplied \"%s\"' % type(item))
+                f'Members of this object must be strings. You supplied "{type(item)}"')
         index = minindex
         while index < maxindex:
             index += 1
@@ -1269,8 +1250,7 @@ class CaselessList(list):
         Raises TypeError if x isn't a string."""
         if not isinstance(x, str):
             raise TypeError(
-                'Members of this object must be strings. '
-                'You supplied \"%s\"' % type(x))
+                f'Members of this object must be strings. You supplied "{type(x)}"')
         list.insert(self, i, x)
 
     def __setitem__(self, index, value):
@@ -1284,8 +1264,8 @@ class CaselessList(list):
         if isinstance(index, int):
             if not isinstance(value, str):
                 raise TypeError(
-                    'Members of this object must be strings. '
-                    'You supplied \"%s\"' % type(value))
+                    f'Members of this object must be strings. '
+                    f'You supplied "{type(value)}"')
             list.__setitem__(self, index, value)
         elif isinstance(index, slice):
             if not hasattr(value, '__len__'):
@@ -1294,8 +1274,8 @@ class CaselessList(list):
             for entry in value:
                 if not isinstance(entry, str):
                     raise TypeError(
-                        'Members of this object must be strings. '
-                        'You supplied \"%s\"' % type(entry))
+                        f'Members of this object must be strings. '
+                        f'You supplied "{type(entry)}"')
             list.__setitem__(self, index, value)
         else:
             raise TypeError('Indexes must be integers or slice objects.')
@@ -1305,8 +1285,8 @@ class CaselessList(list):
         for entry in sequence:
             if not isinstance(entry, str):
                 raise TypeError(
-                    'Members of this object must be strings. '
-                    'You supplied \"%s\"' % type(entry))
+                    f'Members of this object must be strings. '
+                    f'You supplied "{type(entry)}"')
         list.__setslice__(self, i, j, sequence)
 
     def __getslice__(self, i, j):
@@ -1482,7 +1462,7 @@ def _notifd2db_real_db(ior_string, host=None, out=sys.stdout):
               "to TANGO database", file=out)
 
 
-class EventCallback(object):
+class EventCallback:
     """
     Useful event callback for test purposes
 
@@ -1526,8 +1506,7 @@ class EventCallback(object):
         try:
             self._push_event(evt)
         except Exception as e:
-            print("Unexpected error in callback for %s: %s"
-                  % (str(evt), str(e)), file=self._fd)
+            print(f"Unexpected error in callback for {evt}: {e}", file=self._fd)
 
     def _push_event(self, evt):
         """Internal usage only"""
@@ -1557,7 +1536,7 @@ class EventCallback(object):
         try:
             value = self._get_value(evt)
         except Exception as e:
-            value = "Unexpected exception in getting event value: %s" % str(e)
+            value = f"Unexpected exception in getting event value: {e}"
         d = {"date": date, "reception_date": reception_date,
              "type": evt_type, "dev_name": dev_name, "name": attr_name,
              "value": value}
@@ -1582,14 +1561,13 @@ class EventCallback(object):
         """Internal usage only"""
         if evt.err:
             e = evt.errors[0]
-            return "[%s] %s" % (e.reason, e.desc)
+            return f"[{e.reason}] {e.desc}"
 
         if isinstance(evt, EventData):
-            return "[%s] %s" % (
-                evt.attr_value.quality, str(evt.attr_value.value))
+            return f"[{evt.attr_value.quality}] {evt.attr_value.value}"
         elif isinstance(evt, AttrConfEventData):
             cfg = evt.attr_conf
-            return "label='%s'; unit='%s'" % (cfg.label, cfg.unit)
+            return f"label='{cfg.label}'; unit='{cfg.unit}'"
         elif isinstance(evt, DataReadyEventData):
             return ""
         elif isinstance(evt, PipeEventData):
@@ -1684,23 +1662,22 @@ def from_version_str_to_int(version_str):
 def info():
     # Compile and Runtime are set by `tango.pytango_init.init`
     from .constants import Compile, Runtime
-    msg = """\
-PyTango {0.version_long} {0.version_info}
+    msg = f"""\
+PyTango {Release.version_long} {Release.version_info}
 PyTango compiled with:
-    Python : {1.PY_VERSION}
-    Numpy  : {1.NUMPY_VERSION}
-    Tango  : {1.TANGO_VERSION}
-    Boost  : {1.BOOST_VERSION}
+    Python : {Compile.PY_VERSION}
+    Numpy  : {Compile.NUMPY_VERSION}
+    Tango  : {Compile.TANGO_VERSION}
+    Boost  : {Compile.BOOST_VERSION}
 
 PyTango runtime is:
-    Python : {2.PY_VERSION}
-    Numpy  : {2.NUMPY_VERSION}
-    Tango  : {2.TANGO_VERSION}
+    Python : {Runtime.PY_VERSION}
+    Numpy  : {Runtime.NUMPY_VERSION}
+    Tango  : {Runtime.TANGO_VERSION}
 
 PyTango running on:
-{2.UNAME}
+{Runtime.UNAME}
 """
-    msg = msg.format(Release, Compile, Runtime)
     return msg
 
 
@@ -1708,10 +1685,10 @@ def get_attrs(obj):
     """Helper for dir2 implementation."""
     if not hasattr(obj, '__dict__'):
         return []  # slots only
-    proxy_type = types.MappingProxyType if six.PY3 else types.DictProxyType
+    proxy_type = types.MappingProxyType
     if not isinstance(obj.__dict__, (dict, proxy_type)):
         print(type(obj.__dict__), obj)
-        raise TypeError("%s.__dict__ is not a dictionary" % obj.__name__)
+        raise TypeError(f"{obj.__name__}.__dict__ is not a dictionary")
     return obj.__dict__.keys()
 
 
@@ -1741,44 +1718,35 @@ def dir2(obj):
     return list(attrs)
 
 
-if hasattr(six, "ensure_binary"):
-    ensure_binary = six.ensure_binary
-else:
-    # For older versions of six (<1.12), fallback to local
-    # implementation
+def ensure_binary(s, encoding='utf-8', errors='strict'):
+    """Coerce **s** to the bytes type.
+    For Python 3:
+        - `str` -> encoded to `bytes`
+        - `bytes` -> `bytes`
 
-    def ensure_binary(s, encoding='utf-8', errors='strict'):
-        """Coerce **s** to six.binary_type.
-        For Python 2:
-          - `unicode` -> encoded to `str`
-          - `str` -> `str`
-        For Python 3:
-          - `str` -> encoded to `bytes`
-          - `bytes` -> `bytes`
-
-        Code taken from https://github.com/benjaminp/six/blob/1.12.0/six.py#L853
-        """
-        if isinstance(s, six.text_type):
-            return s.encode(encoding, errors)
-        elif isinstance(s, six.binary_type):
-            return s
-        else:
-            raise TypeError("not expecting type '%s'" % type(s))
+    Code taken from https://github.com/benjaminp/six/blob/1.12.0/six.py#L853
+    """
+    if isinstance(s, str):
+        return s.encode(encoding, errors)
+    elif isinstance(s, bytes):
+        return s
+    else:
+        raise TypeError(f"not expecting type '{type(s)}'")
 
 
 class PyTangoHelpFormatter(HelpFormatter):
 
     def _format_usage(self, usage, actions, groups, prefix):
-        usage = super(PyTangoHelpFormatter, self)._format_usage(usage, actions, groups, prefix)
+        usage = super()._format_usage(usage, actions, groups, prefix)
         try:
             db = Database()
             servers_list = db.get_instance_name_list(self._prog)
             if servers_list.size():
-                usage += 'Instance names defined in database for server {}:\n'.format(self._prog)
+                usage += f'Instance names defined in database for server {self._prog}:\n'
                 for server in servers_list:
                     usage += '\t' + str(server) + '\n'
             else:
-                usage += 'Warning! No defined instance in database for server {} found!\n'.format(self._prog)
+                usage += f'Warning! No defined instance in database for server {self._prog} found!\n'
         except DevFailed:
             pass
 

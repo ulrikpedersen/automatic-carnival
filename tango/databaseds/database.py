@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """This class manage the TANGO database."""
 
@@ -137,7 +136,7 @@ def update_timing_stats(dev, time_before, time_after, cmd_name):
 
 
 def get_plugin(name):
-    fullname = '%s.%s' % (db_access.__package__, name)
+    fullname = f'{db_access.__package__}.{name}'
     return __import__(fullname, None, None, fullname)
 
 
@@ -1771,7 +1770,7 @@ def main(argv = None):
         except:
             port = 10000
 
-    options.argv += ["-ORBendPoint", "giop:tcp::{0}".format(port)]
+    options.argv += ["-ORBendPoint", f"giop:tcp::{port}"]
 
     log_fmt = '%(threadName)-14s %(levelname)-8s %(asctime)s %(name)s: %(message)s'
     if options.logging_level == 1:
@@ -1807,12 +1806,10 @@ def __monkey_patch_database_class():
         klass = get_constructed_class_by_class(klass)
 
         if info is None:
-            raise RuntimeError("Device class '%s' is not " \
-                               "registered" % klass_name)
+            raise RuntimeError(f"Device class '{klass_name}' is not registered")
 
         if klass is None:
-            raise RuntimeError("Device class '%s' as not been " \
-                               "constructed" % klass_name)
+            raise RuntimeError(f"Device class '{klass_name}' as not been constructed")
 
         deviceClassClass, deviceImplClass, deviceImplName = info
         deviceImplClass._device_class_instance = klass

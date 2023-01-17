@@ -20,7 +20,7 @@ class MyClass:
     def func(self, nap_time):
         import time
         time.sleep(nap_time)
-        return "Finished sleep for {0}s".format(nap_time)
+        return f"Finished sleep for {nap_time}s"
 
 server = Server("many", server_type="Server")
 

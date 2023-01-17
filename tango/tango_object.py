@@ -13,13 +13,9 @@
 
 import os
 import sys
-import six
 import logging
 import weakref
-try:
-    from inspect import getfullargspec as inspect_getargspec  # python 3.0+
-except ImportError:
-    from inspect import getargspec as inspect_getargspec
+from inspect import getfullargspec
 import inspect
 import functools
 
@@ -134,7 +130,7 @@ def create_tango_class(server, obj, tango_class_name=None, member_filter=None):
             in_type = CmdArgType.DevEncoded
             out_type = CmdArgType.DevEncoded
             try:
-                arg_spec = inspect_getargspec(member)
+                arg_spec = getfullargspec(member)
                 if not arg_spec.args:
                     in_type = CmdArgType.DevVoid
             except TypeError:
@@ -159,7 +155,6 @@ def create_tango_class(server, obj, tango_class_name=None, member_filter=None):
             if doc is None:
                 doc = ""
             cmd.__doc__ = doc
-            cmd = six.create_unbound_method(cmd, DeviceDispatcher)
             setattr(DeviceDispatcher, name, cmd)
             DeviceDispatcherClass.cmd_list[name] = \
                 [[in_type, doc], [out_type, ""]]
@@ -286,7 +281,7 @@ class Server:
         args = [self.server_type, self.__server_name]
         if self.__port is not None:
             args.extend(["-ORBendPoint",
-                         "giop:tcp::{0}".format(self.__port)])
+                         f"giop:tcp::{self.__port}"])
         return args
 
     def __exec_cb(self, cb):
@@ -311,7 +306,7 @@ class Server:
         server_registered = server_instance in db.get_server_list()
 
         if server_registered:
-            dserver_name = "dserver/{0}".format(server_instance)
+            dserver_name = f"dserver/{server_instance}"
             if db.import_device(dserver_name).exported:
                 import tango
                 dserver = tango.DeviceProxy(dserver_name)
@@ -435,7 +430,7 @@ class Server:
 
     @property
     def server_instance(self):
-        return "{0}/{1}".format(self.server_type, self.__server_name)
+        return f"{self.server_type}/{self.__server_name}"
 
     @property
     def tango_util(self):
@@ -541,7 +536,7 @@ class Server:
         slash_count = name.count("/")
         if slash_count == 0:
             alias = name
-            full_name = "{0}/{1}".format(self.server_instance, name)
+            full_name = f"{self.server_instance}/{name}"
         elif slash_count == 2:
             alias = None
             full_name = name

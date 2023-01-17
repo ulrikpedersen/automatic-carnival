@@ -23,7 +23,6 @@ from time import sleep
 
 import psutil
 import pytest
-import six
 from functools import partial
 from tango import DeviceProxy, DevFailed, GreenMode
 from tango import DeviceInfo, AttributeInfo, AttributeInfoEx
@@ -139,16 +138,14 @@ def get_ports(pid):
 
 def start_server(server, inst, device):
     exe = find_executable(server)
-    cmd = ("{0} {1} -ORBendPoint giop:tcp::0 -nodb -dlist {2}"
-           .format(exe, inst, device))
+    cmd = f"{exe} {inst} -ORBendPoint giop:tcp::0 -nodb -dlist {device}"
     proc = Popen(cmd.split(), close_fds=True)
     proc.poll()
     return proc
 
 
 def get_proxy(host, port, device, green_mode):
-    access = "tango://{0}:{1}/{2}#dbase=no".format(
-        host, port, device)
+    access = f"tango://{host}:{port}/{device}#dbase=no"
     return device_proxy_map[green_mode](access)
 
 
@@ -369,13 +366,13 @@ def test_read_attribute_config(tango_test, attribute):
 def test_attribute_list_query(tango_test):
     attrs = tango_test.attribute_list_query()
     assert all(isinstance(a, AttributeInfo) for a in attrs)
-    assert set(a.name for a in attrs) == set(ATTRIBUTES)
+    assert {a.name for a in attrs} == set(ATTRIBUTES)
 
 
 def test_attribute_list_query_ex(tango_test):
     attrs = tango_test.attribute_list_query_ex()
     assert all(isinstance(a, AttributeInfoEx) for a in attrs)
-    assert set(a.name for a in attrs) == set(ATTRIBUTES)
+    assert {a.name for a in attrs} == set(ATTRIBUTES)
 
 
 def test_device_proxy_dir_method(tango_test):
@@ -537,14 +534,7 @@ def test_no_cyclic_ref_for_proxy(green_mode_device_proxy, simple_device_fqdn):
 
 def assert_object_released_after_gc(weak_ref):
     gc.collect()
-    try:
-        assert weak_ref() is None
-    except AssertionError:
-        green_mode = weak_ref().get_green_mode()
-        if six.PY2 and green_mode != GreenMode.Synchronous:
-            pytest.xfail('Sometimes fails on Python 2 - unknown cause')
-        else:
-            raise
+    assert weak_ref() is None
 
 
 def assert_object_released_without_gc(weak_ref):

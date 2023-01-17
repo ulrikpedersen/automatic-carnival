@@ -1,4 +1,3 @@
-
 import tango
 from tango import DevState
 from tango import GreenMode
@@ -58,14 +57,14 @@ class PipeServer(Device):
             blob = "PipeEventCase2", dict(pipeData)
             self.push_pipe_event("TestPipe", blob)
         elif argin == 3:
-            print "not coded yet"
+            print("not coded yet")
         elif argin == 4:
             alist = [k for k in range(30)]
             pipeData = [("Lunes", "Girona"), ("Martes", alist)]
             blob = "PipeEventCase4", dict(pipeData)
             self.push_pipe_event("TestPipe", blob)
         else:
-            print "Invalid test case: Use 0-4"
+            print("Invalid test case: Use 0-4")
 
 #
 # Run server

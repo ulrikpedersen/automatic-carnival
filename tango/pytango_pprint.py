@@ -36,16 +36,13 @@ from .device_server import AttributeAlarm, EventProperties
 from .device_server import ChangeEventProp, PeriodicEventProp, ArchiveEventProp
 from .device_server import AttributeConfig, AttributeConfig_2
 from .device_server import AttributeConfig_3, AttributeConfig_5
-try:
-    import collections.abc as collections_abc  # python 3.3+
-except ImportError:
-    import collections as collections_abc
+import collections.abc
 
 
 def __inc_param(obj, name):
     ret = not name.startswith('_')
     ret &= name not in ('except_flags',)
-    ret &= not isinstance(getattr(obj, name), collections_abc.Callable)
+    ret &= not isinstance(getattr(obj, name), collections.abc.Callable)
     return ret
 
 
@@ -74,14 +71,14 @@ def __struct_params_str(obj, fmt, f=repr):
 
 def __repr__Struct(self):
     """repr method for struct"""
-    return '%s(%s)' % (self.__class__.__name__, __struct_params_repr(self))
+    return f'{self.__class__.__name__}({__struct_params_repr(self)})'
 
 
 def __str__Struct_Helper(self, f=repr):
     """str method for struct"""
     attrs = [n for n in dir(self) if __inc_param(self, n)]
     fmt = attrs and '%%%ds = %%s' % max(map(len, attrs)) or "%s = %s"
-    return '%s[\n%s]\n' % (self.__class__.__name__, __struct_params_str(self, fmt, f))
+    return f'{self.__class__.__name__}[\n{__struct_params_str(self, fmt, f)}]\n'
 
 
 def __str__Struct(self):
@@ -94,8 +91,8 @@ def __str__Struct_extra(self):
 
 def __registerSeqStr():
     """helper function to make internal sequences printable"""
-    _SeqStr = lambda self: (self and "[%s]" % (", ".join(map(repr, self)))) or "[]"
-    _SeqRepr = lambda self: (self and "[%s]" % (", ".join(map(repr, self)))) or "[]"
+    _SeqStr = lambda self: (self and f"[{', '.join(map(repr, self))}]") or "[]"
+    _SeqRepr = lambda self: (self and f"[{', '.join(map(repr, self))}]") or "[]"
 
     seqs = (StdStringVector, StdLongVector, CommandInfoList,
             AttributeInfoList, AttributeInfoListEx, PipeInfoList,
@@ -109,22 +106,24 @@ def __registerSeqStr():
 
 
 def __str__DevFailed(self):
-    if isinstance(self.args, collections_abc.Sequence):
-        return 'DevFailed[\n%s]' % '\n'.join(map(str, self.args))
-    return 'DevFailed[%s]' % (self.args)
+    if isinstance(self.args, collections.abc.Sequence):
+        seq_str = '\n'.join(map(str, self.args))
+        return f'DevFailed[\n{seq_str}]'
+    return f'DevFailed[{self.args}]'
 
 
 def __repr__DevFailed(self):
-    return 'DevFailed(args = %s)' % repr(self.args)
+    return f'DevFailed(args = {repr(self.args)})'
 
 
 def __str__DevError(self):
     desc = self.desc.replace("\n", "\n           ")
-    s = """DevError[
-    desc = %s
-  origin = %s
-  reason = %s
-severity = %s]\n""" % (desc, self.origin, self.reason, self.severity)
+    s = f"""DevError[
+    desc = {desc}
+  origin = {self.origin}
+  reason = {self.reason}
+severity = {self.severity}]
+"""
     return s
 
 

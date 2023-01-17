@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from tango import DevState
 from tango.server import Device, device_property
 

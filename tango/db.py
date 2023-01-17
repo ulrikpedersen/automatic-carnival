@@ -17,11 +17,7 @@ __all__ = ("db_init",)
 
 __docformat__ = "restructuredtext"
 
-import six
-try:
-    import collections.abc as collections_abc  # python 3.3+
-except ImportError:
-    import collections as collections_abc
+import collections.abc
 
 from ._tango import StdStringVector, Database, DbDatum, DbData, \
     DbDevInfo, DbDevInfos, DbDevImportInfo, DbDevExportInfo, DbDevExportInfos, \
@@ -130,7 +126,7 @@ def __Database__add_server(self, servname, dev_info, with_dserver=False):
             Throws     : ConnectionFailed, CommunicationFailed, DevFailed from device (DB_SQLError)
     """
 
-    if not isinstance(dev_info, collections_abc.Sequence) and \
+    if not isinstance(dev_info, collections.abc.Sequence) and \
             not isinstance(dev_info, DbDevInfo):
         raise TypeError(
             'Value must be a DbDevInfos, a seq<DbDevInfo> or a DbDevInfo')
@@ -170,7 +166,7 @@ def __Database__export_server(self, dev_info):
             Throws     : ConnectionFailed, CommunicationFailed, DevFailed from device (DB_SQLError)
     """
 
-    if not isinstance(dev_info, collections_abc.Sequence) and \
+    if not isinstance(dev_info, collections.abc.Sequence) and \
             not isinstance(dev_info, DbDevExportInfo):
         raise TypeError(
             'Value must be a DbDevExportInfos, a seq<DbDevExportInfo> or '
@@ -196,7 +192,7 @@ def __Database__generic_get_property(self, obj_name, value, f):
     elif is_pure_str(value):
         new_value = DbData()
         new_value.append(DbDatum(value))
-    elif isinstance(value, collections_abc.Sequence):
+    elif isinstance(value, collections.abc.Sequence):
         new_value = DbData()
         for e in value:
             if isinstance(e, DbDatum):
@@ -204,7 +200,7 @@ def __Database__generic_get_property(self, obj_name, value, f):
             else:
                 e = ensure_binary(e, 'latin-1')
                 new_value.append(DbDatum(e))
-    elif isinstance(value, collections_abc.Mapping):
+    elif isinstance(value, collections.abc.Mapping):
         new_value = DbData()
         for k, v in value.items():
             if isinstance(v, DbDatum):
@@ -240,7 +236,7 @@ def __Database__generic_delete_property(self, obj_name, value, f):
         new_value = DbData()
         value = ensure_binary(value, 'latin-1')
         new_value.append(DbDatum(value))
-    elif isinstance(value, collections_abc.Sequence):
+    elif isinstance(value, collections.abc.Sequence):
         new_value = DbData()
         for e in value:
             if isinstance(e, DbDatum):
@@ -248,7 +244,7 @@ def __Database__generic_delete_property(self, obj_name, value, f):
             else:
                 e = ensure_binary(e, 'latin-1')
                 new_value.append(DbDatum(e))
-    elif isinstance(value, collections_abc.Mapping):
+    elif isinstance(value, collections.abc.Mapping):
         new_value = DbData()
         for k, v in value.items():
             if isinstance(v, DbDatum):
@@ -273,14 +269,14 @@ def __Database__generic_get_attr_pipe_property(self, obj_name, value, f):
     elif is_pure_str(value):
         new_value = DbData()
         new_value.append(DbDatum(value))
-    elif isinstance(value, collections_abc.Sequence):
+    elif isinstance(value, collections.abc.Sequence):
         new_value = DbData()
         for e in value:
             if isinstance(e, DbDatum):
                 new_value.append(e)
             else:
                 new_value.append(DbDatum(str(e)))
-    elif isinstance(value, collections_abc.Mapping):
+    elif isinstance(value, collections.abc.Mapping):
         new_value = DbData()
         for k, v in value.items():
             if isinstance(v, DbDatum):
@@ -317,7 +313,7 @@ def __Database__generic_put_attr_pipe_property(self, obj_name, value, f):
         new_value = value
     elif is_non_str_seq(value):
         new_value = seq_2_DbData(value)
-    elif isinstance(value, collections_abc.Mapping):
+    elif isinstance(value, collections.abc.Mapping):
         new_value = DbData()
         for k1, v1 in value.items():
             attr = DbDatum(k1)
@@ -349,7 +345,7 @@ def __Database__generic_delete_attr_pipe_property(self, obj_name, value, f):
         new_value = value
     elif is_non_str_seq(value):
         new_value = seq_2_DbData(value)
-    elif isinstance(value, collections_abc.Mapping):
+    elif isinstance(value, collections.abc.Mapping):
         new_value = DbData()
         for k1, v1 in value.items():
             attr = DbDatum(k1)
@@ -971,7 +967,7 @@ def __Database__get_service_list(self, filter='.*'):
 
 
 def __Database__str(self):
-    return "Database(%s, %s)" % (self.get_db_host(), self.get_db_port())
+    return f"Database({self.get_db_host()}, {self.get_db_port()})"
 
 
 def __init_Database():

@@ -9,5 +9,5 @@ class ROI:
         return str(self)
 
     def __str__(self):
-        txt = "ROI(x={o.x}, y={o.y}, w={o.w}, h={o.h})".format(o=self)
+        txt = f"ROI(x={self.x}, y={self.y}, w={self.w}, h={self.h})"
         return txt

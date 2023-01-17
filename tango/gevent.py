@@ -12,7 +12,6 @@
 """This module exposes a gevent version of :class:`tango.DeviceProxy` and
 :class:`tango.AttributeProxy"""
 
-from __future__ import absolute_import
 from functools import partial
 from packaging.version import Version
 
@@ -20,7 +19,7 @@ from ._tango import GreenMode
 from .device_proxy import get_device_proxy
 from .attribute_proxy import get_attribute_proxy
 
-__all__ = ("DeviceProxy", "AttributeProxy", "check_requirements")
+__all__ = ("DeviceProxy", "AttributeProxy")
 
 
 def check_requirements():
@@ -33,9 +32,8 @@ def check_requirements():
                           "instead")
 
     if Version(gevent.__version__) < Version("1.0"):
-        raise ImportError("You need gevent >= 1.0. You are using %s. "
-                          "Consider using the futures green mode instead"
-                          % gevent_version)
+        raise ImportError(f"You need gevent >= 1.0. You are using {gevent_version}. "
+                          f"Consider using the futures green mode instead")
 
 
 check_requirements()

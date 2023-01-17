@@ -13,8 +13,6 @@
 This is an internal PyTango module.
 """
 
-from __future__ import with_statement
-from __future__ import print_function
 
 __all__ = ("PipeData",)
 
@@ -26,7 +24,7 @@ from ._tango import Except, DispLevel, Pipe, PipeWriteType, UserDefaultPipeProp
 from .utils import is_non_str_seq, is_pure_str
 
 
-class PipeData(object):
+class PipeData:
     """A helper class that contains the same information one of the items in
     DeviceClass.pipe_list but in object form"""
 
@@ -122,14 +120,14 @@ class PipeData(object):
 
         for k, v in extra_info.items():
             k_lower = k.lower()
-            method_name = "set_%s" % k_lower.replace(' ', '_')
+            method_name = f"set_{k_lower.replace(' ', '_')}"
             if hasattr(p, method_name):
                 method = getattr(p, method_name)
                 method(str(v))
             else:
-                msg = "Wrong definition of pipe. " \
-                      "The object extra information '%s' " \
-                      "is not recognized!" % (k,)
+                msg = f"Wrong definition of pipe. " \
+                      f"The object extra information '{k}' " \
+                      f"is not recognized!"
                 Except.throw_exception("PyDs_WrongPipeDefinition", msg,
                                        "create_user_default_pipe_prop()")
         return p
@@ -142,14 +140,12 @@ class PipeData(object):
 
         # check parameter
         if not is_non_str_seq(pipe_info):
-            throw_ex("Wrong data type for value for describing pipe %s in "
-                     "class %s\nMust be a sequence with 1 or 2 elements"
-                     % (pipe_name, name))
+            throw_ex(f"Wrong data type for value for describing pipe {pipe_name} in "
+                     f"class {name}\nMust be a sequence with 1 or 2 elements")
 
         if len(pipe_info) < 1 or len(pipe_info) > 2:
-            throw_ex("Wrong number of argument for describing pipe %s in "
-                     "class %s\nMust be a sequence with 1 or 2 elements"
-                     % (pipe_name, name))
+            throw_ex(f"Wrong number of argument for describing pipe {pipe_name} in "
+                     f"class {name}\nMust be a sequence with 1 or 2 elements")
 
         extra_info = {}
         if len(pipe_info) == 2:
@@ -164,17 +160,16 @@ class PipeData(object):
         try:
             self.pipe_write = PipeWriteType(pipe_info)
         except:
-            throw_ex("Wrong data write type in pipe argument for "
-                     "pipe %s in class %s\nPipe write type must be a "
-                     "tango.PipeWriteType" % (pipe_name, name))
+            throw_ex(f"Wrong data write type in pipe argument for "
+                     f"pipe {pipe_name} in class {name}\nPipe write type must be a "
+                     f"tango.PipeWriteType")
         try:
             self.display_level = DispLevel(extra_info.get("display level",
                                                           DispLevel.OPERATOR))
         except:
-            throw_ex("Wrong display level in pipe information for "
-                     "pipe %s in class %s\nPipe information for "
-                     "display level is not a tango.DispLevel"
-                     % (pipe_name, name))
+            throw_ex(f"Wrong display level in pipe information for "
+                     f"pipe {pipe_name} in class {name}\nPipe information for "
+                     f"display level is not a tango.DispLevel")
 
         self.pipe_class = extra_info.get("klass", Pipe)
         self.pipe_args.extend((self.pipe_name, self.display_level, self.pipe_write))

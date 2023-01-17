@@ -16,7 +16,6 @@ Documentation for this package can be found online:
 http://pytango.readthedocs.io
 """
 
-from __future__ import print_function
 
 __all__ = (
     'AccessControlType', 'ApiUtil', 'ArchiveEventInfo',

@@ -59,11 +59,8 @@ void export_log4tango();
 void export_auto_tango_monitor();
 void export_ensure_omni_thread();
 
-#if PY_MAJOR_VERSION >= 3
 void* init_numpy(void) { import_array(); return NULL; }
-#else
-void init_numpy(void) { import_array(); return; }
-#endif
+
 
 BOOST_PYTHON_MODULE(_tango)
 {

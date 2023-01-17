@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 import sys
 import textwrap
@@ -44,7 +42,7 @@ def test_empty_device(server_green_mode):
 
 
 def test_set_state(state, server_green_mode):
-    status = 'The device is in {0!s} state.'.format(state)
+    status = f'The device is in {state!s} state.'
 
     class TestDevice(Device):
         green_mode = server_green_mode
@@ -435,7 +433,7 @@ def test_read_write_attribute_enum(server_green_mode):
         green_mode = server_green_mode
 
         def __init__(self, *args, **kwargs):
-            super(TestDevice, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
             self.attr_from_enum_value = 0
             self.attr_from_labels_value = 0
 
@@ -489,7 +487,7 @@ def test_read_write_attribute_enum(server_green_mode):
             green_mode = server_green_mode
 
             def __init__(self, *args, **kwargs):
-                super(BadTestDevice, self).__init__(*args, **kwargs)
+                super().__init__(*args, **kwargs)
                 self.attr_value = 0
 
             # enum_labels may not be specified if dtype is an enum.Enum
@@ -580,7 +578,7 @@ def test_read_write_dynamic_attribute(typed_values, server_green_mode):
         green_mode = server_green_mode
 
         def __init__(self, *args, **kwargs):
-            super(TestDevice, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
             self.attr_value = None
 
         @command
@@ -621,7 +619,7 @@ def test_read_write_dynamic_attribute_enum(server_green_mode):
         green_mode = server_green_mode
 
         def __init__(self, *args, **kwargs):
-            super(TestDevice, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
             self.attr_value = 0
 
         @command
@@ -678,7 +676,7 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(
         green_mode = server_green_mode
 
         def __init__(self, *args, **kwargs):
-            super(TestDevice, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
             self._is_test_attr_allowed = True
 
         def initialize_dynamic_attributes(self):
@@ -880,13 +878,13 @@ def test_dynamic_attribute_using_classic_api_like_sardana(device_impl_class):
         }
 
         def __init__(self, name):
-            super(ClassicAPIClass, self).__init__(name)
+            super().__init__(name)
             self.set_type("TestDevice")
 
     class ClassicAPIDeviceImpl(device_impl_class):
 
         def __init__(self, cl, name):
-            super(ClassicAPIDeviceImpl, self).__init__(cl, name)
+            super().__init__(cl, name)
             ClassicAPIDeviceImpl.init_device(self)
 
         def init_device(self):
@@ -932,7 +930,7 @@ def test_dynamic_attribute_with_non_device_method_fails(server_green_mode):
     def read_function_outside_of_any_class(attr):
         attr.set_value(123)
 
-    class NonDeviceClass(object):
+    class NonDeviceClass:
         def read_method_outside_of_device_class(self, attr):
             attr.set_value(456)
 
@@ -1083,7 +1081,7 @@ def test_device_get_device_properties_when_init_device(server_green_mode):
         _got_properties = False
 
         def get_device_properties(self, *args, **kwargs):
-            super(TestDevice, self).get_device_properties(*args, **kwargs)
+            super().get_device_properties(*args, **kwargs)
             self._got_properties = True
 
         @attribute(dtype=bool)
@@ -1104,7 +1102,7 @@ def test_device_get_attr_config(server_green_mode):
             # testing that call to get_attribute_config for all types of
             # input arguments gives same result and doesn't raise an exception
             ac1 = self.get_attribute_config(b"attr_config_ok")
-            ac2 = self.get_attribute_config(u"attr_config_ok")
+            ac2 = self.get_attribute_config("attr_config_ok")
             ac3 = self.get_attribute_config(["attr_config_ok"])
             return repr(ac1) == repr(ac2) == repr(ac3)
 
@@ -1350,7 +1348,7 @@ def test_logging(server_green_mode):
         proxy_source = context.get_device("test/log/source")
         proxy_consumer = context.get_device("test/log/consumer")
         consumer_access = context.get_device_access("test/log/consumer")
-        proxy_source.add_logging_target("device::{}".format(consumer_access))
+        proxy_source.add_logging_target(f"device::{consumer_access}")
 
         for msg in ([""],
                     [" with literal %s"],

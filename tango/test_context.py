@@ -1,11 +1,9 @@
 """Provide a context to run a device without a database."""
 
-from __future__ import absolute_import
 
 # Imports
 import os
 import sys
-import six
 import time
 import struct
 import socket
@@ -17,7 +15,7 @@ from functools import partial
 # Concurrency imports
 import threading
 import multiprocessing
-from six.moves import queue
+import queue
 
 # CLI imports
 from ast import literal_eval
@@ -49,7 +47,7 @@ IOR = collections.namedtuple(
 
 
 def ascii_to_bytes(s):
-    convert = lambda x: six.int2byte(int(x, 16))
+    convert = lambda x: bytes((int(x, 16),))
     return b''.join(convert(s[i:i + 2]) for i in range(0, len(s), 2))
 
 
@@ -57,9 +55,9 @@ def parse_ior(encoded_ior):
     assert encoded_ior[:4] == 'IOR:'
     ior = ascii_to_bytes(encoded_ior[4:])
     dtype_length = struct.unpack_from('II', ior)[-1]
-    form = 'II{:d}sIIIBBHI'.format(dtype_length)
+    form = f'II{dtype_length:d}sIIIBBHI'
     host_length = struct.unpack_from(form, ior)[-1]
-    form = 'II{:d}sIIIBBHI{:d}sH0I'.format(dtype_length, host_length)
+    form = f'II{dtype_length:d}sIIIBBHI{host_length:d}sH0I'
     values = struct.unpack_from(form, ior)
     values += (ior[struct.calcsize(form):],)
     strip = lambda x: x[:-1] if isinstance(x, bytes) else x
@@ -84,9 +82,8 @@ def device(path):
     try:
         module = import_module(module_name)
     except Exception:
-        raise ArgumentTypeError("Error importing {0}.{1}:\n{2}"
-                                .format(module_name, device_name,
-                                        traceback.format_exc()))
+        raise ArgumentTypeError(f"Error importing {module_name}.{device_name}:\n"
+                                f"{traceback.format_exc()}")
     return getattr(module, device_name)
 
 
@@ -129,7 +126,7 @@ def _device_class_from_field(field):
     return (device_cls_class, device_class)
 
 
-class MultiDeviceTestContext(object):
+class MultiDeviceTestContext:
     """Context to run device(s) without a database.
 
     The difference with respect to
@@ -299,7 +296,7 @@ class MultiDeviceTestContext(object):
         # Command args
         string = self.command.format(
             server_name, instance_name, host, port, db)
-        string += " -v{0}".format(debug) if debug else ""
+        string += f" -v{debug}" if debug else ""
         cmd_args = string.split()
 
         class_list = []
@@ -387,8 +384,8 @@ class MultiDeviceTestContext(object):
             device_name = info["name"]
             properties = info.get("properties", {})
             # Patch the property dict to avoid a PyTango bug
-            patched = dict((key, value if value != '' else ' ')
-                           for key, value in properties.items())
+            patched = {key: value if value != '' else ' '
+                           for key, value in properties.items()}
             db.put_device_property(device_name, patched)
 
             memorized = info.get("memorized", {})
@@ -408,13 +405,11 @@ class MultiDeviceTestContext(object):
 
     def get_server_access(self):
         """Return the full server name."""
-        form = 'tango://{0}:{1}/{2}#{3}'
-        return form.format(self.host, self.port, self.server_name, self.nodb)
+        return f'tango://{self.host}:{self.port}/{self.server_name}#{self.nodb}'
 
     def get_device_access(self, device_name):
         """Return the full device name."""
-        form = 'tango://{0}:{1}/{2}#{3}'
-        return form.format(self.host, self.port, device_name, self.nodb)
+        return f'tango://{self.host}:{self.port}/{device_name}#{self.nodb}'
 
     def get_device(self, device_name):
         """Return the device proxy corresponding to the given device name.
@@ -443,17 +438,23 @@ class MultiDeviceTestContext(object):
                     'Check stdout/stderr for more information.')
             elif hasattr(self.thread, 'exitcode'):
                 raise RuntimeError(
-                    'The server process stopped with exitcode {}. '
-                    'Check stdout/stderr for more information.'
-                    ''.format(self.thread.exitcode))
+                    f'The server process stopped with exitcode {self.thread.exitcode}. '
+                    f'Check stdout/stderr for more information.')
             else:
                 raise RuntimeError(
                     'The server stopped without reporting. '
                     'Check stdout/stderr for more information.')
         try:
             self.host, self.port = args
-        except ValueError:
-            six.reraise(*args)
+        except ValueError as e:
+            # Warning: an assumption made here - if the args don't contain the
+            #          expected (host, port) items then we assume the args contain
+            #          exception info.
+            if len(args) == 3:
+                exc_type, exc_value, exc_traceback = args
+                raise exc_value
+            # In case the above assumption is wrong: re-raise the original exception
+            raise ValueError(*args) from e
         # Get server proxy
         self.server = DeviceProxy(self.get_server_access())
         self.server.ping()
@@ -565,7 +566,7 @@ class DeviceTestContext(MultiDeviceTestContext):
                 )
             },
         )
-        super(DeviceTestContext, self).__init__(devices_info,
+        super().__init__(devices_info,
                                                 server_name=server_name,
                                                 instance_name=instance_name,
                                                 db=db, host=host,
@@ -582,11 +583,11 @@ class DeviceTestContext(MultiDeviceTestContext):
         """Return the full device name."""
         if device_name is None:
             device_name = self.device_name
-        return super(DeviceTestContext, self).get_device_access(
+        return super().get_device_access(
             device_name)
 
     def connect(self):
-        super(DeviceTestContext, self).connect()
+        super().connect()
         # Get device proxy
         self.device = self.get_device(self.device_name)
         self.device.ping()
@@ -637,10 +638,10 @@ def run_device_test_context(args=None):
     context = DeviceTestContext(
         device, properties=properties, host=host, port=port, debug=debug)
     context.start()
-    msg = '{0} started on port {1} with properties {2}'
-    print(msg.format(device.__name__, context.port, properties))
-    print('Device access: {}'.format(context.get_device_access()))
-    print('Server access: {}'.format(context.get_server_access()))
+    msg = f'{device.__name__} started on port {context.port} with properties {properties}'
+    print(msg)
+    print(f'Device access: {context.get_device_access()}')
+    print(f'Server access: {context.get_server_access()}')
     context.join()
     print("Done")
 

@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import os
 import logging
 import functools
@@ -74,7 +72,7 @@ def use_cursor(f):
     return wrap
 
 
-class SqlDatabase(object):
+class SqlDatabase:
 
     DB_API_NAME = 'sqlite3'  # Default implementation
 
@@ -938,7 +936,7 @@ class SqlDatabase(object):
 
 
     def get_instance_name_list(self, server_name):
-        server_name = server_name + "\*"
+        server_name = server_name + r"\*"
         server_list = self.get_server_list(server_name)
         result = []
         for server in server_list:

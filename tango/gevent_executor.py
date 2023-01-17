@@ -9,12 +9,8 @@
 # See LICENSE.txt for more info.
 # ------------------------------------------------------------------------------
 
-# Future imports
-from __future__ import absolute_import
-
 # Imports
 import sys
-import six
 import functools
 from collections import namedtuple
 
@@ -94,7 +90,7 @@ class ThreadPool(gevent.threadpool.ThreadPool):
 
     def spawn(self, fn, *args, **kwargs):
         wrapped = wrap_error(fn)
-        raw = super(ThreadPool, self).spawn(wrapped, *args, **kwargs)
+        raw = super().spawn(wrapped, *args, **kwargs)
         return unwrap_error(raw)
 
 
@@ -125,7 +121,7 @@ class GeventTask:
     def result(self):
         self.done.wait()
         if self.exception:
-            six.reraise(*self.exception)
+            raise self.exception[1]
         return self.value
 
 
@@ -138,7 +134,7 @@ class GeventExecutor(AbstractExecutor):
     default_wait = True
 
     def __init__(self, loop=None, subexecutor=None):
-        super(GeventExecutor, self).__init__()
+        super().__init__()
         if loop is None:
             loop = gevent.get_hub().loop
         if subexecutor is None:
