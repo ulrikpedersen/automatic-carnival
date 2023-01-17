@@ -2,9 +2,45 @@
 requires = ["scikit-build-core", "numpy"]
 build-backend = "scikit_build_core.build"
 
+[project.urls]
+homepage = "https://example.com"
+documentation = "https://readthedocs.org"
+repository = "https://github.com/me/spam.git"
+changelog = "https://github.com/me/spam/blob/master/CHANGELOG.md"
+
 [project]
 name = "pytango"
 version = "9.4.1"
+description = "This is a description"
+authors = [
+    {'name' = "coutinho"}]
+maintainers = [
+    {"name" = "Anton Joubert"},
+    {"name" = "Yury Matveyev"},
+    {"name" = "Ulrik Pedersen"}]
+classifiers = [
+        "Development Status :: 5 - Production/Stable",
+        "Environment :: Other Environment",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved ::",
+        " GNU Library or Lesser General Public License (LGPL)",
+        "Natural Language :: English",
+        "Operating System :: Microsoft :: Windows",
+        "Operating System :: POSIX",
+        "Operating System :: POSIX :: Linux",
+        "Operating System :: Unix",
+        "Programming Language :: C",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Topic :: Scientific/Engineering",
+        "Topic :: Software Development :: Libraries",
+    ]
+
+[tool.setuptools.package-data]
+pytango.data = ["*.txt"]
 
 [tool.scikit-build]
 # This activates verbose builds
