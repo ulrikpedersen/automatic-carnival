@@ -90,7 +90,10 @@
     },
     {
       "name": "ci-macOS",
-      "inherits": ["ci-build", "ci-unix", "dev-mode"]
+      "inherits": ["ci-build", "ci-unix", "dev-mode"],
+      "cacheVariables": {
+        "TANGO_ROOT": "/Users/ulrik/soft/installed/tango.9.4"
+      }
     },
     {
       "name": "ci-Linux",
