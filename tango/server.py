@@ -29,7 +29,7 @@ from .pipe_data import PipeData
 from .device_class import DeviceClass
 from .device_server import LatestDeviceImpl, get_worker, set_worker, run_in_executor
 from .utils import get_enum_labels
-from .utils import is_seq, is_non_str_seq, is_pure_str
+from .utils import is_seq, is_non_str_seq, is_pure_str, is_enum_seq, is_enum
 from .utils import scalar_to_array_type, TO_TANGO_TYPE
 from .green import get_green_mode, get_executor
 from .pyutil import Util
@@ -42,15 +42,21 @@ API_VERSION = 2
 
 # Helpers
 
-def _get_tango_type_format(dtype=None, dformat=None):
+def _get_tango_type_format(dtype=None, dformat=None, caller=None):
     if dformat is None:
         dformat = AttrDataFormat.SCALAR
         if is_non_str_seq(dtype):
-            dtype = dtype[0]
-            dformat = AttrDataFormat.SPECTRUM
-            if is_non_str_seq(dtype):
+            if len(dtype):
                 dtype = dtype[0]
-                dformat = AttrDataFormat.IMAGE
+                dformat = AttrDataFormat.SPECTRUM
+                if is_non_str_seq(dtype):
+                    if len(dtype):
+                        dtype = dtype[0]
+                        dformat = AttrDataFormat.IMAGE
+                    elif caller == 'attribute':
+                        raise TypeError('Image attribute type must be specified as ((<dtype>,),)')
+            elif caller == 'attribute':
+                raise TypeError('Spectrum attribute type must be specified as (<dtype>,)')
     return TO_TANGO_TYPE[dtype], dformat
 
 
@@ -829,17 +835,21 @@ class attribute(AttrData):
         if 'dtype' in kwargs:
             dtype = kwargs['dtype']
             dformat = kwargs.get('dformat')
-            if inspect.isclass(dtype) and issubclass(dtype, enum.Enum):
-                if dformat and dformat != AttrDataFormat.SCALAR:
-                    raise TypeError(f"DevEnum types can only be scalar, not {dformat}.")
+            if is_enum(dtype) or is_enum_seq(dtype):
                 enum_labels = kwargs.get('enum_labels')
                 if enum_labels:
-                    raise TypeError(f"For dtype of enum.Enum the enum_labels must not "
+                    raise TypeError("For dtype of enum.Enum, (enum.Enum,) or ((enum.Enum,),) the enum_labels must not "
                                     f"be specified - dtype: {dtype}, enum_labels: {enum_labels}.")
-                kwargs['enum_labels'] = get_enum_labels(dtype)
+                _dtype = dtype
                 dtype = CmdArgType.DevEnum
-            kwargs['dtype'], kwargs['dformat'] = \
-                _get_tango_type_format(dtype, dformat)
+
+                while is_enum_seq(_dtype):
+                    _dtype = _dtype[0]
+                    dtype = (dtype,)
+
+                kwargs['enum_labels'] = get_enum_labels(_dtype)
+
+            kwargs['dtype'], kwargs['dformat'] = _get_tango_type_format(dtype, dformat, caller='attribute')
         self.build_from_dict(kwargs)
 
     def get_attribute(self, obj):

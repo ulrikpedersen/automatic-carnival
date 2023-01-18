@@ -18,6 +18,7 @@ import os
 import sys
 import types
 import numbers
+import inspect
 import enum
 
 from argparse import HelpFormatter
@@ -507,6 +508,18 @@ def is_non_str_seq(obj):
     :rtype: :py:obj:`bool`
     """
     return is_seq(obj) and not is_pure_str(obj)
+
+
+def is_enum(obj):
+    return inspect.isclass(obj) and issubclass(obj, enum.Enum)
+
+
+def is_enum_seq(obj):
+    if is_non_str_seq(obj):
+        while is_non_str_seq(obj) and len(obj):
+            obj = obj[0]
+        return is_enum(obj)
+    return False
 
 
 def is_integer(obj):

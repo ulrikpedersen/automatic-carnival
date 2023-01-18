@@ -431,19 +431,36 @@ def test_read_write_wvalue_attribute(attribute_typed_values, server_green_mode):
             assert_close(proxy.attr, expected(proxy.read_attribute('attr').w_value))
 
 
-def test_read_write_attribute_enum(server_green_mode):
+def test_read_write_attribute_enum(server_green_mode, attr_data_format):
     values = (member.value for member in GoodEnum)
     enum_labels = get_enum_labels(GoodEnum)
+
+    if attr_data_format == AttrDataFormat.SCALAR:
+        good_type = GoodEnum
+        good_type_str = 'DevEnum'
+    elif attr_data_format == AttrDataFormat.SPECTRUM:
+        good_type = (GoodEnum,)
+        good_type_str = ('DevEnum',)
+    else:
+        good_type = ((GoodEnum,),)
+        good_type_str = (('DevEnum',),)
 
     class TestDevice(Device):
         green_mode = server_green_mode
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
-            self.attr_from_enum_value = 0
-            self.attr_from_labels_value = 0
+            if attr_data_format == AttrDataFormat.SCALAR:
+                self.attr_from_enum_value = 0
+                self.attr_from_labels_value = 0
+            elif attr_data_format == AttrDataFormat.SPECTRUM:
+                self.attr_from_enum_value = (0,)
+                self.attr_from_labels_value = (0,)
+            else:
+                self.attr_from_enum_value = ((0,),)
+                self.attr_from_labels_value = ((0,),)
 
-        @attribute(dtype=GoodEnum, access=AttrWriteType.READ_WRITE)
+        @attribute(dtype=good_type, max_dim_x=10, max_dim_y=10, access=AttrWriteType.READ_WRITE)
         def attr_from_enum(self):
             return self.attr_from_enum_value
 
@@ -451,8 +468,8 @@ def test_read_write_attribute_enum(server_green_mode):
         def attr_from_enum(self, value):
             self.attr_from_enum_value = value
 
-        @attribute(dtype='DevEnum', enum_labels=enum_labels,
-                   access=AttrWriteType.READ_WRITE)
+        @attribute(dtype=good_type_str, max_dim_x=10, max_dim_y=10,
+                   enum_labels=enum_labels, access=AttrWriteType.READ_WRITE)
         def attr_from_labels(self):
             return self.attr_from_labels_value
 
@@ -460,33 +477,68 @@ def test_read_write_attribute_enum(server_green_mode):
         def attr_from_labels(self, value):
             self.attr_from_labels_value = value
 
+    def make_nd_value(value):
+        if attr_data_format == AttrDataFormat.SCALAR:
+           return value
+        elif attr_data_format == AttrDataFormat.SPECTRUM:
+            return (value,)
+        else:
+            return ((value,),)
+
+    def check_attr_type(read_attr):
+        if attr_data_format == AttrDataFormat.SCALAR:
+            assert isinstance(read_attr, enum.IntEnum)
+        elif attr_data_format == AttrDataFormat.SPECTRUM:
+            for val in read_attr:
+                assert isinstance(val, enum.IntEnum)
+        else:
+            for val in read_attr:
+                for v in val:
+                    assert isinstance(v, enum.IntEnum)
+
+    def check_read_attr(read_attr, value, label):
+        if attr_data_format == AttrDataFormat.SCALAR:
+            assert_value_label(read_attr, value, label)
+        elif attr_data_format == AttrDataFormat.SPECTRUM:
+            for val in read_attr:
+                assert_value_label(val, value, label)
+        else:
+            for val in read_attr:
+                for v in val:
+                    assert_value_label(v, value, label)
+
+    def assert_value_label(read_attr, value, label):
+        assert read_attr.value == value
+        assert read_attr.name == label
+
     with DeviceTestContext(TestDevice) as proxy:
         for value, label in zip(values, enum_labels):
-            proxy.attr_from_enum = value
+            nd_value = make_nd_value(value)
+            proxy.attr_from_enum = nd_value
             read_attr = proxy.attr_from_enum
-            assert read_attr == value
-            assert isinstance(read_attr, enum.IntEnum)
-            assert read_attr.value == value
-            assert read_attr.name == label
-            proxy.attr_from_labels = value
+            assert read_attr == nd_value
+            check_attr_type(read_attr)
+            check_read_attr(read_attr, value, label)
+
+            proxy.attr_from_labels = nd_value
             read_attr = proxy.attr_from_labels
-            assert read_attr == value
-            assert isinstance(read_attr, enum.IntEnum)
-            assert read_attr.value == value
-            assert read_attr.name == label
+            assert read_attr == nd_value
+            check_attr_type(read_attr)
+            check_read_attr(read_attr, value, label)
+
         for value, label in zip(values, enum_labels):
-            proxy.attr_from_enum = label
+            nd_label = make_nd_value(label)
+            proxy.attr_from_enum = nd_label
             read_attr = proxy.attr_from_enum
-            assert read_attr == value
-            assert isinstance(read_attr, enum.IntEnum)
-            assert read_attr.value == value
-            assert read_attr.name == label
-            proxy.attr_from_labels = label
+            assert read_attr == nd_label
+            check_attr_type(read_attr)
+            check_read_attr(read_attr, value, label)
+
+            proxy.attr_from_labels = nd_label
             read_attr = proxy.attr_from_labels
-            assert read_attr == value
-            assert isinstance(read_attr, enum.IntEnum)
-            assert read_attr.value == value
-            assert read_attr.name == label
+            assert read_attr == nd_label
+            check_attr_type(read_attr)
+            check_read_attr(read_attr, value, label)
 
     with pytest.raises(TypeError) as context:
         class BadTestDevice(Device):
@@ -494,10 +546,15 @@ def test_read_write_attribute_enum(server_green_mode):
 
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
-                self.attr_value = 0
+                if attr_data_format == AttrDataFormat.SCALAR:
+                    self.attr_value = 0
+                elif attr_data_format == AttrDataFormat.SPECTRUM:
+                    self.attr_value = (0,)
+                else:
+                    self.attr_value = ((0,),)
 
             # enum_labels may not be specified if dtype is an enum.Enum
-            @attribute(dtype=GoodEnum, enum_labels=enum_labels)
+            @attribute(dtype=good_type, max_dim_x=10, max_dim_y=10, enum_labels=enum_labels)
             def bad_attr(self):
                 return self.attr_value
 
@@ -618,34 +675,48 @@ def test_read_write_dynamic_attribute(attribute_typed_values, server_green_mode)
         assert "dyn_attr" not in proxy.get_attribute_list()
 
 
-def test_read_write_dynamic_attribute_enum(server_green_mode):
+def test_read_write_dynamic_attribute_enum(server_green_mode, attr_data_format):
     values = (member.value for member in GoodEnum)
     enum_labels = get_enum_labels(GoodEnum)
+
+    if attr_data_format == AttrDataFormat.SCALAR:
+        attr_type = DevEnum
+        attr_info = (DevEnum, attr_data_format, READ_WRITE)
+    elif attr_data_format == AttrDataFormat.SPECTRUM:
+        attr_type = (DevEnum,)
+        attr_info = (DevEnum, attr_data_format, READ_WRITE, 10)
+    else:
+        attr_type = ((DevEnum,),)
+        attr_info = (DevEnum, attr_data_format, READ_WRITE, 10, 10)
 
     class TestDevice(Device):
         green_mode = server_green_mode
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
-            self.attr_value = 0
+            if attr_data_format == AttrDataFormat.SCALAR:
+                self.attr_value = 0
+            elif attr_data_format == AttrDataFormat.SPECTRUM:
+                self.attr_value = (0,)
+            else:
+                self.attr_value = ((0,),)
 
         @command
         def add_dyn_attr_old(self):
             attr = AttrData(
-                "dyn_attr",
-                None,
-                attr_info=[
-                    (DevEnum, SCALAR, READ_WRITE),
-                    {"enum_labels": enum_labels},
-                ],
-            )
+                            "dyn_attr",
+                            None,
+                            attr_info=[attr_info, {"enum_labels": enum_labels},],
+                            )
             self.add_attribute(attr, r_meth=self.read, w_meth=self.write)
 
         @command
         def add_dyn_attr_new(self):
             attr = attribute(
                 name="dyn_attr",
-                dtype=GoodEnum,
+                dtype=attr_type,
+                max_dim_x=10,
+                max_dim_y=10,
                 access=AttrWriteType.READ_WRITE,
                 fget=self.read,
                 fset=self.write)
@@ -661,16 +732,50 @@ def test_read_write_dynamic_attribute_enum(server_green_mode):
         def write(self, attr):
             self.attr_value = attr.get_write_value()
 
+    def make_nd_value(value):
+        if attr_data_format == AttrDataFormat.SCALAR:
+            return value
+        elif attr_data_format == AttrDataFormat.SPECTRUM:
+            return (value,)
+        else:
+            return ((value,),)
+
+    def check_attr_type(read_attr):
+        if attr_data_format == AttrDataFormat.SCALAR:
+            assert isinstance(read_attr, enum.IntEnum)
+        elif attr_data_format == AttrDataFormat.SPECTRUM:
+            for val in read_attr:
+                assert isinstance(val, enum.IntEnum)
+        else:
+            for val in read_attr:
+                for v in val:
+                    assert isinstance(v, enum.IntEnum)
+
+    def check_read_attr(read_attr, value, label):
+        if attr_data_format == AttrDataFormat.SCALAR:
+            assert_value_label(read_attr, value, label)
+        elif attr_data_format == AttrDataFormat.SPECTRUM:
+            for val in read_attr:
+                assert_value_label(val, value, label)
+        else:
+            for val in read_attr:
+                for v in val:
+                    assert_value_label(v, value, label)
+
+    def assert_value_label(read_attr, value, label):
+        assert read_attr.value == value
+        assert read_attr.name == label
+
     with DeviceTestContext(TestDevice) as proxy:
         for add_attr_cmd in [proxy.add_dyn_attr_old, proxy.add_dyn_attr_new]:
             add_attr_cmd()
             for value, label in zip(values, enum_labels):
-                proxy.dyn_attr = value
+                nd_value = make_nd_value(value)
+                proxy.dyn_attr = nd_value
                 read_attr = proxy.dyn_attr
-                assert read_attr == value
-                assert isinstance(read_attr, enum.IntEnum)
-                assert read_attr.value == value
-                assert read_attr.name == label
+                assert read_attr == nd_value
+                check_attr_type(read_attr)
+                check_read_attr(read_attr, value, label)
             proxy.delete_dyn_attr()
             assert "dyn_attr" not in proxy.get_attribute_list()
 
