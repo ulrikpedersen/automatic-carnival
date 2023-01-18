@@ -12,6 +12,11 @@ __pycache__/
 # Local pipelines
 builds/
 
+# cmake
+cmakebuild/
+CMakeCache.txt
+CMakeUserPresets.json
+
 # Packages
 bin/
 build/
