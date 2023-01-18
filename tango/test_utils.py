@@ -2,12 +2,13 @@
 
 import sys
 import enum
-import collections.abc
+import numpy as np
 
 # Local imports
 from . import DevState, GreenMode
 from .server import Device
 from .test_context import MultiDeviceTestContext, DeviceTestContext
+from .utils import is_non_str_seq
 from . import DeviceClass, LatestDeviceImpl, DevLong64, SCALAR, READ
 
 # Conditional imports
@@ -29,11 +30,9 @@ __all__ = (
     'ClassicAPISimpleDeviceClass'
 )
 
-PY3 = sys.version_info >= (3,)
-
 # char \x00 cannot be sent in a DevString. All other 1-255 chars can
 ints = tuple(range(1, 256))
-bytes_devstring = bytes(ints) if PY3 else ''.join(map(chr, ints))
+bytes_devstring = bytes(ints)
 str_devstring = bytes_devstring.decode('latin-1')
 
 # Test devices
@@ -94,15 +93,28 @@ class BadEnumDuplicates(enum.IntEnum):
 # why you will find that all property related tests are truncated to
 # the first two values of the arrays below
 
-TYPED_VALUES = {
+GENERAL_TYPED_VALUES = {
     int: (1, 2, -65535, 23),
     float: (2.71, 3.14, -34.678e-10, 12.678e+15),
     str: ('hey hey', 'my my', bytes_devstring, str_devstring),
     bool: (False, True, True, False),
-    (int,): ([1, 2, 3], [9, 8, 7], [-65535, 2224], [0, 0]),
-    (float,): ([0.1, 0.2, 0.3], [0.9, 0.8, 0.7], [-6.3232e-3], [0.0, 12.56e+12]),
-    (str,): (['ab', 'cd', 'ef'], ['gh', 'ij', 'kl'], 10*[bytes_devstring], 10*[str_devstring]),
-    (bool,): ([False, False, True], [True, False, False], [False], [True])}
+    (int,): (np.array([1, 2]), [1, 2, 3], [9, 8, 7], [-65535, 2224], [0, 0], ),
+    (float,): (np.array([0.1, 0.2]), [0.1, 0.2, 0.3], [0.9, 0.8, 0.7], [-6.3232e-3], [0.0, 12.56e+12]),
+    (str,): (np.array(['foo', 'bar']), ['ab', 'cd', 'ef'], ['gh', 'ij', 'kl'], 10*[bytes_devstring], 10*[str_devstring]),
+    (bool,): (np.array([True, False]), [False, False, True], [True, False, False], [False], [True]),
+}
+
+IMAGE_TYPED_VALUES = {
+    ((int,),): (np.vstack((np.array([1, 2]), np.array([3, 4]))),
+                [[1, 2, 3], [4, 5, 6]], [[-65535, 2224], [-65535, 2224]],),
+    ((float,),): (np.vstack((np.array([0.1, 0.2]), np.array([0.3, 0.4]))),
+                  [[0.1, 0.2, 0.3], [0.9, 0.8, 0.7]], [[-6.3232e-3, 0.0], [0.0, 12.56e+12]],),
+    ((str,),): (np.vstack((np.array(['hi-hi', 'ha-ha']), np.array(['hu-hu', 'yuhuu']))),
+                [['ab', 'cd', 'ef'], ['gh', 'ij', 'kl']], [10*[bytes_devstring],10*[bytes_devstring]],
+                [10*[str_devstring], 10*[str_devstring]],),
+    ((bool,),): (np.vstack((np.array([True, False]), np.array([False, True]))),
+                 [[False, False, True], [True, False, False]], [[False]], [[True]],)
+}
 
 # these sets to test Device Server input arguments
 
@@ -143,51 +155,66 @@ DEVICE_SERVER_ARGUMENTS = (
 )
 
 def repr_type(x):
-    if not isinstance(x, tuple):
-        return x.__name__
-    return f'({x[0].__name__},)'
+    if isinstance(x, (list, tuple)):
+        return f'({repr_type(x[0])},)'
+    return f'{x.__name__}'
 
 
 # Numpy helpers
 
 if numpy and pytest:
 
-    def assert_close(a, b):
+    def __assert_all_types(a, b):
         if isinstance(a, str):
             assert a == b
             return
-        if isinstance(a, collections.abc.Sequence) and len(a) and isinstance(a[0], str):
-            assert list(a) == list(b)
-            return
+
         try:
             assert a == pytest.approx(b)
-        except ValueError:
+        except (ValueError, TypeError):
             numpy.testing.assert_allclose(a, b)
+
+    def assert_close(a, b):
+        if is_non_str_seq(a):
+            assert len(a) == len(b)
+            for _a, _b in zip(a, b):
+                assert_close(_a, _b)
+        else:
+            __assert_all_types(a, b)
+
 
 # Pytest fixtures
 
 if pytest:
 
-    def create_result(dtype, value):
-        if dtype == str:
-            if PY3:
-                if isinstance(value, bytes):
-                    return value.decode('latin-1')
-            else:
-                if isinstance(value, str):
-                    return value.encode('latin-1')
-        elif dtype == (str,):
-            return [create_result(str, v) for v in value]
+    def __convert_value(value):
+        if isinstance(value, bytes):
+            return value.decode('latin-1')
         return value
+
+    def create_result(dtype, value):
+        if isinstance(dtype, (list, tuple)):
+            dtype = dtype[0]
+            return [create_result(dtype, v) for v in value]
+
+        return __convert_value(value)
 
     @pytest.fixture(params=DevState.values.values())
     def state(request):
         return request.param
 
     @pytest.fixture(
-        params=list(TYPED_VALUES.items()),
+        params=list(GENERAL_TYPED_VALUES.items()),
         ids=lambda x: repr_type(x[0]))
-    def typed_values(request):
+    def command_typed_values(request):
+        dtype, values = request.param
+        expected = lambda v: create_result(dtype, v)
+        return dtype, values, expected
+
+    @pytest.fixture(
+        params=list({**GENERAL_TYPED_VALUES, **IMAGE_TYPED_VALUES}.items()),
+        ids=lambda x: repr_type(x[0]))
+    def attribute_typed_values(request):
         dtype, values = request.param
         expected = lambda v: create_result(dtype, v)
         return dtype, values, expected

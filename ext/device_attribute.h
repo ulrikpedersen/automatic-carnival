@@ -22,6 +22,39 @@
 #include "tango_numpy.h"
 #include "fast_from_py.h"
 
+template<long tangoTypeConst>
+struct python_tangocpp
+{
+    typedef typename TANGO_const2type(tangoTypeConst) TangoScalarType;
+
+    static inline void to_cpp(const bopy::object & py_value, TangoScalarType & result)
+    {
+        result = bopy::extract<TangoScalarType>(py_value);
+    }
+
+    static inline bopy::object to_python(const TangoScalarType & value)
+    {
+        return bopy::object(value);
+    }
+};
+
+template<>
+struct python_tangocpp<Tango::DEV_STRING>
+{
+    static const long tangoTypeConst = Tango::DEV_STRING;
+    typedef TANGO_const2type(tangoTypeConst) TangoScalarType;
+
+    static inline void to_cpp(const bopy::object & py_value, TangoScalarType & result)
+    {
+        result = from_str_to_char(py_value.ptr());
+    }
+
+    static inline bopy::object to_python(const TangoScalarType & value)
+    {
+        return from_char_to_boost_str(value);
+    }
+};
+
 namespace PyDeviceAttribute {
 
 /// @name Types

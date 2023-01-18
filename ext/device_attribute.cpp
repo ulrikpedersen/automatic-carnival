@@ -30,39 +30,6 @@ static const char* type_attr_name = "type";
 static const char* is_empty_attr_name = "is_empty";
 static const char* has_failed_attr_name = "has_failed";
 
-template<long tangoTypeConst>
-struct python_tangocpp
-{
-    typedef typename TANGO_const2type(tangoTypeConst) TangoScalarType;
-
-    static inline void to_cpp(const bopy::object & py_value, TangoScalarType & result)
-    {
-        result = bopy::extract<TangoScalarType>(py_value);
-    }
-
-    static inline bopy::object to_python(const TangoScalarType & value)
-    {
-        return bopy::object(value);
-    }
-};
-
-template<>
-struct python_tangocpp<Tango::DEV_STRING>
-{
-    static const long tangoTypeConst = Tango::DEV_STRING;
-    typedef TANGO_const2type(tangoTypeConst) TangoScalarType;
-
-    static inline void to_cpp(const bopy::object & py_value, TangoScalarType & result)
-    {
-        result = from_str_to_char(py_value.ptr());
-    }
-
-    static inline bopy::object to_python(const TangoScalarType & value)
-    {
-	return from_char_to_boost_str(value);
-    }
-};
-
 #include "device_attribute_numpy.hpp"
 
 #define EXTRACT_VALUE(self, value_ptr) \

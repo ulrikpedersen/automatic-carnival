@@ -9,8 +9,8 @@ from tango.server import Device, command
 from tango.test_utils import DeviceTestContext
 
 
-def test_async_command_polled(typed_values):
-    dtype, values, expected = typed_values
+def test_async_command_polled(command_typed_values):
+    dtype, values, expected = command_typed_values
 
     if dtype == (bool,):
         pytest.xfail('Not supported for some reasons')
@@ -28,8 +28,8 @@ def test_async_command_polled(typed_values):
             assert_array_equal(result, expected(value))
 
 
-def test_async_command_with_polled_callback(typed_values):
-    dtype, values, expected = typed_values
+def test_async_command_with_polled_callback(command_typed_values):
+    dtype, values, expected = command_typed_values
 
     if dtype == (bool,):
         pytest.xfail('Not supported for some reasons')
@@ -52,8 +52,8 @@ def test_async_command_with_polled_callback(typed_values):
             assert_array_equal(result.argout, expected(value))
 
 
-def test_async_command_with_pushed_callback(typed_values):
-    dtype, values, expected = typed_values
+def test_async_command_with_pushed_callback(command_typed_values):
+    dtype, values, expected = command_typed_values
 
     if dtype == (bool,):
         pytest.xfail('Not supported for some reasons')

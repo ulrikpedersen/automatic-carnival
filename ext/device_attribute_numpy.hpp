@@ -244,7 +244,7 @@ namespace PyDeviceAttribute {
                     PyObject* dataObj = PyArray_GETITEM(array, iter->dataptr);
                     const object py_data = object( handle<>( dataObj ) );
 
-                    buffer[y*ndim_x + x] = extract<TangoScalarType>(py_data);
+                    python_tangocpp<tangoTypeConst>::to_cpp(py_data, buffer[y*ndim_x + x]);
                 }
             }
         } else {
@@ -252,7 +252,7 @@ namespace PyDeviceAttribute {
                 PyObject* dataObj = PyArray_GETITEM(array, iter->dataptr);
                 const object py_data = object( handle<>( dataObj ) );
 
-                buffer[x] = extract<TangoScalarType>(py_data);
+                python_tangocpp<tangoTypeConst>::to_cpp(py_data, buffer[x]);
 
                 PyArray_ITER_NEXT(iter);
             }
