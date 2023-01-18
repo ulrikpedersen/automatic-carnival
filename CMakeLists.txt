@@ -16,7 +16,18 @@ include(cmake/project-is-top-level.cmake)
 
 # ---- Dependencies -------
 find_package(PkgConfig REQUIRED)
-set(TANGO_ROOT "" CACHE STRING "Tango root installation path")
+
+# TANGO_ROOT: this variable can be set as an environment variable or
+#             as a cache variable on the commandline: "-D TANGO_ROOT=/path/to/cpptango
+#             By default the variable is not set and system is searched for cpptango
+#             using pkg-config.
+#             The cache variable/commandline takes precedence over the environment variable.
+if (DEFINED ENV{TANGO_ROOT})
+    set(TANGO_ROOT "$ENV{TANGO_ROOT}" CACHE STRING "Tango root installation path")
+else()
+    set(TANGO_ROOT "" CACHE STRING "Tango root installation path")
+endif()
+message(STATUS "TANGO_ROOT cache variable is: \"TANGO_ROOT=${TANGO_ROOT}\"")
 list(APPEND CMAKE_PREFIX_PATH ${TANGO_ROOT})
 pkg_check_modules(TANGO REQUIRED IMPORTED_TARGET tango)
 
