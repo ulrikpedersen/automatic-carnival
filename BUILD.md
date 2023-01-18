@@ -8,7 +8,7 @@ A number of practical use-cases for building pytango or parts of it are describe
 Developers platforms
 --------------------
 
-We all have our favorite brand of laptop, desktop, server and distro... Embrace the diversity!
+We all have our favorite brand of laptop, desktop, server and distro... Embrace the diversity - it forces us to think outside of our own particular box!
 
 In random order:
 
@@ -157,7 +157,7 @@ setuptools   65.6.3
 (venv) ulrik@osloxf01 pytango $ pip install cmake   # ONLY IF CMAKE IS NOT ALREADY AVAILABLE
 ```
 
-Then configure, build and (optionally) install:
+If you **do** have the `CMakeUserPresets.json` file in the root of the project, then configure, build the `_pytango.so` library in "Debug" mode in the `cmakebuild/dev/` directory and (optionally) install it:
 ```shell
 (venv) ulrik@osloxf01 pytango $ mkdir install  # optional: if you want to test installed lib locally
 
@@ -170,3 +170,14 @@ _pytango.9.4.0.so _pytango.9.so     _pytango.so
 
 ```
 
+If you do **not** have the `CMakeUserPresets.json` in the root of the project (i.e. if you're in a hurry or on a CI platform) then configure, build and install is a little more manual but you can fall back on the available `ci-<platform>` presets where `<platform>` can be one of the following:
+ * ci-macOS
+ * ci-Linux
+ * ci-Windows
+
+Assuming that you do have the virtualenv defined as above (or all tools _somehow_ available), you can build a CI configuration which will build `_pytango.so` in "Release" mode in the `cmakebuild/` directory:
+```shell
+(venv) ulrik@osloxf01 pytango $ cmake --preset=ci-macOS -DTANGO_ROOT=/path/to/installed/tango.9.4
+(venv) ulrik@osloxf01 pytango $ cmake --build --preset=dev
+
+```
