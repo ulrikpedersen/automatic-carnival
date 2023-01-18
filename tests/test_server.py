@@ -16,8 +16,8 @@ from tango.pyutil import parse_args
 from tango.server import _get_tango_type_format, command, attribute, device_property
 from tango.test_utils import DeviceTestContext, MultiDeviceTestContext, \
     GoodEnum, BadEnumNonZero, BadEnumSkipValues, BadEnumDuplicates, \
-    assert_close, DEVICE_SERVER_ARGUMENTS, os_system
-from tango.utils import EnumTypeError, get_enum_labels, is_pure_str, is_non_str_seq
+    assert_close, DEVICE_SERVER_ARGUMENTS
+from tango.utils import EnumTypeError, get_enum_labels, is_pure_str
 
 # Asyncio imports
 try:
@@ -76,8 +76,8 @@ def test_set_status(server_green_mode):
 
 # Test commands
 
-def test_identity_command(typed_values, server_green_mode):
-    dtype, values, expected = typed_values
+def test_identity_command(command_typed_values, server_green_mode):
+    dtype, values, expected = command_typed_values
 
     if dtype == (bool,):
         pytest.xfail('Not supported for some reasons')
@@ -380,13 +380,13 @@ def test_wrong_command_result(server_green_mode):
 
 # Test attributes
 
-def test_read_write_attribute(typed_values, server_green_mode):
-    dtype, values, expected = typed_values
+def test_read_write_attribute(attribute_typed_values, server_green_mode):
+    dtype, values, expected = attribute_typed_values
 
     class TestDevice(Device):
         green_mode = server_green_mode
 
-        @attribute(dtype=dtype, max_dim_x=10,
+        @attribute(dtype=dtype, max_dim_x=10, max_dim_y=10,
                    access=AttrWriteType.READ_WRITE)
         def attr(self):
             return self.attr_value
@@ -400,24 +400,30 @@ def test_read_write_attribute(typed_values, server_green_mode):
             proxy.attr = value
             assert_close(proxy.attr, expected(value))
 
-def test_read_write_wvalue_attribute(typed_values, server_green_mode):
-    dtype, values, expected = typed_values
+def test_read_write_wvalue_attribute(attribute_typed_values, server_green_mode):
+    dtype, values, expected = attribute_typed_values
+
+    if dtype in [((int,),), ((float,),), ((str,),), ((bool,),)]:
+        pytest.xfail("At the moment IMAGEs are not supported for set_write_value")
 
     class TestDevice(Device):
         green_mode = server_green_mode
 
-        @attribute(dtype=dtype, max_dim_x=10, access=AttrWriteType.READ_WRITE)
+        @attribute(dtype=dtype, max_dim_x=10, max_dim_y=10, access=AttrWriteType.READ_WRITE)
         def attr(self):
             return self.value
 
         @attr.write
         def attr(self, value):
             self.value = value
-            if is_non_str_seq(value):
-                self.get_device_attr().get_w_attr_by_name('attr').set_write_value(value, len(value))
+            w_attr = self.get_device_attr().get_w_attr_by_name('attr')
+            fmt = w_attr.get_data_format()
+            if fmt == AttrDataFormat.SPECTRUM:
+                w_attr.set_write_value(value, len(value))
+            elif fmt == AttrDataFormat.IMAGE:
+                w_attr.set_write_value(value, len(value[0]), len(value))
             else:
-                self.get_device_attr().get_w_attr_by_name('attr').set_write_value(value)
-
+                w_attr.set_write_value(value)
 
     with DeviceTestContext(TestDevice) as proxy:
         for value in values:
@@ -571,8 +577,8 @@ def test_attribute_access_with_default_method_names(server_green_mode):
             _ = proxy.attr_rw
 
 
-def test_read_write_dynamic_attribute(typed_values, server_green_mode):
-    dtype, values, expected = typed_values
+def test_read_write_dynamic_attribute(attribute_typed_values, server_green_mode):
+    dtype, values, expected = attribute_typed_values
 
     class TestDevice(Device):
         green_mode = server_green_mode
@@ -587,6 +593,7 @@ def test_read_write_dynamic_attribute(typed_values, server_green_mode):
                 name="dyn_attr",
                 dtype=dtype,
                 max_dim_x=10,
+                max_dim_y=10,
                 access=AttrWriteType.READ_WRITE,
                 fget=self.read,
                 fset=self.write)
@@ -668,9 +675,8 @@ def test_read_write_dynamic_attribute_enum(server_green_mode):
             assert "dyn_attr" not in proxy.get_attribute_list()
 
 
-def test_read_write_dynamic_attribute_is_allowed_with_async(
-        typed_values, server_green_mode):
-    dtype, values, expected = typed_values
+def test_read_write_dynamic_attribute_is_allowed_with_async(attribute_typed_values, server_green_mode):
+    dtype, values, expected = attribute_typed_values
 
     class TestDevice(Device):
         green_mode = server_green_mode
@@ -685,6 +691,7 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(
                 name="dyn_attr1",
                 dtype=dtype,
                 max_dim_x=10,
+                max_dim_y=10,
                 access=AttrWriteType.READ_WRITE,
                 fget=self.read_attr1,
                 fset=self.write_attr1,
@@ -697,6 +704,7 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(
                 name="dyn_attr2",
                 dtype=dtype,
                 max_dim_x=10,
+                max_dim_y=10,
                 access=AttrWriteType.READ_WRITE,
                 fget=TestDevice.read_attr2,
                 fset=TestDevice.write_attr2,
@@ -709,6 +717,7 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(
                 name="dyn_attr3",
                 dtype=dtype,
                 max_dim_x=10,
+                max_dim_y=10,
                 access=AttrWriteType.READ_WRITE,
                 fget="read_attr3",
                 fset="write_attr3",
@@ -746,9 +755,12 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(
         def _get_attr_data_info(self):
             simple_type, fmt = _get_tango_type_format(dtype)
             data_info = [[simple_type, fmt, READ_WRITE]]
-            if fmt == AttrDataFormat.SPECTRUM:
+            if fmt in [AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE]:
                 max_dim_x = 10
                 data_info[0].append(max_dim_x)
+            if fmt == AttrDataFormat.IMAGE:
+                max_dim_y = 10
+                data_info[0].append(max_dim_y)
             return data_info
 
         @command(dtype_in=bool)
@@ -1018,8 +1030,8 @@ def test_read_only_dynamic_attribute_with_dummy_write_method(server_green_mode):
 
 # Test properties
 
-def test_device_property_no_default(typed_values, server_green_mode):
-    dtype, values, expected = typed_values
+def test_device_property_no_default(command_typed_values, server_green_mode):
+    dtype, values, expected = command_typed_values
     patched_dtype = dtype if dtype != (bool,) else (int,)
     value = values[1]
 
@@ -1043,8 +1055,8 @@ def test_device_property_no_default(typed_values, server_green_mode):
         assert_close(proxy.get_prop_with_db_value(), expected(value))
 
 
-def test_device_property_with_default_value(typed_values, server_green_mode):
-    dtype, values, expected = typed_values
+def test_device_property_with_default_value(command_typed_values, server_green_mode):
+    dtype, values, expected = command_typed_values
     patched_dtype = dtype if dtype != (bool,) else (int,)
 
     default = values[0]
@@ -1195,9 +1207,8 @@ def test_polled_attribute(server_green_mode):
             assert dct[attr] == poll_period
 
 
-def test_mandatory_device_property_with_db_value_succeeds(
-        typed_values, server_green_mode):
-    dtype, values, expected = typed_values
+def test_mandatory_device_property_with_db_value_succeeds(command_typed_values, server_green_mode):
+    dtype, values, expected = command_typed_values
     patched_dtype = dtype if dtype != (bool,) else (int,)
     default, value = values[:2]
 
@@ -1215,9 +1226,8 @@ def test_mandatory_device_property_with_db_value_succeeds(
         assert_close(proxy.get_prop(), expected(value))
 
 
-def test_mandatory_device_property_without_db_value_fails(
-        typed_values, server_green_mode):
-    dtype, _, _ = typed_values
+def test_mandatory_device_property_without_db_value_fails(command_typed_values, server_green_mode):
+    dtype, _, _ = command_typed_values
 
     class TestDevice(Device):
         green_mode = server_green_mode

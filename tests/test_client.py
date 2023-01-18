@@ -28,9 +28,7 @@ from tango import DeviceProxy, DevFailed, GreenMode
 from tango import DeviceInfo, AttributeInfo, AttributeInfoEx
 from tango.server import Device
 from tango.utils import is_str_type, is_int_type, is_float_type, is_bool_type
-from tango.test_utils import (
-    DeviceTestContext, PY3, assert_close, bytes_devstring, str_devstring
-)
+from tango.test_utils import DeviceTestContext, assert_close, bytes_devstring, str_devstring
 from tango.gevent import DeviceProxy as gevent_DeviceProxy
 from tango.futures import DeviceProxy as futures_DeviceProxy
 from tango.asyncio import DeviceProxy as asyncio_DeviceProxy
@@ -327,14 +325,11 @@ def test_write_read_string_attribute(tango_test):
 
     values = [b'', '', 'Hello, World!', b'Hello, World!',
               bytes_devstring, str_devstring, bytes_big, str_big]
-    if PY3:
-        expected_values = ['', '', 'Hello, World!', 'Hello, World!',
-                           str_devstring, str_devstring,
-                           str_big, str_big]
-    else:
-        expected_values = ['', '', 'Hello, World!', 'Hello, World!',
-                           bytes_devstring, bytes_devstring,
-                           bytes_big, bytes_big]
+
+    expected_values = ['', '', 'Hello, World!', 'Hello, World!',
+                       str_devstring, str_devstring,
+                       str_big, str_big]
+
 
     for value, expected_value in zip(values, expected_values):
         tango_test.write_attribute(attr_name, value, wait=True)
@@ -434,14 +429,10 @@ def test_command_string(tango_test):
 
     values = [b'', '', 'Hello, World!', b'Hello, World!',
               bytes_devstring, str_devstring, bytes_big, str_big]
-    if PY3:
-        expected_values = ['', '', 'Hello, World!', 'Hello, World!',
-                           str_devstring, str_devstring,
-                           str_big, str_big]
-    else:
-        expected_values = ['', '', 'Hello, World!', 'Hello, World!',
-                           bytes_devstring, bytes_devstring,
-                           bytes_big, bytes_big]
+
+    expected_values = ['', '', 'Hello, World!', 'Hello, World!',
+                       str_devstring, str_devstring,
+                       str_big, str_big]
 
     for value, expected_value in zip(values, expected_values):
         result = tango_test.command_inout(cmd_name, value, wait=True)
