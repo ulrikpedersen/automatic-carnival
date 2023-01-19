@@ -53,7 +53,7 @@ find_package(Boost 1.71 REQUIRED COMPONENTS python${BOOST_PYTHON_SUFFIX} CONFIG)
 message(STATUS "Boost Python version: ${Boost_PYTHON_VERSION}")
 
 # Just a sanity check: the python used to build pytango should match the
-# version used to build libboost_python.
+# version used to build libboost_python. This could be changed from WARNING to ERROR(?)
 # cmake hack: using VERSION_EQUAL would be better but Python reports a full MAJOR.MINOR.PATCH
 #             version number whereas boost-python only reports MAJOR.MINOR. MATCHES works but
 #             we're pretending that the shorter version string is a regex.
@@ -64,7 +64,7 @@ endif()
 # ---- Declare library ----
 # A python extension module library must be shared
 add_library(
-    pytango_pytango SHARED
+    pytango_tango SHARED
     ext/device_attribute.cpp
     ext/device_proxy.cpp
     ext/pytgutils.cpp
@@ -133,16 +133,16 @@ add_library(
     ext/event_data.cpp
     ext/data_ready_event_data.cpp
 )
-add_library(pytango::pytango ALIAS pytango_pytango)
+add_library(pytango::tango ALIAS pytango_tango)
 
 set_target_properties(
-    pytango_pytango PROPERTIES
+    pytango_tango PROPERTIES
     CXX_VISIBILITY_PRESET hidden
     VISIBILITY_INLINES_HIDDEN YES
     VERSION "${PROJECT_VERSION}"
     SOVERSION "${PROJECT_VERSION_MAJOR}"
-    EXPORT_NAME pytango
-    OUTPUT_NAME pytango
+    EXPORT_NAME tango
+    OUTPUT_NAME tango
     PREFIX "_"
 )
 if ( CMAKE_SYSTEM_NAME MATCHES "Darwin" )
@@ -150,20 +150,20 @@ if ( CMAKE_SYSTEM_NAME MATCHES "Darwin" )
     # the extension module. On MacOS the default is .dylib so we have
     # to force the suffix here.
     # (what to do for Windows?)
-    set_target_properties(pytango_pytango PROPERTIES SUFFIX ".so")  
+    set_target_properties(pytango_tango PROPERTIES SUFFIX ".so")  
 endif()
 
 target_include_directories(
-    pytango_pytango
+    pytango_tango
     PUBLIC
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/ext>"
 )
 
-target_compile_features(pytango_pytango PUBLIC cxx_std_14)
+target_compile_features(pytango_tango PUBLIC cxx_std_14)
 
-target_link_libraries(pytango_pytango PRIVATE Python::Module Python::NumPy Boost::python PkgConfig::TANGO)
+target_link_libraries(pytango_tango PRIVATE Python::Module Python::NumPy Boost::python PkgConfig::TANGO)
 
-install(TARGETS pytango_pytango LIBRARY DESTINATION pytango)
+install(TARGETS pytango_tango LIBRARY DESTINATION tango)
 
 # ---- Developer mode ----
 
