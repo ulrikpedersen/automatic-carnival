@@ -29,7 +29,7 @@ from ._tango import (
     DispLevel, UserDefaultAttrProp, StdStringVector)
 
 from .utils import document_method as __document_method
-from .utils import copy_doc, get_latest_device_class, is_pure_str
+from .utils import copy_doc, get_latest_device_class, set_complex_value, is_pure_str
 from .green import get_executor
 from .attr_data import AttrData
 
@@ -385,7 +385,6 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
 
         :raises DevFailed:
     """
-
     attr_data = None
     if isinstance(attr, AttrData):
         attr_data = attr
@@ -393,6 +392,7 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
 
     att_name = attr.get_name()
 
+    # get read method and its name
     r_name = f'read_{att_name}'
     if r_meth is None:
         if attr_data is not None:
@@ -404,12 +404,23 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
     else:
         r_name = r_meth.__name__
 
+    # patch it if attribute is readable
     if attr.get_writable() in (AttrWriteType.READ,
                                AttrWriteType.READ_WRITE,
                                AttrWriteType.READ_WITH_WRITE,
                                ):
-        _ensure_user_method_can_be_called(self, r_name, r_meth)
+        r_meth = __ensure_user_method_is_device_attr(self, r_name, r_meth)
 
+        read_args = getfullargspec(r_meth)
+        has_attr_argument = len(read_args.args) - int(__is_method_bound(r_meth))
+
+        r_meth = functools.partial(__dynamic_attribute_reader,
+                                   r_meth=r_meth,
+                                   has_attr_argument=has_attr_argument)
+        r_name = f"__wrapped_{att_name}_{r_name}__"
+        setattr(self, r_name, r_meth)
+
+    # get write method and its name
     w_name = f'write_{att_name}'
     if w_meth is None:
         if attr_data is not None:
@@ -421,12 +432,23 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
     else:
         w_name = w_meth.__name__
 
+    # patch it if attribute is writable
     if attr.get_writable() in (AttrWriteType.WRITE,
                                AttrWriteType.READ_WRITE,
                                AttrWriteType.READ_WITH_WRITE,
                                ):
-        _ensure_user_method_can_be_called(self, w_name, w_meth)
+        w_meth = __ensure_user_method_is_device_attr(self, w_name, w_meth)
 
+        write_args = getfullargspec(w_meth)
+        has_value_argument = len(write_args.args) - int(__is_method_bound(w_meth)) - 1  # we always pass attr
+
+        w_meth = functools.partial(__dynamic_attribute_writer,
+                                   w_meth=w_meth,
+                                   has_value_argument=has_value_argument)
+        w_name = f"__wrapped_{att_name}_{w_name}__"
+        setattr(self, w_name, w_meth)
+
+    # get is allowed method and its name
     ia_name = f'is_{att_name}_allowed'
     if is_allo_meth is None:
         if attr_data is not None:
@@ -436,14 +458,50 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
         elif hasattr(self, ia_name):
             is_allo_meth = getattr(self, ia_name)
     else:
-            ia_name = is_allo_meth.__name__
-    _ensure_user_method_can_be_called(self, ia_name, is_allo_meth)
+        ia_name = is_allo_meth.__name__
+
+    # patch it if exists
+    if is_allo_meth is not None:
+        is_allo_meth = __ensure_user_method_is_device_attr(self, ia_name, is_allo_meth)
+        ia_name = f"__wrapped_{att_name}_{ia_name}__"
+
+        setattr(self, ia_name, run_in_executor(is_allo_meth))
 
     self._add_attribute(attr, r_name, w_name, ia_name)
     return attr
 
 
-def _ensure_user_method_can_be_called(obj, name, user_method):
+def __dynamic_attribute_reader(attr, r_meth, has_attr_argument):
+    worker = get_worker()
+
+    if has_attr_argument:
+        ret = worker.execute(r_meth, attr)
+    else:
+        ret = worker.execute(r_meth)
+
+    if not attr.get_value_flag() and ret is not None:
+        set_complex_value(attr, ret)
+
+    return ret
+
+
+def __dynamic_attribute_writer(attr, w_meth, has_value_argument):
+    worker = get_worker()
+
+    if has_value_argument:
+        return worker.execute(w_meth, attr, attr.get_write_value())
+
+    return worker.execute(w_meth, attr)
+
+
+def __is_method_bound(method):
+    """
+    checks if method belongs to any class,
+    """
+    return hasattr(method, '__self__')
+
+
+def __ensure_user_method_is_device_attr(obj, name, user_method):
     if user_method is not None:
 
         # we have to check that user provided us with the device method,
@@ -464,13 +522,7 @@ def _ensure_user_method_can_be_called(obj, name, user_method):
                 )
             user_method = bound_user_method
 
-        # If server run in async mode, all calls must be wrapped with async executor:
-        user_method_cannot_be_run_directly = get_worker().asynchronous
-        if user_method_cannot_be_run_directly:
-            setattr(obj, name, run_in_executor(user_method))
-
-    # else user hasn't provided a method, which may be OK (e.g., using named lookup, or
-    # unnecessary method like a write for a read-only attribute).
+    return user_method
 
 
 def __DeviceImpl__remove_attribute(self, attr_name):

@@ -872,6 +872,30 @@ is then passed to the :meth:`~tango.server.Device.add_attribute` method.
 Which arguments you have to provide depends on the type of the attribute.  For example,
 a WRITE attribute does not need a read method.
 
+.. note:: Starting from PyTango 9.4.0 the read and write methods for dynamic attributes
+          can also be implemented with the high-level API.  Prior to that, only the low-level
+          API was available.
+
+for the read function it is possible to use one of the following signatures::
+
+    def low_level_read(self, attr):
+        attr.set_value(self.attr_value)
+
+    def high_level_read_with_attr_argument(self, attr):
+        return self.attr_value
+
+    def high_level_read_without_attr_argument(self):
+        return self.attr_value
+
+for the write function it is possible to use one of the following signatures::
+
+    def low_level_write(self, attr):
+        self.attr_value = attr.get_write_value()
+
+    def high_level_write(self, attr, value):
+        self.attr_value = value
+
+
 Here is an example of a device which creates a dynamic attribute on startup::
 
     from tango import AttrWriteType
@@ -893,12 +917,10 @@ Here is an example of a device which creates a dynamic attribute on startup::
 
         def generic_read(self, attr):
             value = self._values[attr.get_name()]
-            # unlike a normal static attribute read, we have to modify the value
-            # inside this attr object, rather than just returning the value
-            attr.set_value(value)
+            return value
 
-        def generic_write(self, attr):
-            self._values[attr.get_name()] = attr.get_write_value()
+        def generic_write(self, attr, value):
+            self._values[attr.get_name()] = value
 
         def generic_is_allowed(self, req_type):
             # note: we don't know which attribute is being read!
