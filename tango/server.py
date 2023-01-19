@@ -29,7 +29,7 @@ from .pipe_data import PipeData
 from .device_class import DeviceClass
 from .device_server import LatestDeviceImpl, get_worker, set_worker, run_in_executor
 from .utils import get_enum_labels
-from .utils import is_seq, is_non_str_seq, is_pure_str, is_enum_seq, is_enum
+from .utils import is_seq, is_non_str_seq, is_pure_str, is_enum_seq, is_enum, set_complex_value
 from .utils import scalar_to_array_type, TO_TANGO_TYPE
 from .green import get_green_mode, get_executor
 from .pyutil import Util
@@ -66,39 +66,6 @@ def from_typeformat_to_type(dtype, dformat):
     elif dformat == AttrDataFormat.IMAGE:
         raise TypeError("Cannot translate IMAGE to tango type")
     return scalar_to_array_type(dtype)
-
-
-def set_complex_value(attr, value):
-    is_tuple = isinstance(value, tuple)
-    dtype, fmt = attr.get_data_type(), attr.get_data_format()
-    if dtype == CmdArgType.DevEncoded:
-        if is_tuple and len(value) == 4:
-            attr.set_value_date_quality(*value)
-        elif is_tuple and len(value) == 3 and is_non_str_seq(value[0]):
-            attr.set_value_date_quality(value[0][0],
-                                        value[0][1],
-                                        *value[1:])
-        else:
-            attr.set_value(*value)
-    else:
-        if is_tuple:
-            if len(value) == 3:
-                if fmt == AttrDataFormat.SCALAR:
-                    attr.set_value_date_quality(*value)
-                elif fmt == AttrDataFormat.SPECTRUM:
-                    if is_seq(value[0]):
-                        attr.set_value_date_quality(*value)
-                    else:
-                        attr.set_value(value)
-                else:
-                    if is_seq(value[0]) and is_seq(value[0][0]):
-                        attr.set_value_date_quality(*value)
-                    else:
-                        attr.set_value(value)
-            else:
-                attr.set_value(value)
-        else:
-            attr.set_value(value)
 
 
 def _get_wrapped_read_method(attribute, read_method):

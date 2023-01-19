@@ -1,6 +1,7 @@
 """Test utilities"""
 
 import sys
+import textwrap
 import enum
 import numpy as np
 
@@ -243,3 +244,36 @@ if pytest:
         sys.platform = request.param
         yield
         sys.platform = original_platform
+
+    @pytest.fixture(ids=["low_level_read",
+                         "high_level_read_with_attr",
+                         "high_level_read_no_attr"],
+                    params=[textwrap.dedent("""\
+                            def read_dyn_attr(self, attr):
+                                attr.set_value(self.attr_value)
+                                """),
+                            textwrap.dedent("""\
+                            def read_dyn_attr(self, attr):
+                                return self.attr_value
+                                """),
+                            textwrap.dedent("""\
+                            def read_dyn_attr(self):
+                                return self.attr_value
+                                """),
+                            ])
+    def dynamic_attribute_read_function(request):
+        return request.param
+
+    @pytest.fixture(ids=["low_level_write",
+                         "high_level_write"],
+                    params=[textwrap.dedent("""\
+                            def write_dyn_attr(self, attr):
+                                self.attr_value = attr.get_write_value()
+                                """),
+                            textwrap.dedent("""\
+                            def write_dyn_attr(self, attr, value):
+                                self.attr_value = value
+                                """)
+                            ])
+    def dynamic_attribute_write_function(request):
+        return request.param

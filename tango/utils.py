@@ -380,6 +380,39 @@ __number_klasses = tuple(__number_klasses)
 __seq_klasses = tuple(__seq_klasses)
 
 
+def set_complex_value(attr, value):
+    is_tuple = isinstance(value, tuple)
+    dtype, fmt = attr.get_data_type(), attr.get_data_format()
+    if dtype == CmdArgType.DevEncoded:
+        if is_tuple and len(value) == 4:
+            attr.set_value_date_quality(*value)
+        elif is_tuple and len(value) == 3 and is_non_str_seq(value[0]):
+            attr.set_value_date_quality(value[0][0],
+                                        value[0][1],
+                                        *value[1:])
+        else:
+            attr.set_value(*value)
+    else:
+        if is_tuple:
+            if len(value) == 3:
+                if fmt == AttrDataFormat.SCALAR:
+                    attr.set_value_date_quality(*value)
+                elif fmt == AttrDataFormat.SPECTRUM:
+                    if is_seq(value[0]):
+                        attr.set_value_date_quality(*value)
+                    else:
+                        attr.set_value(value)
+                else:
+                    if is_seq(value[0]) and is_seq(value[0][0]):
+                        attr.set_value_date_quality(*value)
+                    else:
+                        attr.set_value(value)
+            else:
+                attr.set_value(value)
+        else:
+            attr.set_value(value)
+
+
 def __get_tango_type(obj):
     if is_non_str_seq(obj):
         tg_type, tg_format = get_tango_type(obj[0])
