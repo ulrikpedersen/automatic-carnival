@@ -102,16 +102,21 @@ A recommended example to get started with (replace with TANGO_ROOT entry):
 
 Building the CPP source code
 ----------------------------
+Please note that the instructions in this section are for developers/maintainers of the C++
+extension code. Python developers/users/packagers do **not** need to invoke cmake directly
+in order to build pytango. See the next section for python build instructions.
 
 The `ext/` dir contains the source code for the pytango bindings to the cppTango C++ library.
 These python bindings are generated using Boost Python and built using cmake.
 
+### PyTango library dependencies
 The C++ code has dependencies on:
  * Tango (cppTango) & its dependencies...
  * Python
  * Boost Python
  * NumPy
 
+### PyTango Build System Dependencies
 In addition the build system requires a development environment with the following tools:
  * cmake (>=3.16 - the newer the better)
  * python (>= 3.8 - the newer the better)
@@ -122,6 +127,7 @@ In addition the build system requires a development environment with the followi
 
 (the latter 3 are not *strictly* required but the build system is configured by default to expect these)
 
+### Example build 
 The following example shows how to build _just_ the C++ code into a shared object called `_pytango.so`.
 The example uses a python virtualenv in order to pull together an up-to-date build environment which developers are encouraged to use.
 
@@ -181,3 +187,67 @@ Assuming that you do have the virtualenv defined as above (or all tools _somehow
 (venv) ulrik@osloxf01 pytango $ cmake --build --preset=dev
 
 ```
+
+Building the python package
+---------------------------
+
+Pytango can be built into a distribution package using the build system provided. The build sytstem is based
+on a few development tools, mainly:
+
+* cmake - for building the c++ code and pulling in dependency configurations
+* python build - the (new) standard build interface in python world
+* scikit-build-core - provides glue to seamlessly invoke cmake builds from a python build
+
+Assuming the library dependencies are already installed on your host (see [above](#pytango-library-dependencies)), you should create a python virtualenv for the build. This virtualenv can be very small because scikit-build-core actually creates its own virtualenv in the background (in /tmp) where the pytango build requirements are pulled in.
+
+```shell
+ulrik@osloxf01 pytango $ python3.11 -m venv buildvenv
+ulrik@osloxf01 pytango $ source buildvenv/bin/activate
+(buildvenv) ulrik@osloxf01 pytango $ pip install pip install build scikit-build-core
+...
+(buildvenv) ulrik@osloxf01 pytango $ pip list
+Package           Version
+----------------- -------
+build             0.10.0
+install           1.3.5
+packaging         23.0
+pip               22.3.1
+pyproject_hooks   1.0.0
+scikit_build_core 0.1.5
+setuptools        65.6.3
+
+# Setting the TANGO_ROOT variable is only required for a non-standard system install of cppTango
+(buildvenv) ulrik@osloxf01 pytango $ TANGO_ROOT=/path/to/installed/tango.9.4 python3 -m build
+...
+[100%] Built target pytango_tango
+*** Installing project into wheel...
+-- Install configuration: "Release"
+-- Installing: /var/folders/gp/7q57_wf53bs1_v04jvt52rm40000gn/T/tmparowuq1s/wheel/platlib/tango/_tango.9.4.0.so
+-- Installing: /var/folders/gp/7q57_wf53bs1_v04jvt52rm40000gn/T/tmparowuq1s/wheel/platlib/tango/_tango.9.so
+-- Installing: /var/folders/gp/7q57_wf53bs1_v04jvt52rm40000gn/T/tmparowuq1s/wheel/platlib/tango/_tango.so
+*** Making wheel...
+Successfully built pytango-9.4.0.tar.gz and pytango-9.4.0-cp311-cp311-macosx_12_0_arm64.whl
+(buildvenv) ulrik@osloxf01 pytango $ ls dist
+pytango-9.4.0-cp311-cp311-macosx_12_0_arm64.whl pytango-9.4.0.tar.gz
+
+```
+
+### Configuration options
+The above build is the most basic form of build. There are many ways to tweak and configure the build.
+
+Environment variables can be used to point to non-standard/non-system installed versions of boost, python and tango:
+* TANGO_ROOT
+* BOOST_ROOT
+* PYTHON_ROOT (to be confirmed)
+
+Other environment variables can also be used to control aspects of the build:
+* CMAKE_ARGS - use this to set flags/options that are used by scikit-build-core when invoking cmake.
+* CMAKE_GENERATOR - for example chose between "Unix Makefiles" (default) and "Ninja".
+
+It is also possible to invoke a set of defined cmake presets from `CMakePresets.json` by using the `CMAKE_ARGS` environment variable. This may be convenient to store CI configurations for cmake in one place and leave the CI yaml definitions quite simple (i.e. TANGO_ROOT could be defined in `CMakePresets.json`):
+
+```shell
+(buildvenv) ulrik@osloxf01 pytango $ CMAKE_ARGS="--preset=ci-macOS" python3 -m build
+```
+
+NOTE that you cannot reference presets from your own `CMakeUserPresets.json` as it is not packaged with the PyTango source distribution and not available in the temporary virtualenv that scikit-build-core creates.
