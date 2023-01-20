@@ -134,8 +134,8 @@ The example uses a python virtualenv in order to pull together an up-to-date bui
 Pre-amble: setup the environment.
 First check that you have a recent cmake (>= 3.16) installed:
 ```shell
-ulrik@osloxf01 home $ cd pytango
-ulrik@osloxf01 pytango $ cmake --version
+user@computer home $ cd pytango
+user@computer pytango $ cmake --version
 cmake version 3.25.1
 
 CMake suite maintained and supported by Kitware (kitware.com/cmake).
@@ -147,10 +147,10 @@ IF you don't have cmake in your environment. Otherwise they can conflict and cau
 We create a python virtualenv in order to conveniently pull in some recent versions of useful developer tools:
 ```shell
 cd pytango/   # if you're not already here...
-ulrik@osloxf01 pytango $ python3.11 -m venv venv
-ulrik@osloxf01 pytango $ source venv/bin/activate
-(venv) ulrik@osloxf01 pytango $ pip install clang-tidy clang-format numpy
-(venv) ulrik@osloxf01 pytango $ pip list
+user@computer pytango $ python3.11 -m venv venv
+user@computer pytango $ source venv/bin/activate
+(venv) user@computer pytango $ pip install clang-tidy clang-format numpy
+(venv) user@computer pytango $ pip list
 Package      Version
 ------------ --------
 clang-format 15.0.7
@@ -160,18 +160,18 @@ numpy        1.24.1
 pip          22.3.1
 setuptools   65.6.3
 
-(venv) ulrik@osloxf01 pytango $ pip install cmake   # ONLY IF CMAKE IS NOT ALREADY AVAILABLE
+(venv) user@computer pytango $ pip install cmake   # ONLY IF CMAKE IS NOT ALREADY AVAILABLE
 ```
 
 If you **do** have the `CMakeUserPresets.json` file in the root of the project, then configure, build the `_pytango.so` library in "Debug" mode in the `cmakebuild/dev/` directory and (optionally) install it:
 ```shell
-(venv) ulrik@osloxf01 pytango $ mkdir install  # optional: if you want to test installed lib locally
+(venv) user@computer pytango $ mkdir install  # optional: if you want to test installed lib locally
 
-(venv) ulrik@osloxf01 pytango $ cmake --preset=dev -DCMAKE_INSTALL_PREFIX=$(pwd)/install  # configuring - the install prefix is optional
-(venv) ulrik@osloxf01 pytango $ cmake --build --preset=dev   # building
-(venv) ulrik@osloxf01 pytango $ cmake --build --preset=dev --target install  # optionally install the library
+(venv) user@computer pytango $ cmake --preset=dev -DCMAKE_INSTALL_PREFIX=$(pwd)/install  # configuring - the install prefix is optional
+(venv) user@computer pytango $ cmake --build --preset=dev   # building
+(venv) user@computer pytango $ cmake --build --preset=dev --target install  # optionally install the library
 
-(venv) ulrik@osloxf01 pytango $ ls install/pytango/
+(venv) user@computer pytango $ ls install/pytango/
 _pytango.9.4.0.so _pytango.9.so     _pytango.so
 
 ```
@@ -183,8 +183,8 @@ If you do **not** have the `CMakeUserPresets.json` in the root of the project (i
 
 Assuming that you do have the virtualenv defined as above (or all tools _somehow_ available), you can build a CI configuration which will build `_pytango.so` in "Release" mode in the `cmakebuild/` directory:
 ```shell
-(venv) ulrik@osloxf01 pytango $ cmake --preset=ci-macOS -DTANGO_ROOT=/path/to/installed/tango.9.4
-(venv) ulrik@osloxf01 pytango $ cmake --build --preset=dev
+(venv) user@computer pytango $ cmake --preset=ci-macOS -DTANGO_ROOT=/path/to/installed/tango.9.4
+(venv) user@computer pytango $ cmake --build --preset=dev
 
 ```
 
@@ -201,11 +201,11 @@ on a few development tools, mainly:
 Assuming the library dependencies are already installed on your host (see [above](#pytango-library-dependencies)), you should create a python virtualenv for the build. This virtualenv can be very small because scikit-build-core actually creates its own virtualenv in the background (in /tmp) where the pytango build requirements are pulled in.
 
 ```shell
-ulrik@osloxf01 pytango $ python3.11 -m venv buildvenv
-ulrik@osloxf01 pytango $ source buildvenv/bin/activate
-(buildvenv) ulrik@osloxf01 pytango $ pip install pip install build scikit-build-core
+user@computer pytango $ python3.11 -m venv buildvenv
+user@computer pytango $ source buildvenv/bin/activate
+(buildvenv) user@computer pytango $ pip install pip install build scikit-build-core
 ...
-(buildvenv) ulrik@osloxf01 pytango $ pip list
+(buildvenv) user@computer pytango $ pip list
 Package           Version
 ----------------- -------
 build             0.10.0
@@ -217,7 +217,7 @@ scikit_build_core 0.1.5
 setuptools        65.6.3
 
 # Setting the TANGO_ROOT variable is only required for a non-standard system install of cppTango
-(buildvenv) ulrik@osloxf01 pytango $ TANGO_ROOT=/path/to/installed/tango.9.4 python3 -m build
+(buildvenv) user@computer pytango $ TANGO_ROOT=/path/to/installed/tango.9.4 python3 -m build
 ...
 [100%] Built target pytango_tango
 *** Installing project into wheel...
@@ -227,7 +227,7 @@ setuptools        65.6.3
 -- Installing: /var/folders/gp/7q57_wf53bs1_v04jvt52rm40000gn/T/tmparowuq1s/wheel/platlib/tango/_tango.so
 *** Making wheel...
 Successfully built pytango-9.4.0.tar.gz and pytango-9.4.0-cp311-cp311-macosx_12_0_arm64.whl
-(buildvenv) ulrik@osloxf01 pytango $ ls dist
+(buildvenv) user@computer pytango $ ls dist
 pytango-9.4.0-cp311-cp311-macosx_12_0_arm64.whl pytango-9.4.0.tar.gz
 
 ```
@@ -247,7 +247,7 @@ Other environment variables can also be used to control aspects of the build:
 It is also possible to invoke a set of defined cmake presets from `CMakePresets.json` by using the `CMAKE_ARGS` environment variable. This may be convenient to store CI configurations for cmake in one place and leave the CI yaml definitions quite simple (i.e. TANGO_ROOT could be defined in `CMakePresets.json`):
 
 ```shell
-(buildvenv) ulrik@osloxf01 pytango $ CMAKE_ARGS="--preset=ci-macOS" python3 -m build
+(buildvenv) user@computer pytango $ CMAKE_ARGS="--preset=ci-macOS" python3 -m build
 ```
 
 NOTE that you cannot reference presets from your own `CMakeUserPresets.json` as it is not packaged with the PyTango source distribution and not available in the temporary virtualenv that scikit-build-core creates.
