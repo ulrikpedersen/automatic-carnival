@@ -1,56 +1,77 @@
-# Source for base image:  https://github.com/conda-forge/docker-images
+# Lets name this image: ubuntu2204-pytango-dev
+FROM ubuntu:22.04
+RUN apt-get update -q \
+    && apt-get install -y -q sudo \
+       build-essential git pkg-config gdb libtool autoconf automake \
+       ca-certificates curl vim \
+       python3 python3-pip python3-venv \
+       lcov doxygen clang-tidy-12 cppcheck \
+       libboost-python-dev libzmq3-dev libomniorb4-dev omniorb-idl libcos4-dev omniidl libjpeg-turbo8-dev \
+       unattended-upgrades
+RUN unattended-upgrade \
+    && apt-get purge unattended-upgrades -y \
+    && update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-12 120
+RUN pip3 install cmake
 
-FROM --platform=linux/amd64 condaforge/mambaforge:4.14.0-0
+# Create a non-root account 'developer' without a password
+# and give this account sudo access.
+RUN useradd --create-home --shell /bin/bash developer \
+    && adduser developer sudo \
+    # Ensure sudo group users are not asked for a password when using 
+    # sudo command (ammending sudoers file)
+    && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers \
+    # Create a /src/ dir and hand it over to 'developer'
+    && mkdir /src && chown -R developer:developer /src
 
-ARG PYTHON_VERSION=3.10
-ARG CPP_TANGO_VERSION=9.4.0
-ARG TANGO_TEST_VERSION=3.6
+USER developer
+WORKDIR /src
 
-# setting default shell to bash
-SHELL ["/bin/bash", "--login", "-c"]
+# build and install tangoidl
+RUN git clone --depth 1 https://gitlab.com/tango-controls/tango-idl.git \
+    && mkdir -p tango-idl/build && cd tango-idl \
+    && cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/usr/local/ \
+    && cmake --build build \
+    && sudo cmake --install build
 
-# install required packages
-# - if we use cpptango dev - we have to build TangoTest, so also packages to build
-RUN if [[ "${CPP_TANGO_VERSION}" = *"dev"* ]] || [[ "${CPP_TANGO_VERSION}" = *"rc"* ]]; then \
-      export BUILD_DEPENDENCIES="build-essential cmake git libcos4-dev libomniorb4-dev libomnithread4-dev libzmq3-dev omniidl"; \
-    fi && \
-    apt-get update -y && \
-    DEBIAN_FRONTEND=noninteractive apt-get -y install make pkg-config rsync $BUILD_DEPENDENCIES && \
-    apt-get autoremove -y && \
-    apt-get clean -y && \
-    rm -rf /var/lib/apt/lists/*
+# build and install cppTango
+WORKDIR /src
+RUN git clone https://gitlab.com/tango-controls/cppTango.git \
+    && cd cppTango && git checkout 9.4.0 \
+    && mkdir -p build \
+    && cmake -S . -B build -DBUILD_TESTING=OFF -DIDL_BASE=/usr/local \
+    && cmake --build build \
+    && sudo cmake --install build \
+    && sudo ldconfig
 
-# setup conda environment
-RUN mamba create --yes --name py$PYTHON_VERSION-tango$CPP_TANGO_VERSION python=$PYTHON_VERSION
+# Build and install TangoTest
+# This is required for running the pytest unittest suite
+WORKDIR /src
+RUN git clone https://gitlab.com/tango-controls/TangoTest.git  \
+    && cd TangoTest \
+    && mkdir -p build \
+    && cmake -S . -B build \
+    && cmake --build build \
+    && sudo cmake --install build
 
-# add conda environment to PATH
-ENV PATH /opt/conda/envs/py"$PYTHON_VERSION"-tango"$CPP_TANGO_VERSION"/bin:$PATH
+WORKDIR /src
+RUN python3 -m venv py3venv \ 
+    && . py3venv/bin/activate \
+    && pip install -U pip \
+    # Build dependencies:
+    && pip install scikit-build-core wheel build cmake numpy ninja \ 
+    # Install dependencies is just numpy...
+    # Test dependencies
+    && pip install pytest pytest-forked gevent psutil
 
-# setup environment to activate automatically, with correct vars
-RUN mamba init bash && \
-    echo "mamba activate py$PYTHON_VERSION-tango$CPP_TANGO_VERSION" >> ~/.bashrc && \
-    echo "export CONDA_ENV_NAME=py$PYTHON_VERSION-tango$CPP_TANGO_VERSION" >> ~/.bashrc && \
-    echo "export BOOST_ROOT=\$CONDA_PREFIX TANGO_ROOT=\$CONDA_PREFIX ZMQ_ROOT=\$CONDA_PREFIX OMNI_ROOT=\$CONDA_PREFIX" >> ~/.bashrc && \
-    echo "export PYTHON_VERSION=$PYTHON_VERSION" >> ~/.bashrc && \
-    echo "export BOOST_PYTHON_LIB=boost_python\${PYTHON_VERSION//./}" >> ~/.bashrc && \
-    sed -i 's/\[ -z "\$PS1" \] && return/# disabled early exit for non-interactive usage in container!/' ~/.bashrc
+WORKDIR /src
+ENV VIRTUAL_ENV=/src/py3venv
+ENV PATH=${VIRTUAL_ENV}/bin:${PATH}
+ENV CMAKE_GENERATOR="Ninja"
+CMD exec /bin/bash
 
-# create conda environment in one step
-# - install cpptango and PyTango extension build requirements
-# - depending on cppTango version, we may get TangoTest from conda-forge, or build from source
-RUN export PYTHON_TEST_PACKAGES="pytest pytest-forked 'gevent!=1.5a1' psutil" && \
-    if [[ "${CPP_TANGO_VERSION}" = *"dev"* ]] || [[ "${CPP_TANGO_VERSION}" = *"rc"* ]]; then \
-      export TANGO_TEST_PACKAGE=""; \
-    else \
-      export TANGO_TEST_PACKAGE=tango-test=$TANGO_TEST_VERSION; \
-    fi && \
-    mamba install --yes -c conda-forge -c tango-controls/label/dev -c conda-forge/label/cpptango_rc \
-      boost cppzmq cxx-compiler numpy cpptango=$CPP_TANGO_VERSION $TANGO_TEST_PACKAGE $PYTHON_TEST_PACKAGES && \
-    mamba clean --all --force-pkgs-dirs --yes
-
-# if we use cpptango dev/rc - we build TangoTest
-RUN if [[ "${CPP_TANGO_VERSION}" = *"dev"* ]] || [[ "${CPP_TANGO_VERSION}" = *"rc"* ]]; then \
-      git clone --depth 1 -b "$TANGO_TEST_VERSION" https://gitlab.com/tango-controls/TangoTest.git /tangotest && \
-      cmake -B /tangotest/build -DCMAKE_CXX_COMPILER=/usr/bin/x86_64-linux-gnu-g++ -DTANGO_WARNINGS_AS_ERRORS=ON /tangotest && \
-      make -C /tangotest/build install; \
-    fi
+# To build:
+# docker build . -t ubuntu2204-pytango-dev
+# To run interactively:
+# docker run -it --rm -v $(pwd):/src/pytango --name u22-pytango-dev ubuntu2204-pytango-dev
+# To run a configure/build/other command...
+# 

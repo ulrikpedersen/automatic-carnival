@@ -9,34 +9,57 @@ Using some command line overrides, images for various versions of Python and Tan
 
 ## Building the Docker image
 
-From within this folder, run commands like the following:
+From within the pytango root folder, run commands like the following:
 
 ```shell script
-export PYTHON_VERSION=3.10
-export CPP_TANGO_VERSION=9.4.0
-docker build . --platform=linux/amd64 -t pytango-dev:py${PYTHON_VERSION}-tango${CPP_TANGO_VERSION} --build-arg PYTHON_VERSION --build-arg CPP_TANGO_VERSION
+docker build .devcontainer/ -t ubuntu2204-pytango-dev
 ```
 
 Note: 
-- the cppTango version must exist on conda-forge:  https://anaconda.org/conda-forge/cpptango
 - the `--platform=linux/amd64 ` parameter is useful if not running on a linux/amd64 platform  
-  (e.g., Apple Silicon) - without the parameter conda may fail to find compatible packages.
+  (e.g., Apple Silicon) although this image does build natively on `--platform=linux/arm64`.
 
 ## Build, install and test PyTango in a container
 
 Run an instance of the container, volume mounting an external PyTango repo into the container.  For example
-(assuming PYTHON_VERSION and CPP_TANGO_VERSION are still set as above):
+(assuming PYTHON_VERSION and CPP_TANGO_VERSION are still set as above). From the root of the pytango module:
 
 ```shell script
-docker run -it --rm -v ~/tango-src/pytango:/opt/pytango pytango-dev:py${PYTHON_VERSION}-tango${CPP_TANGO_VERSION}
+docker run -it --rm -v $(pwd):/src/pytango --name u22-pytango-dev ubuntu2204-pytango-dev
 ```
 
-Inside the container:
+Inside the container build and install the wheel:
 
 ```shell script
-cd /opt/pytango
-python setup.py build
-python setup.py test
+cd /src/pytango
+python -m build
+pip install dist/*.whl
+```
+
+Basic check that the build and install has worked:
+```shell
+cd /src   # Step out of the pytango root or you will not be able to import tango from the installed wheel
+python -c "import tango; print(tango.utils.info())"
+PyTango 9.4.0rc2 (9, 4, 0, 'rc', 2)
+PyTango compiled with:
+    Python : 3.10.6
+    Numpy  : PYTANGO_NUMPY_VERSION
+    Tango  : 9.4.0
+    Boost  : 1.74.0
+
+PyTango runtime is:
+    Python : 3.10.6
+    Numpy  : 1.24.1
+    Tango  : 9.4.0
+
+PyTango running on:
+uname_result(system='Linux', node='548deafc4ec7', release='5.15.49-linuxkit', version='#1 SMP PREEMPT Tue Sep 13 07:51:32 UTC 2022', machine='aarch64')
+```
+
+Running the full unittest suite with pytest:
+```shell
+cd /src/pytango
+pytest
 ```
 
 ## Using a container with an IDE
@@ -52,7 +75,7 @@ Add a new interpreter:
 
 - Open the _Add Interpreter..._ dialog
 - Select _Docker_
-- Pick the image to use, e.g., `pytango-dev:py3.10-tango9.4.0`
+- Pick the image to use, e.g., `ubuntu2204-pytango-dev`
 
 Running tests:
 
@@ -80,6 +103,7 @@ Once in the container, your `pytango` folder will be mounted at `/workspaces/pyt
 With VS Code in the Dev Container mode and opening a Terminal; you will find yourself in the pytango source dir, ready to build and test:
 
 ```shell script
-python setup.py build
-python setup.py test
+python -m build
+pip install dist/*.whl
+pytest
 ```
