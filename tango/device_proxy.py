@@ -827,11 +827,9 @@ def __DeviceProxy__get_attribute_config(self, value):
 
         Parameters :
                 - name : (str) attribute name
-        Return     : (AttributeInfoEx) Object containing the attribute
-                        information
+        Return     : (AttributeInfoEx) Object containing the attribute information
 
-        Throws     : ConnectionFailed, CommunicationFailed,
-                        DevFailed from device
+        Throws     : ConnectionFailed, CommunicationFailed, DevFailed from device
 
         Deprecated: use get_attribute_config_ex instead
 
@@ -841,9 +839,8 @@ def __DeviceProxy__get_attribute_config(self, value):
             attributes pass a sequence containing the constant tango.constants.AllAttr
 
         Parameters :
-                - names : (sequence<str>) attribute names
-        Return     : (AttributeInfoList) Object containing the attributes
-                        information
+                - names : (sequence(str)) attribute names
+        Return     : (AttributeInfoList) Object containing the attributes information
 
         Throws     : ConnectionFailed, CommunicationFailed,
                      DevFailed from device,
@@ -862,32 +859,18 @@ def __DeviceProxy__get_attribute_config(self, value):
 
 def __DeviceProxy__get_attribute_config_ex(self, value):
     """
-    get_attribute_config_ex( self, name) -> AttributeInfoListEx :
+    get_attribute_config_ex(self, name or sequence(names)) -> AttributeInfoListEx :
 
-            Return the extended attribute configuration for a single attribute.
+            Return the extended attribute configuration for a single attribute or for the list of
+            specified attributes. To get all the attributes pass a sequence
+            containing the constant tango.constants.AllAttr.
 
         Parameters :
-                - name : (str) attribute name
-        Return     : (AttributeInfoEx) Object containing the attribute
-                        information
+                - name : (str) attribute name or (sequence(str)) attribute names
+        Return     : (AttributeInfoListEx) Object containing the attribute information
 
         Throws     : ConnectionFailed, CommunicationFailed,
                         DevFailed from device
-
-    get_attribute_config( self, names) -> AttributeInfoListEx :
-
-            Return the extended attribute configuration for the list of
-            specified attributes. To get all the attributes pass a sequence
-            containing the constant tango.constants.AllAttr
-
-        Parameters :
-                - names : (sequence<str>) attribute names
-        Return     : (AttributeInfoList) Object containing the attributes
-                        information
-
-        Throws     : ConnectionFailed, CommunicationFailed,
-                     DevFailed from device,
-                     TypeError
     """
     if isinstance(value, StdStringVector):
         return self._get_attribute_config_ex(value)

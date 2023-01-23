@@ -807,6 +807,12 @@ def __doc_base_types():
             - extensions : (StdStringVector) extensions (currently not used)
             - disp_level : (DispLevel) display level (OPERATOR, EXPERT)"""
 
+    AttributeInfoList.__doc__ = """
+    List of AttributeInfo objects, containing available information for the attributes"""
+
+    AttributeInfoListEx.__doc__ = """
+    List of AttributeInfoEx objects, containing available information for the attributes"""
+
     ChangeEventInfo.__doc__ = """
     A structure containing available change event information for an attribute
     with the folowing members:

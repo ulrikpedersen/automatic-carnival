@@ -165,7 +165,7 @@ Upload the new version to PyPI
   * If necessary, pip install twine: https://pypi.org/project/twine/)
   * On AppVeyor find the build for the tag, download artifacts, and upload wheels.
     E.g., for version 9.4.4:
-      - ``$ twine upload dist/pytango-9.4.4-*.whl``
+    - ``$ twine upload dist/pytango-9.4.4-*.whl``
 
 Bump the version with "-dev" in the develop branch
   * Make a branch like ``bump-dev-version`` from head of ``develop``.
