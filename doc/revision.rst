@@ -129,12 +129,12 @@ Version history
 | 9.3.6    | 9.3.6 release.                                                                                                                                                                      |
 |          |                                                                                                                                                                                     |
 |          | Changes:                                                                                                                                                                            |
-|          |     - `Pull Request #482: Use cpptango 9.3.5 for Widows wheels (except Py27 x64) <https://gitlab.com/tango-controls/pytango/-/merge_requests/482>`_                                        |
+|          |     - `Pull Request #482: Use cpptango 9.3.5 for Widows wheels (except Py27 x64) <https://gitlab.com/tango-controls/pytango/-/merge_requests/482>`_                                 |
 |          |                                                                                                                                                                                     |
 |          | Bug fixes:                                                                                                                                                                          |
-|          |     - `Pull Request #477: Resolve "Dynamic attribute in 9.3.5 fails" <https://gitlab.com/tango-controls/pytango/-/merge_requests/477>`_                                     |
-|          |     - `Pull Request #479: Fix green mode usage from run method kwarg <https://gitlab.com/tango-controls/pytango/-/merge_requests/479>`_              |
-|          |     - `Pull Request #480: Resolve "read-only dynamic attribute with dummy write function fails in 9.3.5" <https://gitlab.com/tango-controls/pytango/-/merge_requests/480>`_                           |
+|          |     - `Pull Request #477: Resolve "Dynamic attribute in 9.3.5 fails" <https://gitlab.com/tango-controls/pytango/-/merge_requests/477>`_                                             |
+|          |     - `Pull Request #479: Fix green mode usage from run method kwarg <https://gitlab.com/tango-controls/pytango/-/merge_requests/479>`_                                             |
+|          |     - `Pull Request #480: Resolve "read-only dynamic attribute with dummy write function fails in 9.3.5" <https://gitlab.com/tango-controls/pytango/-/merge_requests/480>`_         |
 |          |                                                                                                                                                                                     |
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | 9.3.5    | 9.3.5 release.                                                                                                                                                                      |
