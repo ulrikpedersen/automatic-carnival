@@ -363,6 +363,10 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
         to the device class attribute list. Therefore, all devices belonging to the
         same class created after this attribute addition will also have this attribute.
 
+        If you pass a reference to unbound method for read, write or is_allowed method
+        (e.g. DeviceClass.read_function or self.__class__.read_function),
+        during execution the corresponding bound method (self.read_function) will be used.
+
         :param attr: the new attribute to be added to the list.
         :type attr: server.attribute or Attr or AttrData
         :param r_meth: the read method to be called on a read request
@@ -511,17 +515,10 @@ def __ensure_user_method_is_device_attr(obj, name, user_method):
         if not is_device_method:
             # in case user gave us class method, we are trying to find it in device:
             bound_user_method = getattr(obj, name, None)
-            if bound_user_method is None:
-                raise ValueError(
-                    f"User-supplied method for attributes must be "
-                    f"available as a bound method on the Device class. "
-                    f"When accessing Tango attributes, the PyTango extension "
-                    f"code, PyAttr::read, uses the name of the method "
-                    f"to get a reference to it from the Device object. "
-                    f"{name} was not found on {obj}."
-                )
-            user_method = bound_user_method
-
+            if bound_user_method:
+                user_method = bound_user_method
+            else:
+                setattr(obj, name, user_method)
     return user_method
 
 

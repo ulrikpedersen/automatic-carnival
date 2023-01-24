@@ -864,10 +864,9 @@ when the attribute is written and fisallowed is the method to be executed
 to implement the attribute state machine.  This :class:`tango.server.attribute` object
 is then passed to the :meth:`~tango.server.Device.add_attribute` method.
 
-.. note:: The methods used for fget, fset and fisallowed must be methods that exist
-          on your Device class.  They cannot be plain functions, nor belong to a
-          different class.  You can pass a reference to the bound or unbound method,
-          but during execution the bound method will be used.
+.. note:: If the fget (fread), fset (fwrite) and fisallowed are given as str(name) they must be methods
+          that exist on your Device class. If you want to use plain functions, or functions belonging to a
+          different class, you should pass a callable.
 
 Which arguments you have to provide depends on the type of the attribute.  For example,
 a WRITE attribute does not need a read method.
