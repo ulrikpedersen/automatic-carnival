@@ -69,20 +69,42 @@ def from_typeformat_to_type(dtype, dformat):
 
 
 def _get_wrapped_read_method(attribute, read_method):
+    """
+    Checks which signature has method.
+    If the read method has 1 argument, the method is wrapped into another method
+    which has correct parameter definition to make it work.
+
+    Additionally, we wrap it with executor, if needed.
+
+    :param attribute: the attribute data information
+    :type attribute: AttrData
+    :param read_method: read method
+    :type read_method: callable
+    """
+
     read_args = getfullargspec(read_method)
     nb_args = len(read_args.args)
 
     green_mode = attribute.read_green_mode
 
-    if nb_args < 2:
-        if green_mode == GreenMode.Synchronous:
+    if nb_args < 1:  # plain methods do not have "self" argument
+        if green_mode:
             @functools.wraps(read_method)
             def read_attr(self, attr):
-                ret = read_method(self)
+                worker = get_worker()
+                ret = worker.execute(read_method)
                 if not attr.get_value_flag() and ret is not None:
                     set_complex_value(attr, ret)
                 return ret
         else:
+            @functools.wraps(read_method)
+            def read_attr(self, attr):
+                ret = read_method()
+                if not attr.get_value_flag() and ret is not None:
+                    set_complex_value(attr, ret)
+                return ret
+    else:
+        if green_mode:
             @functools.wraps(read_method)
             def read_attr(self, attr):
                 worker = get_worker()
@@ -90,24 +112,20 @@ def _get_wrapped_read_method(attribute, read_method):
                 if not attr.get_value_flag() and ret is not None:
                     set_complex_value(attr, ret)
                 return ret
-    else:
-        if green_mode == GreenMode.Synchronous:
-            read_attr = read_method
         else:
             @functools.wraps(read_method)
             def read_attr(self, attr):
-                return get_worker().execute(read_method, self, attr)
+                ret = read_method(self)
+                if not attr.get_value_flag() and ret is not None:
+                    set_complex_value(attr, ret)
+                return ret
 
     return read_attr
 
 
 def __patch_read_method(tango_device_klass, attribute):
     """
-    Checks if method given by it's name for the given DeviceImpl
-    class has the correct signature. If a read/write method doesn't
-    have a parameter (the traditional Attribute), then the method is
-    wrapped into another method which has correct parameter definition
-    to make it work.
+    Finds read method for attribute, wraps it with executor and adds wrapped method to device dict.
 
     :param tango_device_klass: a DeviceImpl class
     :type tango_device_klass: class
@@ -130,28 +148,44 @@ def __patch_read_method(tango_device_klass, attribute):
 
 
 def _get_wrapped_write_method(attribute, write_method):
+    """
+    Wraps write method with executor, if needed.
+    """
+    read_args = getfullargspec(write_method)
+    nb_args = len(read_args.args)
+
     green_mode = attribute.write_green_mode
 
-    if green_mode == GreenMode.Synchronous:
-        @functools.wraps(write_method)
-        def write_attr(self, attr):
-            value = attr.get_write_value()
-            return write_method(self, value)
+    if nb_args < 2:  # plain methods do not have "self" argument
+        if green_mode:
+            @functools.wraps(write_method)
+            def write_attr(self, attr):
+                value = attr.get_write_value()
+                return get_worker().execute(write_method, value)
+        else:
+            @functools.wraps(write_method)
+            def write_attr(self, attr):
+                value = attr.get_write_value()
+                return write_method(value)
+
     else:
-        @functools.wraps(write_method)
-        def write_attr(self, attr):
-            value = attr.get_write_value()
-            return get_worker().execute(write_method, self, value)
+        if green_mode:
+            @functools.wraps(write_method)
+            def write_attr(self, attr):
+                value = attr.get_write_value()
+                return get_worker().execute(write_method, self, value)
+        else:
+            @functools.wraps(write_method)
+            def write_attr(self, attr):
+                value = attr.get_write_value()
+                return write_method(self, value)
+
     return write_attr
 
 
 def __patch_write_method(tango_device_klass, attribute):
     """
-    Checks if method given by it's name for the given DeviceImpl
-    class has the correct signature. If a read/write method doesn't
-    have a parameter (the traditional Attribute), then the method is
-    wrapped into another method which has correct parameter definition
-    to make it work.
+    Finds write method for attribute, wraps it with executor and adds wrapped method to device dict.
 
     :param tango_device_klass: a DeviceImpl class
     :type tango_device_klass: class
@@ -170,12 +204,79 @@ def __patch_write_method(tango_device_klass, attribute):
     setattr(tango_device_klass, method_name, write_attr)
 
 
+def _get_wrapped_isallowed_method(attribute, isallowed_method):
+    """
+    Checks which signature has method.
+    If the isallosed method has 1 argument, the method is wrapped into another method
+    which has correct parameter definition to make it work.
+
+    Additionally, we wrap it with executor, if needed.
+
+    :param attribute: the attribute data information
+    :type attribute: AttrData
+    :param isallowed_method: is allowed method
+    :type isallowed_method: callable
+    """
+
+    isallowed_args = getfullargspec(isallowed_method)
+    nb_args = len(isallowed_args.args)
+
+    green_mode = attribute.isallowed_green_mode
+    if nb_args < 2:  # plain methods do not have "self" argument
+        if green_mode:
+            @functools.wraps(isallowed_method)
+            def isallowed_attr(self, request):
+                worker = get_worker()
+                return worker.execute(isallowed_method, request)
+        else:
+            @functools.wraps(isallowed_method)
+            def isallowed_attr(self, request):
+                return isallowed_method(request)
+    else:
+        if green_mode:
+            @functools.wraps(isallowed_method)
+            def isallowed_attr(self, request):
+                worker = get_worker()
+                return worker.execute(isallowed_method, self, request)
+        else:
+            isallowed_attr = isallowed_method
+
+    return isallowed_attr
+
+
+def __patch_isallowed_method(tango_device_klass, attribute):
+    """
+    Finds isallowed method for attribute, wraps it with executor and adds wrapped method to device dict.
+
+    :param tango_device_klass: a DeviceImpl class
+    :type tango_device_klass: class
+    :param attribute: the attribute data information
+    :type attribute: AttrData
+    """
+    isallowed_method = getattr(attribute, "fisallowed", None)
+    if isallowed_method:
+        method_name = f"__is_{attribute.attr_name}_allowed__"
+        attribute.is_allowed_name = method_name
+    else:
+        method_name = attribute.is_allowed_name
+        isallowed_method = getattr(tango_device_klass, method_name, None)
+
+    if isallowed_method:
+        isallowed_attr = _get_wrapped_isallowed_method(attribute, isallowed_method)
+        method_name = f"__is_{attribute.attr_name}_allowed_wrapper__"
+        attribute.is_allowed_name = method_name
+
+        setattr(tango_device_klass, method_name, isallowed_attr)
+
+
 def __patch_attr_methods(tango_device_klass, attribute):
     """
-    Checks if the read and write methods have the correct signature.
-    If a read/write method doesn't have a parameter (the traditional
-    Attribute), then the method is wrapped into another method to make
-    this work.
+    Finds read, write and isallowed methods for attribute, checks their signatures
+    and wraps into another method to make them work.
+
+    Also patch methods with green executor, if requested.
+
+    Finally, adds pathed methods to the device dict.
 
     :param tango_device_klass: a DeviceImpl class
     :type tango_device_klass: class
@@ -188,6 +289,8 @@ def __patch_attr_methods(tango_device_klass, attribute):
     if attribute.attr_write in (AttrWriteType.WRITE,
                                 AttrWriteType.READ_WRITE):
         __patch_write_method(tango_device_klass, attribute)
+
+    __patch_isallowed_method(tango_device_klass, attribute)
 
 
 def _get_wrapped_pipe_read_method(pipe, read_method):
@@ -721,9 +824,10 @@ class attribute(AttrData):
     archive_abs_change     :obj:`str`                       None
     archive_rel_change     :obj:`str`                       None
     archive_period         :obj:`str`                       None
-    green_mode             :obj:`~tango.GreenMode`          None                                    green mode for read and write. None means use server green mode.
-    read_green_mode        :obj:`~tango.GreenMode`          None                                    green mode for read. None means use server green mode.
-    write_green_mode       :obj:`~tango.GreenMode`          None                                    green mode for write. None means use server green mode.
+    green_mode             :obj:`bool`                      True                                    Default green mode for read/write/isallowed functions. If True: run with green mode executor, if False: run directly
+    read_green_mode        :obj:`bool`                      'green_mode' value                      green mode for read function. If True: run with green mode executor, if False: run directly
+    write_green_mode       :obj:`bool`                      'green_mode' value                      green mode for write function. If True: run with green mode executor, if False: run directly
+    isallowed_green_mode   :obj:`bool`                      'green_mode' value                      green mode for is allowed function. If True: run with green mode executor, if False: run directly
     forwarded              :obj:`bool`                      False                                   the attribute should be forwarded if True
     ===================== ================================ ======================================= =======================================================================================
 
@@ -788,6 +892,10 @@ class attribute(AttrData):
             green_mode = kwargs.pop("green_mode", True)
             self.read_green_mode = kwargs.pop("read_green_mode", green_mode)
             self.write_green_mode = kwargs.pop("write_green_mode", green_mode)
+            self.isallowed_green_mode = kwargs.pop("isallowed_green_mode", green_mode)
+
+            if not fget:
+                fget = kwargs.pop("fread", None)
 
             if fget:
                 if inspect.isroutine(fget):
@@ -796,6 +904,19 @@ class attribute(AttrData):
                         if fget.__doc__ is not None:
                             kwargs['doc'] = fget.__doc__
                 kwargs['fget'] = fget
+
+            fset = kwargs.pop("fwrite", kwargs.pop("fset", None))
+            if fset:
+                if inspect.isroutine(fset):
+                    self.fset = fset
+                kwargs['fset'] = fset
+
+            fisallowed = kwargs.pop("fisallowed", None)
+            if fisallowed:
+                if inspect.isroutine(fisallowed):
+                    self.fisallowed = fisallowed
+                kwargs['fisallowed'] = fisallowed
+
         super().__init__(self.name, class_name)
         self.__doc__ = kwargs.get('doc', kwargs.get('description',
                                                     'TANGO attribute'))
@@ -962,6 +1083,7 @@ class pipe(PipeData):
         green_mode = kwargs.pop("green_mode", True)
         self.read_green_mode = kwargs.pop("read_green_mode", green_mode)
         self.write_green_mode = kwargs.pop("write_green_mode", green_mode)
+        self.isallowed_green_mode = kwargs.pop("isallowed_green_mode", green_mode)
 
         if fget:
             if inspect.isroutine(fget):
@@ -1209,8 +1331,7 @@ class device_property(_BaseProperty):
     """
     def __init__(self, dtype, doc='', mandatory=False,
                  default_value=None, update_db=False):
-        super().__init__(dtype, doc, default_value,
-                                              update_db)
+        super().__init__(dtype, doc, default_value, update_db)
         self.mandatory = mandatory
         if mandatory and default_value is not None:
             msg = ("Invalid arguments: 'mandatory' is True, so 'default_value' must be None. "
