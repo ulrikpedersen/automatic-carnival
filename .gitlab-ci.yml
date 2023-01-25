@@ -134,6 +134,12 @@ test-source:
   parallel:
     matrix:
       - PYTHON_VERSION: ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11']
+  artifacts:
+    when: always
+    paths:
+      - report.xml
+    reports:
+      junit: report.xml
 
 test-wheel:
   stage: test
