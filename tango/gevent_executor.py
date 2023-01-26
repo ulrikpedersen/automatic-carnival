@@ -62,7 +62,7 @@ def wrap_error(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except:
+        except Exception:
             return ExceptionInfo(*sys.exc_info())
 
     return wrapper
@@ -110,7 +110,7 @@ class GeventTask:
         self.started.set()
         try:
             self.value = self.func(*self.args, **self.kwargs)
-        except:
+        except Exception:
             self.exception = sys.exc_info()
         finally:
             self.done.set()

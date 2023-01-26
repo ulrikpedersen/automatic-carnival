@@ -141,11 +141,11 @@ def __Util__create_device(self, klass_name, device_name, alias=None, cb=None):
 
         # 5 - Initialize device object on this server
         k.device_factory([device_name])
-    except:
+    except Exception:
         try:
             if alias is not None:
                 db.delete_device_alias(alias)
-        except:
+        except Exception:
             pass
         db.delete_device(device_name)
 

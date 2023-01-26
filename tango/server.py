@@ -698,7 +698,7 @@ class BaseDevice(LatestDeviceImpl):
                 # Call this method in a try/except in case this is called
                 # during the DS shutdown sequence
                 ds_class = self.get_device_class()
-            except:
+            except Exception:
                 return
         try:
             pu = self.prop_util = ds_class.prop_util
@@ -1148,7 +1148,7 @@ def __build_command_doc(f, name, dtype_in, doc_in, dtype_out, doc_out):
         if not isinstance(dtype_in, str):
             try:
                 dtype_in_str = dtype_in.__name__
-            except:
+            except Exception:
                 pass
         msg = doc_in or '(not documented)'
         doc += f'\n\n:param {param_name}: {msg}\n:type {param_name}: {dtype_in_str}'
@@ -1157,7 +1157,7 @@ def __build_command_doc(f, name, dtype_in, doc_in, dtype_out, doc_out):
         if not isinstance(dtype_out, str):
             try:
                 dtype_out_str = dtype_out.__name__
-            except:
+            except Exception:
                 pass
         msg = doc_out or '(not documented)'
         doc += f'\n\n:return: {msg}\n:rtype: {dtype_out_str}'

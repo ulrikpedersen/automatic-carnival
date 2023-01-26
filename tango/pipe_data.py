@@ -159,14 +159,14 @@ class PipeData:
         # get write type
         try:
             self.pipe_write = PipeWriteType(pipe_info)
-        except:
+        except Exception:
             throw_ex(f"Wrong data write type in pipe argument for "
                      f"pipe {pipe_name} in class {name}\nPipe write type must be a "
                      f"tango.PipeWriteType")
         try:
             self.display_level = DispLevel(extra_info.get("display level",
                                                           DispLevel.OPERATOR))
-        except:
+        except Exception:
             throw_ex(f"Wrong display level in pipe information for "
                      f"pipe {pipe_name} in class {name}\nPipe information for "
                      f"display level is not a tango.DispLevel")

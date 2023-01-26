@@ -335,7 +335,7 @@ def __DeviceImpl__get_device_properties(self, ds_class=None):
         try:
             # Call this method in a try/except in case this is called during the DS shutdown sequence
             ds_class = self.get_device_class()
-        except:
+        except Exception:
             return
     try:
         pu = self.prop_util = ds_class.prop_util

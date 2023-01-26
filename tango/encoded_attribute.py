@@ -27,7 +27,7 @@ if constants.NUMPY_SUPPORT:
         import numpy
 
         np = numpy
-    except:
+    except Exception:
         np = None
 else:
     np = None

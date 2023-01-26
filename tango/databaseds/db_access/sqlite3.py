@@ -1525,7 +1525,7 @@ class SqlDatabase:
             try:
                 adm_dev = "dserver/" + old_name
                 previous_host = self.get_device_host(adm_dev)
-            except:
+            except Exception:
                 th_exc(DB_IncorrectServerName,
                        "Server " + old_name + "not defined in database!",
                        "DataBase::DbRenameServer()")

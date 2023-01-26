@@ -17,7 +17,7 @@ from functools import wraps
 # Compatibility imports
 try:
     from threading import get_ident
-except:
+except Exception:
     from threading import _get_ident as get_ident
 
 # Tango imports

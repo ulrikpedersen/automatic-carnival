@@ -1767,7 +1767,7 @@ def main(argv = None):
     if port is None:
         try:
             _, port = tango.ApiUtil.get_env_var("TANGO_HOST").split(":")
-        except:
+        except Exception:
             port = 10000
 
     options.argv += ["-ORBendPoint", f"giop:tcp::{port}"]
