@@ -1,8 +1,7 @@
 """Load tango-specific pytest fixtures."""
 
 from tango.test_utils import state, command_typed_values, attribute_typed_values
-from tango.test_utils import server_green_mode, os_system, attr_data_format
-from tango.test_utils import dynamic_attribute_read_function, dynamic_attribute_write_function
+from tango.test_utils import server_green_mode, attr_data_format
 import pytest
 
 import sys
@@ -10,8 +9,7 @@ import os
 import json
 
 __all__ = ("state", "command_typed_values", "attribute_typed_values",
-           "server_green_mode", "os_system", "attr_data_format",
-           "dynamic_attribute_read_function", "dynamic_attribute_write_function")
+           "server_green_mode", "attr_data_format")
 
 
 @pytest.hookimpl()
