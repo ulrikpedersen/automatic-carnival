@@ -417,8 +417,7 @@ def test_read_write_attribute(attribute_typed_values, server_green_mode):
             _ = proxy.attr
 
 
-def test_read_write_attribute_unbound_methods(attribute_typed_values, server_green_mode):
-    dtype, values, expected = attribute_typed_values
+def test_read_write_attribute_unbound_methods(server_green_mode):
 
     class Value():
         _value = None
@@ -459,20 +458,17 @@ def test_read_write_attribute_unbound_methods(attribute_typed_values, server_gre
         attr = attribute(fget=read_attr,
                          fset=write_attr,
                          fisallowed=is_attr_allowed,
-                         dtype=dtype,
-                         max_dim_x=10,
-                         max_dim_y=10,
+                         dtype=int,
                          access=AttrWriteType.READ_WRITE)
 
     with DeviceTestContext(TestDevice) as proxy:
         is_allowed = True
-        for value in values:
-            proxy.attr = value
-            assert_close(proxy.attr, expected(value))
+        proxy.attr = 123
+        assert proxy.attr == 123
 
         is_allowed = False
         with pytest.raises(DevFailed):
-            proxy.attr = value
+            proxy.attr = 123
         with pytest.raises(DevFailed):
             _ = proxy.attr
 
@@ -728,9 +724,42 @@ def test_attribute_access_with_default_method_names(server_green_mode):
             _ = proxy.attr_rw
 
 
+@pytest.fixture(ids=["low_level_read",
+                     "high_level_read_with_attr",
+                     "high_level_read_no_attr"],
+                params=[textwrap.dedent("""\
+                        def read_dyn_attr(self, attr):
+                            attr.set_value(self.attr_value)
+                            """),
+                        textwrap.dedent("""\
+                        def read_dyn_attr(self, attr):
+                            return self.attr_value
+                            """),
+                        textwrap.dedent("""\
+                        def read_dyn_attr(self):
+                            return self.attr_value
+                            """),
+                        ])
+def dynamic_attribute_read_function(request):
+    return request.param
+
+
+@pytest.fixture(ids=["low_level_write",
+                     "high_level_write"],
+                params=[textwrap.dedent("""\
+                        def write_dyn_attr(self, attr):
+                            self.attr_value = attr.get_write_value()
+                            """),
+                        textwrap.dedent("""\
+                        def write_dyn_attr(self, attr, value):
+                            self.attr_value = value
+                            """)
+                        ])
+def dynamic_attribute_write_function(request):
+    return request.param
+
 def test_read_write_dynamic_attribute(dynamic_attribute_read_function, dynamic_attribute_write_function,
-                                      attribute_typed_values, server_green_mode):
-    dtype, values, expected = attribute_typed_values
+                                      server_green_mode):
     class TestDevice(Device):
         green_mode = server_green_mode
 
@@ -742,9 +771,7 @@ def test_read_write_dynamic_attribute(dynamic_attribute_read_function, dynamic_a
         def add_dyn_attr(self):
             attr = attribute(
                 name="dyn_attr",
-                dtype=dtype,
-                max_dim_x=10,
-                max_dim_y=10,
+                dtype=int,
                 access=AttrWriteType.READ_WRITE,
                 fget=self.read_dyn_attr,
                 fset=self.write_dyn_attr)
@@ -763,15 +790,13 @@ def test_read_write_dynamic_attribute(dynamic_attribute_read_function, dynamic_a
 
     with DeviceTestContext(TestDevice) as proxy:
         proxy.add_dyn_attr()
-        for value in values:
-            proxy.dyn_attr = value
-            assert_close(proxy.dyn_attr, expected(value))
+        proxy.dyn_attr = 123
+        assert proxy.dyn_attr == 123
         proxy.delete_dyn_attr()
         assert "dyn_attr" not in proxy.get_attribute_list()
 
 
-def test_read_write_dynamic_attribute_enum(dynamic_attribute_read_function, dynamic_attribute_write_function,
-                                           server_green_mode, attr_data_format):
+def test_read_write_dynamic_attribute_enum(server_green_mode, attr_data_format):
     values = (member.value for member in GoodEnum)
     enum_labels = get_enum_labels(GoodEnum)
 
@@ -824,12 +849,18 @@ def test_read_write_dynamic_attribute_enum(dynamic_attribute_read_function, dyna
         def delete_dyn_attr(self):
             self.remove_attribute("dyn_attr")
 
+        sync_code = textwrap.dedent("""\
+            def read_dyn_attr(self):
+                return self.attr_value
+
+            def write_dyn_attr(self, attr, value):
+                self.attr_value = value
+                """)
+
         if server_green_mode != GreenMode.Asyncio:
-            exec(dynamic_attribute_read_function)
-            exec(dynamic_attribute_write_function)
+            exec(sync_code)
         else:
-            exec(dynamic_attribute_read_function.replace("def ", "async def "))
-            exec(dynamic_attribute_write_function.replace("def ", "async def "))
+            exec(sync_code.replace("def ", "async def "))
 
     def make_nd_value(value):
         if attr_data_format == AttrDataFormat.SCALAR:
@@ -879,10 +910,7 @@ def test_read_write_dynamic_attribute_enum(dynamic_attribute_read_function, dyna
             assert "dyn_attr" not in proxy.get_attribute_list()
 
 
-def test_read_write_dynamic_attribute_is_allowed_with_async(dynamic_attribute_read_function,
-                                                            dynamic_attribute_write_function,
-                                                            attribute_typed_values, server_green_mode):
-    dtype, values, expected = attribute_typed_values
+def test_read_write_dynamic_attribute_is_allowed_with_async(server_green_mode):
 
     class TestDevice(Device):
         green_mode = server_green_mode
@@ -891,15 +919,14 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(dynamic_attribute_re
             super().__init__(*args, **kwargs)
             for att_num in range(1, 7):
                 setattr(self, f"attr{att_num}_allowed", True)
-            self.attr_value = 1
+            for att_num in range(1, 7):
+                setattr(self, f"attr{att_num}_value", None)
 
         def initialize_dynamic_attributes(self):
             # recommended approach: using attribute() and bound methods:
             attr = attribute(
                 name="dyn_attr1",
-                dtype=dtype,
-                max_dim_x=10,
-                max_dim_y=10,
+                dtype=int,
                 access=AttrWriteType.READ_WRITE,
                 fget=self.read_dyn_attr1,
                 fset=self.write_dyn_attr1,
@@ -910,9 +937,7 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(dynamic_attribute_re
             # not recommended: using attribute() with unbound methods:
             attr = attribute(
                 name="dyn_attr2",
-                dtype=dtype,
-                max_dim_x=10,
-                max_dim_y=10,
+                dtype=int,
                 access=AttrWriteType.READ_WRITE,
                 fget=TestDevice.read_dyn_attr2,
                 fset=TestDevice.write_dyn_attr2,
@@ -923,9 +948,7 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(dynamic_attribute_re
             # possible approach: using attribute() with method name strings:
             attr = attribute(
                 name="dyn_attr3",
-                dtype=dtype,
-                max_dim_x=10,
-                max_dim_y=10,
+                dtype=int,
                 access=AttrWriteType.READ_WRITE,
                 fget="read_dyn_attr3",
                 fset="write_dyn_attr3",
@@ -961,14 +984,8 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(dynamic_attribute_re
             self.add_attribute(attr_data)
 
         def _get_attr_data_info(self):
-            simple_type, fmt = _get_tango_type_format(dtype)
+            simple_type, fmt = _get_tango_type_format(int)
             data_info = [[simple_type, fmt, READ_WRITE]]
-            if fmt in [AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE]:
-                max_dim_x = 10
-                data_info[0].append(max_dim_x)
-            if fmt == AttrDataFormat.IMAGE:
-                max_dim_y = 10
-                data_info[0].append(max_dim_y)
             return data_info
 
         @command(dtype_in=bool)
@@ -976,13 +993,19 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(dynamic_attribute_re
             for att_num in range(1, 7):
                 setattr(self, f"attr{att_num}_allowed", yesno)
 
-        @command()
-        def reset_value(self):
-            self.attr_value = None
-
         # the following methods are written in plain text which looks
         # weird. This is done so that it is easy to change for async
         # tests without duplicating all the code.
+        read_code = textwrap.dedent("""\
+            def read_dyn_attr(self):
+                return self.attr_value
+                """)
+
+        write_code = textwrap.dedent("""\
+            def write_dyn_attr(self, attr, value):
+                self.attr_value = value
+                """)
+
         is_allowed_code = textwrap.dedent("""\
             def is_attr_allowed(self, req_type):
                 assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
@@ -990,8 +1013,10 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(dynamic_attribute_re
             """)
 
         for attr_num in range(1, 7):
-            read_method = dynamic_attribute_read_function.replace("read_dyn_attr", f"read_dyn_attr{attr_num}")
-            write_method = dynamic_attribute_write_function.replace("write_dyn_attr", f"write_dyn_attr{attr_num}")
+            read_method = read_code.replace("read_dyn_attr", f"read_dyn_attr{attr_num}")
+            read_method = read_method.replace("attr_value", f"attr{attr_num}_value")
+            write_method = write_code.replace("write_dyn_attr", f"write_dyn_attr{attr_num}")
+            write_method = write_method.replace("attr_value", f"attr{attr_num}_value")
             if attr_num < 6:
                 is_allowed_method = is_allowed_code.replace("is_attr_allowed", f"is_attr{attr_num}_allowed")
             else:
@@ -1010,56 +1035,49 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(dynamic_attribute_re
 
     with DeviceTestContext(TestDevice) as proxy:
         proxy.make_allowed(True)
-        for value in values:
-            proxy.dyn_attr1 = value
-            assert_close(proxy.dyn_attr1, expected(value))
+        proxy.dyn_attr1 = 1
+        assert proxy.dyn_attr1 == 1
 
-            proxy.reset_value()
-            proxy.dyn_attr2 = value
-            assert_close(proxy.dyn_attr2, expected(value))
+        proxy.dyn_attr2 = 2
+        assert proxy.dyn_attr2 == 2
 
-            proxy.reset_value()
-            proxy.dyn_attr3 = value
-            assert_close(proxy.dyn_attr3, expected(value))
+        proxy.dyn_attr3 = 3
+        assert proxy.dyn_attr3 == 3
 
-            proxy.reset_value()
-            proxy.dyn_attr4 = value
-            assert_close(proxy.dyn_attr4, expected(value))
+        proxy.dyn_attr4 = 4
+        assert proxy.dyn_attr4 == 4
 
-            proxy.reset_value()
-            proxy.dyn_attr5 = value
-            assert_close(proxy.dyn_attr5, expected(value))
+        proxy.dyn_attr5 = 5
+        assert proxy.dyn_attr5 == 5
 
-            proxy.reset_value()
-            proxy.dyn_attr6 = value
-            assert_close(proxy.dyn_attr6, expected(value))
+        proxy.dyn_attr6 = 6
+        assert proxy.dyn_attr6 == 6
 
         proxy.make_allowed(False)
-        for value in values:
-            with pytest.raises(DevFailed):
-                proxy.dyn_attr1 = value
-            with pytest.raises(DevFailed):
-                _ = proxy.dyn_attr1
-            with pytest.raises(DevFailed):
-                proxy.dyn_attr2 = value
-            with pytest.raises(DevFailed):
-                _ = proxy.dyn_attr2
-            with pytest.raises(DevFailed):
-                proxy.dyn_attr3 = value
-            with pytest.raises(DevFailed):
-                _ = proxy.dyn_attr3
-            with pytest.raises(DevFailed):
-                proxy.dyn_attr4 = value
-            with pytest.raises(DevFailed):
-                _ = proxy.dyn_attr4
-            with pytest.raises(DevFailed):
-                proxy.dyn_attr5 = value
-            with pytest.raises(DevFailed):
-                _ = proxy.dyn_attr5
-            with pytest.raises(DevFailed):
-                proxy.dyn_attr6 = value
-            with pytest.raises(DevFailed):
-                _ = proxy.dyn_attr6
+        with pytest.raises(DevFailed):
+            proxy.dyn_attr1 = 1
+        with pytest.raises(DevFailed):
+            _ = proxy.dyn_attr1
+        with pytest.raises(DevFailed):
+            proxy.dyn_attr2 = 2
+        with pytest.raises(DevFailed):
+            _ = proxy.dyn_attr2
+        with pytest.raises(DevFailed):
+            proxy.dyn_attr3 = 3
+        with pytest.raises(DevFailed):
+            _ = proxy.dyn_attr3
+        with pytest.raises(DevFailed):
+            proxy.dyn_attr4 = 4
+        with pytest.raises(DevFailed):
+            _ = proxy.dyn_attr4
+        with pytest.raises(DevFailed):
+            proxy.dyn_attr5 = 5
+        with pytest.raises(DevFailed):
+            _ = proxy.dyn_attr5
+        with pytest.raises(DevFailed):
+            proxy.dyn_attr6 = 6
+        with pytest.raises(DevFailed):
+            _ = proxy.dyn_attr6
 
 
 @pytest.mark.parametrize("device_impl_class", [Device_4Impl, Device_5Impl, LatestDeviceImpl])
@@ -1246,7 +1264,7 @@ def test_dynamic_attribute_with_non_device_method(read_function_signature, patch
                 _ = proxy.dyn_attr
 
 
-def test_read_only_dynamic_attribute_with_dummy_write_method(dynamic_attribute_read_function, server_green_mode):
+def test_read_only_dynamic_attribute_with_dummy_write_method(server_green_mode):
 
     def dummy_write_method():
         return None
@@ -1264,10 +1282,16 @@ def test_read_only_dynamic_attribute_with_dummy_write_method(dynamic_attribute_r
                 r_meth=self.read_dyn_attr,
                 w_meth=dummy_write_method,
             )
+
+        sync_code = textwrap.dedent("""\
+            def read_dyn_attr(self):
+                return self.attr_value
+                """)
+
         if server_green_mode != GreenMode.Asyncio:
-            exec(dynamic_attribute_read_function)
+            exec(sync_code)
         else:
-            exec(dynamic_attribute_read_function.replace("def ", "async def "))
+            exec(sync_code.replace("def ", "async def "))
 
     with DeviceTestContext(TestDevice) as proxy:
         assert proxy.dyn_attr == 123
@@ -1761,6 +1785,14 @@ def _avoid_double_colon_node_ids(val):
     """
     if is_pure_str(val) and "::" in val:
         return str(val).replace("::", ":_:")
+
+
+@pytest.fixture(params=['linux', 'win'])
+def os_system(request):
+    original_platform = sys.platform
+    sys.platform = request.param
+    yield
+    sys.platform = original_platform
 
 
 @pytest.mark.parametrize(

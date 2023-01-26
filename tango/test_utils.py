@@ -28,7 +28,12 @@ __all__ = (
     'DeviceTestContext',
     'SimpleDevice',
     'ClassicAPISimpleDeviceImpl',
-    'ClassicAPISimpleDeviceClass'
+    'ClassicAPISimpleDeviceClass',
+    'state',
+    'command_typed_values',
+    'attribute_typed_values',
+    'server_green_mode',
+    'attr_data_format'
 )
 
 # char \x00 cannot be sent in a DevString. All other 1-255 chars can
@@ -236,44 +241,4 @@ if pytest:
         AttrDataFormat.SPECTRUM,
         AttrDataFormat.IMAGE])
     def attr_data_format(request):
-        return request.param
-
-    @pytest.fixture(params=['linux', 'win'])
-    def os_system(request):
-        original_platform = sys.platform
-        sys.platform = request.param
-        yield
-        sys.platform = original_platform
-
-    @pytest.fixture(ids=["low_level_read",
-                         "high_level_read_with_attr",
-                         "high_level_read_no_attr"],
-                    params=[textwrap.dedent("""\
-                            def read_dyn_attr(self, attr):
-                                attr.set_value(self.attr_value)
-                                """),
-                            textwrap.dedent("""\
-                            def read_dyn_attr(self, attr):
-                                return self.attr_value
-                                """),
-                            textwrap.dedent("""\
-                            def read_dyn_attr(self):
-                                return self.attr_value
-                                """),
-                            ])
-    def dynamic_attribute_read_function(request):
-        return request.param
-
-    @pytest.fixture(ids=["low_level_write",
-                         "high_level_write"],
-                    params=[textwrap.dedent("""\
-                            def write_dyn_attr(self, attr):
-                                self.attr_value = attr.get_write_value()
-                                """),
-                            textwrap.dedent("""\
-                            def write_dyn_attr(self, attr, value):
-                                self.attr_value = value
-                                """)
-                            ])
-    def dynamic_attribute_write_function(request):
         return request.param
