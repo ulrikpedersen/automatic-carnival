@@ -47,6 +47,7 @@ cache:
 run-pre-commit:
   stage: check
   image: registry.gitlab.com/tango-controls/docker/pre-commit
+  cache: []
   script:
     - pre-commit run --all-files
 
