@@ -1170,7 +1170,7 @@ def test_dynamic_attribute_with_non_device_method(read_function_signature, patch
         async def high_level_write_function(attr, in_value):
             value.set(in_value)
 
-        async def is_allowed(req_type):
+        async def is_allowed_function(req_type):
             assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
             return is_allowed
 
@@ -1190,7 +1190,7 @@ def test_dynamic_attribute_with_non_device_method(read_function_signature, patch
         def high_level_write_function(attr, in_value):
             value.set(in_value)
 
-        def is_allowed(req_type):
+        def is_allowed_function(req_type):
             assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
             return is_allowed
 
@@ -1212,13 +1212,13 @@ def test_dynamic_attribute_with_non_device_method(read_function_signature, patch
             if patched:
                 self.__dict__['read_dyn_attr1'] = read_function
                 self.__dict__['write_dyn_attr1'] = write_function
-                self.__dict__['is_dyn_attr1_allowed'] = is_allowed
+                self.__dict__['is_dyn_attr1_allowed'] = is_allowed_function
                 attr = attribute(name="dyn_attr1", dtype=int, access=AttrWriteType.READ_WRITE)
                 self.add_attribute(attr)
 
                 setattr(self, 'read_dyn_attr2', read_function)
                 setattr(self, 'write_dyn_attr2', write_function)
-                setattr(self, 'is_dyn_attr2_allowed', is_allowed)
+                setattr(self, 'is_dyn_attr2_allowed', is_allowed_function)
                 attr = attribute(name="dyn_attr2", dtype=int, access=AttrWriteType.READ_WRITE)
                 self.add_attribute(attr)
 
@@ -1226,7 +1226,7 @@ def test_dynamic_attribute_with_non_device_method(read_function_signature, patch
                 attr = attribute(name="dyn_attr",
                                  fget=read_function,
                                  fset=write_function,
-                                 fisallowed=is_allowed,
+                                 fisallowed=is_allowed_function,
                                  dtype=int,
                                  access=AttrWriteType.READ_WRITE)
                 self.add_attribute(attr)
