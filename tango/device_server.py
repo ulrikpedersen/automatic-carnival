@@ -25,7 +25,7 @@ from ._tango import (
     DeviceImpl, Device_3Impl, Device_4Impl, Device_5Impl,
     DevFailed, Attribute, WAttribute, AttrWriteType,
     MultiAttribute, MultiClassAttribute,
-    Attr, Logger, AttrWriteType, AttrDataFormat,
+    Attr, Logger, AttrDataFormat,
     DispLevel, UserDefaultAttrProp, StdStringVector)
 
 from .utils import document_method as __document_method

@@ -1803,5 +1803,5 @@ def os_system(request):
 def test_arguments(applicable_os, test_input, expected_output, os_system):
     try:
         assert set(expected_output) == set(parse_args(test_input.split()))
-    except SystemExit as err:
+    except SystemExit:
         assert sys.platform not in applicable_os

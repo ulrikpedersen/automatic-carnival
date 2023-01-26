@@ -961,7 +961,7 @@ def __Database__get_service_list(self, filter='.*'):
     filter_re = re.compile(filter)
     for service in data['Services']:
         service_name, service_value = service.split(':')
-        if not filter_re.match(service_name) is None:
+        if filter_re.match(service_name) is not None:
             res[service_name] = service_value
     return res
 

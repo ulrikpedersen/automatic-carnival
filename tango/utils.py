@@ -42,7 +42,7 @@ __all__ = (
     "is_str_type", "obj_2_str", "seqStr_2_obj",
     "scalar_to_array_type",
     "document_method", "document_static_method", "document_enum",
-    "CaselessList", "CaselessDict", "EventCallBack", "get_home",
+    "CaselessList", "CaselessDict", "get_home",
     "from_version_str_to_hex_str", "from_version_str_to_int",
     "seq_2_StdStringVector", "StdStringVector_2_seq",
     "dir2", "TO_TANGO_TYPE", "ensure_binary")
