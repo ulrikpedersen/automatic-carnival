@@ -46,9 +46,7 @@ cache:
 
 run-pre-commit:
   stage: check
-  image: python:3.11
-  before_script:
-    - pip install pre-commit
+  image: registry.gitlab.com/tango-controls/docker/pre-commit
   script:
     - pre-commit run --all-files
 
