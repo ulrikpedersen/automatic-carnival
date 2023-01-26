@@ -14,7 +14,6 @@
 
 import sys
 import copy
-import enum
 from inspect import getfullargspec
 import inspect
 import logging

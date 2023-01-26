@@ -1,7 +1,5 @@
 """Test utilities"""
 
-import sys
-import textwrap
 import enum
 import numpy as np
 

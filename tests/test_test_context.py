@@ -1,6 +1,4 @@
 import os
-import textwrap
-import sys
 
 import pytest
 
