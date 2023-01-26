@@ -1428,14 +1428,15 @@ def test_inheritance(server_green_mode):
         def attr2(self):
             return 3.14
 
-        def dev_status(self):
-            return 3 * A.dev_status(self)
-
         if server_green_mode == GreenMode.Asyncio:
             async def dev_status(self):
                 coro = super(type(self), self).dev_status()
                 result = await coro
                 return 3*result
+        else:
+            def dev_status(self):
+                return 3 * A.dev_status(self)
+
 
     with DeviceTestContext(B) as proxy:
         assert proxy.get_prop1() == "hello1"
