@@ -388,10 +388,8 @@ def setup_args():
     if TESTING:
         setup_requires += ["pytest-runner"]
 
-    tests_require = [
-        "gevent != 1.5a1",
-        "psutil",
-    ]
+    tests_require = ["gevent >= 20",
+                     "psutil"]
 
     if PYTHON_VERSION < (3, 7):
         tests_require += [
@@ -403,6 +401,10 @@ def setup_args():
         ]
     else:
         tests_require += ["pytest", "pytest-forked"]
+
+    extras_require = {"tests": tests_require,
+                      "gevent": ['gevent >= 20.0']
+                     }
 
     package_data = {
         "tango.databaseds": ["*.xmi", "*.sql", "*.sh", "DataBaseds"],
@@ -515,9 +517,7 @@ def setup_args():
         install_requires=install_requires,
         setup_requires=setup_requires,
         tests_require=tests_require,
-        extras_require={
-            "tests": tests_require
-        },
+        extras_require=extras_require,
         ext_package="tango",
         ext_modules=[pytango_ext],
         cmdclass=cmdclass,
