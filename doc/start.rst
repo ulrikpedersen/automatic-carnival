@@ -9,11 +9,30 @@ Getting started
 Installing
 ----------
 
+PyPi
+~~~~
+
+You can also install the latest version from `PyPi`_.
+
+Install PyTango with pip (common platforms have binary wheels, so no compilation or dependencies required):
+
+.. sourcecode:: console
+
+    $ python -m pip install PyTango
+
+Installation options:
+
+If you are going to utilize gevent green mode of PyTango it is recommended to have a recent version of gevent.
+You can force gevent installation with "gevent" keyword:
+
+.. sourcecode:: console
+
+    $ python -m pip install PyTango[gevent]
 
 Linux
 ~~~~~
 
-PyTango is available on linux as an official debian/ubuntu package:
+PyTango is available on linux as an official debian/ubuntu package (however, this may not be the latest release):
 
 - for Python 3.X:
 .. sourcecode:: console
@@ -30,29 +49,6 @@ RPM packages are also available for RHEL & CentOS:
    * `CentOS 7 64bits <http://pubrepo.maxiv.lu.se/rpm/el7/x86_64/>`_
    * `Fedora 23 32bits <http://pubrepo.maxiv.lu.se/rpm/fc23/i/386/>`_
    * `Fedora 23 64bits <http://pubrepo.maxiv.lu.se/rpm/fc23/x86_64/>`_
-
-PyPi
-~~~~
-
-You can also install the latest version from `PyPi`_.
-
-First, make sure you have the following packages already installed (all of them
-are available from the major official distribution repositories):
-
-* `boost-python`_ (including boost-python-dev)
-* `numpy`_
-
-Then install PyTango either from pip:
-
-.. sourcecode:: console
-
-    $ pip install PyTango
-
-or easy_install:
-
-.. sourcecode:: console
-
-    $ easy_install -U PyTango
 
 Windows
 ~~~~~~~
@@ -75,11 +71,18 @@ Linux
 Since PyTango 9 the build system used to compile PyTango is the standard python
 setuptools.
 
+First, make sure you have the following packages already installed (all of them
+are available from the major official distribution repositories):
+
+* ``libtango9``
+* `boost-python`_ (including boost-python-dev)
+* `numpy`_
+
 Besides the binaries for the three dependencies mentioned above, you also need
 the development files for the respective libraries.
 
 You can get the latest ``.tar.gz`` from `PyPI`_ or directly
-the latest SVN checkout:
+the latest source checkout:
 
 .. sourcecode:: console
 
