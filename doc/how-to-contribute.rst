@@ -45,29 +45,32 @@ Source code standard
 --------------------
 
 All code should be PEP8_ compatible. We have set up checking code quality with
-Codacy_ which uses PyLint_ under the hood. You can see how well your code is
-rated on your PR's page.
+pre-commit_ which runs ruff_, a Python linter written in Rust. ``pre-commit`` is
+run as first job in every gitlab-ci pipeline and will fail if errors are detected.
 
-.. note:: The accepted policy is that your code **cannot** introduce more
-          issues than it solves!
+It is recommended to install pre-commit_ locally to check code quality on every commit,
+before to push to GitLab. This is a one time operation:
 
-You can also use other tools for checking PEP8_ compliance for your
-personal use. One good example of such a tool is Flake8_ which combines PEP8_
-and PyFlakes_. There are plugins_ for various IDEs so that you can use your
-favourite tool easily.
+* Install pre-commit_. pipx_ is a good way if you use it.
+  Otherwise, see the `official documentation <https://pre-commit.com/#install>`_.
+* Run ``pre-commit install`` at the root of your ``pytango`` repository.
 
+That's it. ``pre-commit`` will now run automatically on every commit.
+If errors are reported, the commit will be aborted.
+You should fix them and try to commit again.
+
+Note that you can also configure your editor to run `ruff`.
+See `ruff README <https://github.com/charliermarsh/ruff#editor-integrations>`_.
 
 
 .. _tutorial: https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow
 .. _autodoc: https://pypi.python.org/pypi/autodoc
-.. _PEP8: https://www.python.org/dev/peps/pep-0008
-.. _Flake8: https://gitlab.com/pycqa/flake8
-.. _PyFlakes: https://github.com/PyCQA/pyflakes
-.. _plugins: https://gitlab.com/pycqa/flake8/issues/286
+.. _PEP8: https://peps.python.org/pep-0008/
 .. _reStructuredText: http://docutils.sourceforge.net/rst.html
 .. _Sphinx: http://www.sphinx-doc.org/en/stable
-.. _PyLint: https://www.pylint.org
-.. _Codacy: https://www.codacy.com/app/tango-controls/pytango/dashboard
+.. _pre-commit: https://pre-commit.com
+.. _ruff: https://github.com/charliermarsh/ruff
+.. _pipx: https://pypa.github.io/pipx/
 
 
 Using Docker for development
