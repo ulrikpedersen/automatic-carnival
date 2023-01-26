@@ -13,6 +13,7 @@ variables:
   CACHE_FALLBACK_KEY: "v1-$CPP_TANGO_VERSION-$CI_JOB_NAME-$CI_DEFAULT_BRANCH"
   TWINE_USERNAME: __token__
   TWINE_PASSWORD: secret
+  CMAKE_GENERATOR: "Ninja"
 
 cache:
   key: "v1-$CPP_TANGO_VERSION-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
@@ -34,26 +35,24 @@ cache:
     GLIBC_TAG: '2_17' # depends on manylinux
     PYTHON_TAG: 'cp${PYTHON_VER}-cp${PYTHON_VER}${ABI_SUFFIX}'
     WHEEL_REGEX: pytango*${PYTHON_TAG}*${ARCH}.whl
+    BOOST_PYTHON_SUFFIX: ${PYTHON_VER}
   parallel:
     matrix:
-      - ARCH: [x86_64, i686, aarch64]
-        PYTHON_VER: [36, 37]
-        ABI_SUFFIX: ['m']
-
       - ARCH: [x86_64, i686, aarch64]
         PYTHON_VER: [38, 39, 310, 311]
 
 build-wheel:
   stage: build
   extends: .matrix-wheel
+  variables:
+    CMAKE_ARGS: "--preset=ci-Linux"
+  before_script:
+  # This ought to be moved to the docker image build eventually
+    - yum install -y cppcheck
+    - /opt/python/${PYTHON_TAG}/bin/python -m pip install --no-cache-dir clang-tidy clang-format
   script:
     # build wheel
     - /opt/python/${PYTHON_TAG}/bin/python -m build --wheel
-    # repair wheel
-    - auditwheel repair dist/${WHEEL_REGEX}
-    - rm -rf dist/${WHEEL_REGEX} # delete unrepaired wheel
-    # copy wheel to dist
-    - cp wheelhouse/${WHEEL_REGEX} ./dist # are we always sure of the name?
   artifacts:
     expire_in: 1 day
     paths:
@@ -66,9 +65,11 @@ build-wheel:
 
 build-sdist:
   stage: build
-  image: python:3.8
+  image: python:3.11
+  before_script:
+    - pip install --no-cache-dir build
   script:
-    - python setup.py check sdist
+    - python -m build --sdist
   artifacts:
     expire_in: 1 day
     paths:
@@ -96,7 +97,7 @@ build-docker-image:
     - docker push $CI_REGISTRY/${LOWER_PROJECT_NAMESPACE}/$CI_PROJECT_NAME/pytango-dev:py${PYTHON_VERSION}-tango${CPP_TANGO_VERSION}-pytango${COMMIT_TAG}
   parallel:
     matrix:
-      - PYTHON_VERSION: ['3.7', '3.8']
+      - PYTHON_VERSION: ['3.8', '3.10']
 
 test-source:
   stage: test
@@ -106,6 +107,7 @@ test-source:
   variables:
     TANGO_DEPENDENCIES: "cpptango=${CPP_TANGO_VERSION} tango-test=3.6"
     DEBIAN_FRONTEND: "noninteractive"
+    CMAKE_ARGS: "--preset=ci-Linux"
   before_script:
     - apt-get update -y --allow-releaseinfo-change-suite
     - apt-get -y install make pkg-config rsync
@@ -115,7 +117,7 @@ test-source:
     - mamba activate ./envs/$PYTHON_VERSION || mamba create --prefix ./envs/$PYTHON_VERSION --yes python=$PYTHON_VERSION
     - mamba activate ./envs/$PYTHON_VERSION
     # Install build dependencies
-    - mamba install --yes -c conda-forge -c tango-controls/label/dev -c conda-forge/label/cpptango_rc boost cppzmq cxx-compiler numpy $TANGO_DEPENDENCIES
+    - mamba install --yes -c conda-forge -c tango-controls/label/dev -c conda-forge/label/cpptango_rc boost cppzmq cxx-compiler numpy cmake python-build $TANGO_DEPENDENCIES
     - mamba clean --all --force-pkgs-dirs --yes
     # Use conda prefix as root for the dependencies
     - export BOOST_ROOT=$CONDA_PREFIX TANGO_ROOT=$CONDA_PREFIX ZMQ_ROOT=$CONDA_PREFIX OMNI_ROOT=$CONDA_PREFIX
@@ -126,22 +128,25 @@ test-source:
     # Touch the .so files if the extension hasn't changed
     - diff -r cached_ext ext && find build -name _tango*.so -printf "touching %p\n" -exec touch {} + || true
     # Build pytango
-    - python setup.py build
+    - python -m build --wheel && ls dist/
+    # Install the wheel for testing
+    - python -m pip install dist/pytango-${CPP_TANGO_VERSION}-cp${PYTHON_VER}*.whl
     # The build directory has been updated, cached_ext needs to be synchronized too
     - rsync -a --delete ext/ cached_ext/
   script:
-    - python setup.py test
+    - pytest
   parallel:
     matrix:
-      - PYTHON_VERSION: ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11']
+      - PYTHON_VERSION: ['3.8', '3.9', '3.10', '3.11']
 
 test-wheel:
   stage: test
   extends: .matrix-wheel
   before_script:
+    - cmake --version
     - /opt/python/${PYTHON_TAG}/bin/python -m venv venv
     - source venv/bin/activate
-    - pip install --upgrade pip
+    - ls -alh dist/
     - pip install --prefer-binary $(find dist/${WHEEL_REGEX})[tests]
   script:
     - pytest
