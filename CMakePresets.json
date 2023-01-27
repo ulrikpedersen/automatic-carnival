@@ -97,6 +97,10 @@
       "inherits": ["ci-build", "ci-unix", "clang-tidy", "cppcheck", "dev-mode"]
     },
     {
+      "name": "ci-Linux-quiet",
+      "inherits": ["ci-build", "ci-unix", "dev-mode"]
+    },
+    {
       "name": "ci-Windows",
       "inherits": ["ci-build", "ci-win64", "dev-mode"]
     }
