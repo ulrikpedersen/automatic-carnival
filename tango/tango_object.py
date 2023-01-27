@@ -42,9 +42,9 @@ try:
         db.delete_device(device)
         try:
             db.delete_device_alias(db.get_alias(device))
-        except:
+        except Exception:
             pass
-except:
+except Exception:
     print ('Failed to cleanup!')
 """
 
@@ -115,7 +115,7 @@ def create_tango_class(server, obj, tango_class_name=None, member_filter=None):
         log.debug("inspecting %s.%s", obj_klass_name, name)
         try:
             member = getattr(obj, name)
-        except:
+        except Exception:
             log.info(
                 "failed to inspect member '%s.%s'", obj_klass_name, name)
             log.debug("Details:", exc_info=1)
@@ -313,7 +313,7 @@ class Server:
                 try:
                     dserver.ping()
                     raise Exception("Server already running")
-                except:
+                except Exception:
                     self.log.info("Last time server was not properly "
                                   "shutdown!")
             _, db_device_map = self.get_devices()
@@ -340,7 +340,7 @@ class Server:
             db.delete_device(device)
             try:
                 db.delete_device_alias(db.get_alias(device))
-            except:
+            except Exception:
                 pass
 
         # register devices in database

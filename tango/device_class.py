@@ -195,7 +195,7 @@ class PropUtil:
                 Return     : (CmdArgType) the tango type for the given property"""
         try:
             tg_type = properties[prop_name][0]
-        except:
+        except Exception:
             tg_type = CmdArgType.DevVoid
         return tg_type
 
@@ -227,7 +227,7 @@ class PropUtil:
         try:
             tg_type = self.get_property_type(prop_name, properties)
             val = properties[prop_name][2]
-        except:
+        except Exception:
             val = []
 
         if is_array(tg_type) or (isinstance(val, collections.abc.Sequence) and not len(val)):
@@ -414,7 +414,7 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
     param_type = CmdArgType.DevVoid
     try:
         param_type = CmdArgType(param_info[0])
-    except:
+    except Exception:
         msg = f"Wrong data type in command argument for command {cmd_name} in " \
               f"class {name}\nCommand parameter type (first element in first " \
               f"sequence) must be a tango.CmdArgType"
@@ -444,7 +444,7 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
     result_type = CmdArgType.DevVoid
     try:
         result_type = CmdArgType(result_info[0])
-    except:
+    except Exception:
         msg = f"Wrong data type in command result for command {cmd_name} in " \
               f"class {name}\nCommand result type (first element in second " \
               f"sequence) must be a tango.CmdArgType"
@@ -481,7 +481,7 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
             if info_name_lower == "display level":
                 try:
                     display_level = DispLevel(info_value)
-                except:
+                except Exception:
                     msg = f"Wrong data type in command information for command {cmd_name} in " \
                           f"class {name}\nCommand information for display level is not a " \
                           f"tango.DispLevel"
@@ -497,7 +497,7 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
             elif info_name_lower == "polling period":
                 try:
                     polling_period = int(info_value)
-                except:
+                except Exception:
                     msg = f"Wrong data type in command information for command {cmd_name} in " \
                           f"class {name}\nCommand information for polling period is not an " \
                           f"integer"
@@ -540,7 +540,7 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
                   f"class {name}\nThe object '{is_allowed_name}' exists in class but is " \
                   f"not a method!"
             __throw_create_command_exception(msg)
-    except:
+    except Exception:
         is_allowed_name = ""
 
     self._create_command(cmd_name, param_type, result_type,

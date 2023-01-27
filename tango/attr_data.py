@@ -213,7 +213,7 @@ class AttrData:
         # get data type
         try:
             self.attr_type = CmdArgType(attr_info[0])
-        except:
+        except Exception:
             throw_ex(f"Wrong data type in attribute argument for attribute {attr_name} "
                      f"in class {name}\nAttribute data type (first element in first "
                      f"sequence) must be a tango.CmdArgType")
@@ -221,7 +221,7 @@ class AttrData:
         # get format
         try:
             self.attr_format = AttrDataFormat(attr_info[1])
-        except:
+        except Exception:
             throw_ex(f"Wrong data format in attribute argument for attribute {attr_name} "
                      f"in class {name}\nAttribute data format (second element in "
                      f"first sequence) must be a tango.AttrDataFormat")
@@ -240,7 +240,7 @@ class AttrData:
                          f"have 4 elements")
             try:
                 self.dim_x = int(attr_info[3])
-            except:
+            except Exception:
                 throw_ex(f"Wrong data type in attribute argument for attribute "
                          f"{attr_name} in class {name}\n4th element in sequence describing "
                          f"mandatory dim_x attribute parameter for spectrum "
@@ -253,14 +253,14 @@ class AttrData:
                          f"5 elements")
             try:
                 self.dim_x = int(attr_info[3])
-            except:
+            except Exception:
                 throw_ex(f"Wrong data type in attribute argument for attribute "
                          f"{attr_name} in class {name}\n4th element in sequence describing "
                          f"mandatory dim_x attribute parameter for image "
                          f"attribute must be an integer")
             try:
                 self.dim_y = int(attr_info[4])
-            except:
+            except Exception:
                 throw_ex(f"Wrong data type in attribute argument for attribute "
                          f"{attr_name} in class {name}\n5th element in sequence desribing "
                          f"mandatory dim_y attribute parameter for image "
@@ -269,7 +269,7 @@ class AttrData:
         # get write type
         try:
             self.attr_write = AttrWriteType(attr_info[2])
-        except:
+        except Exception:
             throw_ex(f"Wrong data write type in attribute argument for "
                      f"attribute {attr_name} in class {name}\nAttribute write type (third "
                      f"element in first sequence) must be a "
@@ -277,20 +277,20 @@ class AttrData:
         try:
             self.display_level = DispLevel(extra_info.get("display level",
                                                           DispLevel.OPERATOR))
-        except:
+        except Exception:
             throw_ex(f"Wrong display level in attribute information for "
                      f"attribute {attr_name} in class {name}\nAttribute information for "
                      f"display level is not a tango.DispLevel")
         try:
             self.polling_period = int(extra_info.get("polling period", -1))
-        except:
+        except Exception:
             throw_ex(f"Wrong polling period in attribute information for "
                      f"attribute {attr_name} in class {name}\nAttribute information for "
                      f"polling period is not an integer")
 
         try:
             memorized = extra_info.get("memorized", "false").lower()
-        except:
+        except Exception:
             throw_ex(f"Wrong memorized value for attribute {attr_name} in class {name}."
                      f"Allowed valued are the strings \"true\", \"false\" and "
                      f"\"true_without_hard_applied\" (case insensitive)")

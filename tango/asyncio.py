@@ -20,9 +20,6 @@ from .attribute_proxy import get_attribute_proxy
 
 __all__ = ("DeviceProxy", "AttributeProxy")
 
-import asyncio
-import concurrent.futures
-
 
 DeviceProxy = partial(get_device_proxy,
                       green_mode=GreenMode.Asyncio)

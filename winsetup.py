@@ -66,7 +66,7 @@ def main():
                     f'--dist-dir={dist_dir} ' \
                     f'--plat-name={plat_name} '
         os.system(cmd_line)
-    except:
+    except Exception:
         print("Failed:")
         import traceback
         traceback.print_exc()

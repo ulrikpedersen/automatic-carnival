@@ -42,7 +42,7 @@ __all__ = (
     "is_str_type", "obj_2_str", "seqStr_2_obj",
     "scalar_to_array_type",
     "document_method", "document_static_method", "document_enum",
-    "CaselessList", "CaselessDict", "EventCallBack", "get_home",
+    "CaselessList", "CaselessDict", "EventCallback", "get_home",
     "from_version_str_to_hex_str", "from_version_str_to_int",
     "seq_2_StdStringVector", "StdStringVector_2_seq",
     "dir2", "TO_TANGO_TYPE", "ensure_binary")
@@ -236,7 +236,7 @@ def __requires(package_name, min_version=None, conflicts=(),
         except ImportError:
             msg = f"Could not find package {package_name} required by {software_name}"
             raise Exception(msg)
-        except:
+        except Exception:
             msg = f"Error importing package {package_name} required by {software_name}"
             raise Exception(msg)
 
@@ -1561,23 +1561,23 @@ class EventCallback:
         now = datetime.datetime.now()
         try:
             date = self._get_date(evt)
-        except:
+        except Exception:
             date = now
         try:
             reception_date = evt.reception_date.todatetime()
-        except:
+        except Exception:
             reception_date = now
         try:
             evt_type = evt.event.upper()
-        except:
+        except Exception:
             evt_type = "<UNKNOWN>"
         try:
             dev_name = evt.device.dev_name().upper()
-        except:
+        except Exception:
             dev_name = "<UNKNOWN>"
         try:
             attr_name = evt.attr_name.split("/")[-1].upper()
-        except:
+        except Exception:
             attr_name = "<UNKNOWN>"
         try:
             value = self._get_value(evt)
@@ -1635,7 +1635,7 @@ def get_home():
     path = ''
     try:
         path = os.path.expanduser("~")
-    except:
+    except Exception:
         pass
     if not os.path.isdir(path):
         for evar in ('HOME', 'USERPROFILE', 'TMP'):
@@ -1643,7 +1643,7 @@ def get_home():
                 path = os.environ[evar]
                 if os.path.isdir(path):
                     break
-            except:
+            except Exception:
                 pass
     if path:
         return path

@@ -1,5 +1,6 @@
 ---
 stages:
+  - check
   - build
   - image
   - test
@@ -42,6 +43,13 @@ cache:
 
       - ARCH: [x86_64, i686, aarch64]
         PYTHON_VER: [38, 39, 310, 311]
+
+run-pre-commit:
+  stage: check
+  image: registry.gitlab.com/tango-controls/docker/pre-commit
+  cache: []
+  script:
+    - pre-commit run --all-files
 
 build-wheel:
   stage: build

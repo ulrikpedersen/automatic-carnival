@@ -5,3 +5,25 @@ requires = [
     "oldest-supported-numpy"
 ]
 build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+exclude = [
+    ".git",
+    "__pycache__",
+    ".eggs",
+    "*.egg",
+    "build",
+    "databaseds",
+    "examples",
+    "doc",
+]
+ignore = [
+    "E402",  # Module level import not at top of file
+    "E501",  # Line too long (> 79 characters)
+    "E731",  # Do not assign a lambda expression, use a def
+]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+]

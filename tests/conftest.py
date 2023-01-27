@@ -48,7 +48,7 @@ def pytest_runtest_makereport():
             summary = f.read()
             try:
                 summary = json.loads(summary)
-            except:
+            except Exception:
                 summary = []
             finally:
                 outcome = str(result.outcome).capitalize()
