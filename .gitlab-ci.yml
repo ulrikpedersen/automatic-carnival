@@ -122,7 +122,7 @@ test-source:
     - mamba activate ./envs/$PYTHON_VERSION || mamba create --prefix ./envs/$PYTHON_VERSION --yes python=$PYTHON_VERSION
     - mamba activate ./envs/$PYTHON_VERSION
     # Install build dependencies
-    - mamba install --yes -c conda-forge -c tango-controls/label/dev -c conda-forge/label/cpptango_rc boost cppzmq cxx-compiler numpy cmake python-build pytest pytest-forked $TANGO_DEPENDENCIES
+    - mamba install --yes -c conda-forge -c tango-controls/label/dev -c conda-forge/label/cpptango_rc boost cppzmq cxx-compiler numpy cmake python-build pytest pytest-forked gevent psutil $TANGO_DEPENDENCIES
     - mamba clean --all --force-pkgs-dirs --yes
     # Use conda prefix as root for the dependencies
     - export BOOST_ROOT=$CONDA_PREFIX TANGO_ROOT=$CONDA_PREFIX ZMQ_ROOT=$CONDA_PREFIX OMNI_ROOT=$CONDA_PREFIX
@@ -135,7 +135,7 @@ test-source:
     # Build pytango
     - python -m build --wheel && ls dist/
     # Install the wheel for testing
-    - python -m pip install dist/pytango-${CPP_TANGO_VERSION}-cp${PYTHON_VER}*.whl
+    - python -m pip install --no-index --prefer-binary --find-links=dist/ pytango
     # The build directory has been updated, cached_ext needs to be synchronized too
     - rsync -a --delete ext/ cached_ext/
   script:
@@ -151,7 +151,8 @@ test-wheel:
     - ${PYTHON_ROOT}/bin/python -m venv venv
     - source venv/bin/activate
     - ls -alh dist/
-    - ${PYTHON_ROOT}/bin/pip install --prefer-binary $(find dist/${WHEEL_REGEX})[test]
+    - ${PYTHON_ROOT}/bin/pip install pytest pytest-forked gevent psutil
+    - ${PYTHON_ROOT}/bin/pip install --prefer-binary $(find dist/${WHEEL_REGEX})
     - ${PYTHON_ROOT}/bin/pip list
   script:
     - ${PYTHON_ROOT}/bin/pytest
