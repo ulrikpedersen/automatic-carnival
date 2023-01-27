@@ -238,11 +238,12 @@ The above build is the most basic form of build. There are many ways to tweak an
 Environment variables can be used to point to non-standard/non-system installed versions of boost, python and tango:
 * TANGO_ROOT
 * BOOST_ROOT
-* PYTHON_ROOT (to be confirmed)
+* PYTHON_ROOT
 
 Other environment variables can also be used to control aspects of the build:
 * CMAKE_ARGS - use this to set flags/options that are used by scikit-build-core when invoking cmake.
 * CMAKE_GENERATOR - for example chose between "Unix Makefiles" (default) and "Ninja".
+* BOOST_PYTHON_SUFFIX - Sets the suffix on the Boost Python component to search for (default is 3). Set this if your Boost version is < 1.73 OR if you have multiple installations of python.
 
 It is also possible to invoke a set of defined cmake presets from `CMakePresets.json` by using the `CMAKE_ARGS` environment variable. This may be convenient to store CI configurations for cmake in one place and leave the CI yaml definitions quite simple (i.e. TANGO_ROOT could be defined in `CMakePresets.json`):
 

@@ -33,6 +33,10 @@ pkg_check_modules(TANGO REQUIRED IMPORTED_TARGET tango)
 
 # Find Python and NumPy
 # https://cmake.org/cmake/help/latest/module/FindPython.html
+if (DEFINED ENV{PYTHON_ROOT})
+    set(Python_ROOT_DIR "$ENV{PYTHON_ROOT}" CACHE STRING "Python root installation path")
+    set(Python_FIND_STRATEGY LOCATION)
+endif()
 find_package (Python 3.8 COMPONENTS Interpreter Development NumPy)
 message(STATUS "    Python version:  ${Python_VERSION}")
 message(STATUS "      - intepreter:  ${Python_EXECUTABLE}")
@@ -47,7 +51,11 @@ message(STATUS "     - include dir:  ${Python_NumPy_INCLUDE_DIRS}")
 # By default we search for the component "python3" which works for Boost >= 1.73
 # However, for example Ubuntu 20.04 ships with Boost 1.71 and here the developer/CI
 # can set and override the cache variable BOOST_PYTHON_SUFFIX to "38" (default "3")
-set(BOOST_PYTHON_SUFFIX "3" CACHE STRING "Sets the suffix on the Boost Python component to search for (default is 3). Set this only if your Boost version is < 1.73")
+if (DEFINED ENV{BOOST_PYTHON_SUFFIX})
+    set(BOOST_PYTHON_SUFFIX "$ENV{BOOST_PYTHON_SUFFIX}" CACHE STRING "Sets the suffix on the Boost Python component to search for (default is 3). Set this only if your Boost version is < 1.73")
+else()
+    set(BOOST_PYTHON_SUFFIX "3" CACHE STRING "Sets the suffix on the Boost Python component to search for (default is 3). Set this only if your Boost version is < 1.73")
+endif()
 set(Boost_VERBOSE "ON")
 find_package(Boost 1.71 REQUIRED COMPONENTS python${BOOST_PYTHON_SUFFIX} CONFIG)
 message(STATUS "Boost Python version: ${Boost_PYTHON_VERSION}")
