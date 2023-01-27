@@ -36,6 +36,8 @@ cache:
     PYTHON_TAG: 'cp${PYTHON_VER}-cp${PYTHON_VER}${ABI_SUFFIX}'
     WHEEL_REGEX: pytango*${PYTHON_TAG}*${ARCH}.whl
     BOOST_PYTHON_SUFFIX: ${PYTHON_VER}
+    PYTHON_ROOT: '/opt/python/${PYTHON_TAG}'
+    CMAKE_ARGS: "--preset=ci-Linux"
   parallel:
     matrix:
       - ARCH: [x86_64, i686, aarch64]
@@ -44,15 +46,19 @@ cache:
 build-wheel:
   stage: build
   extends: .matrix-wheel
-  variables:
-    CMAKE_ARGS: "--preset=ci-Linux"
   before_script:
   # This ought to be moved to the docker image build eventually
     - yum install -y cppcheck
-    - /opt/python/${PYTHON_TAG}/bin/python -m pip install --no-cache-dir clang-tidy clang-format
+    - ${PYTHON_ROOT}/bin/python --version
+    - ${PYTHON_ROOT}/bin/python -m pip install --no-cache-dir clang-tidy clang-format
+    - ln -s ${PYTHON_ROOT}/bin/clang-tidy /usr/local/bin
+    - ln -s ${PYTHON_ROOT}/bin/clang-format /usr/local/bin
+    - clang-tidy --version
+    - cmake --version
   script:
     # build wheel
-    - /opt/python/${PYTHON_TAG}/bin/python -m build --wheel
+    - ${PYTHON_ROOT}/bin/python -m build --wheel
+    - ls -alh dist/
   artifacts:
     expire_in: 1 day
     paths:
@@ -107,7 +113,6 @@ test-source:
   variables:
     TANGO_DEPENDENCIES: "cpptango=${CPP_TANGO_VERSION} tango-test=3.6"
     DEBIAN_FRONTEND: "noninteractive"
-    CMAKE_ARGS: "--preset=ci-Linux"
   before_script:
     - apt-get update -y --allow-releaseinfo-change-suite
     - apt-get -y install make pkg-config rsync
@@ -117,7 +122,7 @@ test-source:
     - mamba activate ./envs/$PYTHON_VERSION || mamba create --prefix ./envs/$PYTHON_VERSION --yes python=$PYTHON_VERSION
     - mamba activate ./envs/$PYTHON_VERSION
     # Install build dependencies
-    - mamba install --yes -c conda-forge -c tango-controls/label/dev -c conda-forge/label/cpptango_rc boost cppzmq cxx-compiler numpy cmake python-build $TANGO_DEPENDENCIES
+    - mamba install --yes -c conda-forge -c tango-controls/label/dev -c conda-forge/label/cpptango_rc boost cppzmq cxx-compiler numpy cmake python-build pytest pytest-forked $TANGO_DEPENDENCIES
     - mamba clean --all --force-pkgs-dirs --yes
     # Use conda prefix as root for the dependencies
     - export BOOST_ROOT=$CONDA_PREFIX TANGO_ROOT=$CONDA_PREFIX ZMQ_ROOT=$CONDA_PREFIX OMNI_ROOT=$CONDA_PREFIX
@@ -143,13 +148,13 @@ test-wheel:
   stage: test
   extends: .matrix-wheel
   before_script:
-    - cmake --version
-    - /opt/python/${PYTHON_TAG}/bin/python -m venv venv
+    - ${PYTHON_ROOT}/bin/python -m venv venv
     - source venv/bin/activate
     - ls -alh dist/
-    - pip install --prefer-binary $(find dist/${WHEEL_REGEX})[tests]
+    - ${PYTHON_ROOT}/bin/pip install --prefer-binary $(find dist/${WHEEL_REGEX})[test]
+    - ${PYTHON_ROOT}/bin/pip list
   script:
-    - pytest
+    - ${PYTHON_ROOT}/bin/pytest
   rules:
     - if: $CI_COMMIT_TAG && $ARCH == "aarch64"
       allow_failure: true
