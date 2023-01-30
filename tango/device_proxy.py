@@ -281,7 +281,7 @@ def __get_command_func(dp, cmd_info, name):
 def __get_attribute_value(self, attr_info, name):
     _, enum_class = attr_info
     attr_value = self.read_attribute(name).value
-    if enum_class:
+    if enum_class and attr_value is not None:
         if is_non_str_seq(attr_value):
             ret = []
             for value in attr_value:

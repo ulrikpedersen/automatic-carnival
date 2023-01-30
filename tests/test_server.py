@@ -6,11 +6,13 @@ import time
 import pytest
 import enum
 
-from tango import AttrData, Attr, AttrDataFormat, AttReqType, AttrWriteType, \
-    DevBoolean, DevLong, DevDouble, DevFailed, \
-    DevEncoded, DevEnum, DevState, DevVoid, \
-    Device_4Impl, Device_5Impl, DeviceClass, \
+from tango import (
+    AttrData, Attr, AttrDataFormat, AttrQuality, AttReqType, AttrWriteType,
+    DevBoolean, DevLong, DevDouble, DevFailed,
+    DevEncoded, DevEnum, DevState, DevVoid,
+    Device_4Impl, Device_5Impl, DeviceClass,
     GreenMode, LatestDeviceImpl, READ_WRITE, SCALAR
+)
 from tango.server import Device
 from tango.pyutil import parse_args
 from tango.server import _get_tango_type_format, command, attribute, device_property
@@ -633,6 +635,39 @@ def test_read_write_attribute_enum(server_green_mode, attr_data_format):
 
         BadTestDevice()  # dummy instance for Codacy
     assert 'enum_labels' in str(context.value)
+
+
+def test_read_attribute_with_invalid_quality_is_none(attribute_typed_values):
+    dtype, values, expected = attribute_typed_values
+
+    class TestDevice(Device):
+        @attribute(dtype=dtype, max_dim_x=10, max_dim_y=10)
+        def attr(self):
+            dummy_time = 123.4
+            return values[0], dummy_time, AttrQuality.ATTR_INVALID
+
+    with DeviceTestContext(TestDevice) as proxy:
+        reading = proxy.read_attribute("attr")
+        assert reading.value is None
+        assert reading.quality is AttrQuality.ATTR_INVALID
+        high_level_value = proxy.attr
+        assert high_level_value is None
+
+
+def test_read_enum_attribute_with_invalid_quality_is_none():
+
+    class TestDevice(Device):
+        @attribute(dtype=GoodEnum)
+        def attr(self):
+            dummy_time = 123.4
+            return GoodEnum.START, dummy_time, AttrQuality.ATTR_INVALID
+
+    with DeviceTestContext(TestDevice) as proxy:
+        reading = proxy.read_attribute("attr")
+        assert reading.value is None
+        assert reading.quality is AttrQuality.ATTR_INVALID
+        high_level_value = proxy.attr
+        assert high_level_value is None
 
 
 def test_wrong_attribute_read(server_green_mode):
