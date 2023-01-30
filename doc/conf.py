@@ -255,6 +255,9 @@ rst_epilog = """\
 .. _PyPi: https://pypi.python.org/pypi/pytango
 .. _issues: https://gitlab.com/tango-controls/pytango/issues
 .. _PRs: https://gitlab.com/tango-controls/pytango/-/merge_requests
+.. _Conda-forge: https://anaconda.org/conda-forge/pytango
+.. _Mambaforge: https://github.com/conda-forge/miniforge#mambaforge
+.. _Miniconda: https://docs.conda.io/en/latest/miniconda.html
 
 """
 
