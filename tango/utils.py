@@ -168,7 +168,7 @@ def __build_to_tango_type():
     if constants.NUMPY_SUPPORT:
         import numpy
         FROM_TANGO_TO_NUMPY_TYPE = {
-            CmdArgType.DevBoolean: numpy.bool8,
+            CmdArgType.DevBoolean: numpy.bool_,
             CmdArgType.DevUChar: numpy.ubyte,
             CmdArgType.DevShort: numpy.short,
             CmdArgType.DevUShort: numpy.ushort,
