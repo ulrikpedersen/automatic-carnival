@@ -563,6 +563,8 @@ using the high level API. The example contains:
 
 #. a read-only double scalar attribute called *voltage*
 #. a read/write double scalar expert attribute *current*
+#. a read/write float scalar attribute *range*, defined with pythonic-style decorators, which can be always read, but conditionally written
+#. a read/write float scalar attribute *compliance*, defined with alternative decorators
 #. a read-only double image attribute called *noise*
 #. a *ramp* command
 #. a *host* device property
@@ -574,12 +576,16 @@ using the high level API. The example contains:
     from time import time
     from numpy.random import random_sample
 
-    from tango import AttrQuality, AttrWriteType, DispLevel
+    from tango import AttrQuality, AttrWriteType, DispLevel, AttReqType
     from tango.server import Device, attribute, command
     from tango.server import class_property, device_property
 
 
     class PowerSupply(Device):
+
+        _my_range = 0
+        _my_compliance = 0.
+        _output_on = False
 
         current = attribute(label="Current", dtype=float,
                             display_level=DispLevel.EXPERT,
@@ -612,10 +618,35 @@ using the high level API. The example contains:
         def get_noise(self):
             return random_sample((1024, 1024))
 
-        @command(dtype_in=float)
-        def ramp(self, value):
-            print("Ramping up...")
+        range = attribute(label="Range", dtype=float)
 
+        @range.setter
+        def range(self, new_range):
+            self._my_range = new_range
+
+        @range.getter
+        def current_range(self):
+            return self._my_range
+
+        @range.is_allowed
+        def can_range_be_changed(self, req_type):
+            if req_type == AttReqType.WRITE_REQ:
+                return not self._output_on
+            return True
+
+        compliance = attribute(label="Compliance", dtype=float)
+
+        @compliance.read
+        def compliance(self):
+            return self._my_compliance
+
+        @compliance.write
+        def new_compliance(self, new_compliance):
+            self._my_compliance = new_compliance
+
+        @command(dtype_in=bool)
+        def output_on_off(self, on_off):
+            self._output_on = on_off
 
     if __name__ == "__main__":
         PowerSupply.run_server()
