@@ -980,6 +980,36 @@ class attribute(AttrData):
         """
         return self.setter(fset)
 
+    def getter(self, fget):
+        """
+        To be used as a decorator. Will define the decorated method
+        as a read attribute method to be called when client reads
+        the attribute
+        """
+        self.fget = fget
+        if self.attr_write == AttrWriteType.WRITE:
+            if getattr(self, 'fset', None):
+                self.attr_write = AttrWriteType.READ_WRITE
+            else:
+                self.attr_write = AttrWriteType.READ
+        return self
+
+    def read(self, fset):
+        """
+        To be used as a decorator. Will define the decorated method
+        as a read attribute method to be called when client reads
+        the attribute
+        """
+        return self.getter(fset)
+
+    def is_allowed(self, fisallowed):
+        """
+        To be used as a decorator. Will define the decorated method
+        as is allowed attribute method
+        """
+        self.fisallowed = fisallowed
+        return self
+
     def __call__(self, fget):
         return type(self)(fget=fget, **self._kwargs)
 

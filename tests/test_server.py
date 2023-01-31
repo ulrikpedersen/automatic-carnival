@@ -1299,7 +1299,71 @@ def test_dynamic_attribute_with_non_device_method(read_function_signature, patch
                 _ = proxy.dyn_attr
 
 
-def test_read_only_dynamic_attribute_with_dummy_write_method(server_green_mode):
+def test_attribute_decorators(server_green_mode):
+
+    class TestDevice(Device):
+        green_mode = server_green_mode
+        current_value = None
+        voltage_value = None
+        is_allowed = None
+
+        current = attribute(label="Current", unit="mA", dtype=float)
+        voltage = attribute(label="Voltage", unit="V", dtype=float)
+
+        sync_code = textwrap.dedent("""
+        @current.getter
+        def cur_read(self):
+            return self.current_value
+
+        @current.setter
+        def cur_write(self, current):
+            self.current_value = current
+
+        @current.is_allowed
+        def cur_allo(self, req_type):
+            return self.is_allowed
+
+        @voltage.read
+        def vol_read(self):
+            return self.voltage_value
+
+        @voltage.write
+        def vol_write(self, voltage):
+            self.voltage_value = voltage
+
+        @voltage.is_allowed
+        def vol_allo(self, req_type):
+            return self.is_allowed
+        """)
+
+        @command(dtype_in=bool)
+        def make_allowed(self, yesno):
+            self.is_allowed = yesno
+
+        if server_green_mode == GreenMode.Asyncio:
+            exec(sync_code.replace("def ", "async def "))
+        else:
+            exec(sync_code)
+
+    with DeviceTestContext(TestDevice) as proxy:
+        proxy.make_allowed(True)
+        proxy.current = 2.
+        assert_close(proxy.current, 2.)
+        proxy.voltage = 3.
+        assert_close(proxy.voltage, 3.)
+
+        proxy.make_allowed(False)
+        with pytest.raises(DevFailed):
+            proxy.current = 4.
+        with pytest.raises(DevFailed):
+            _ = proxy.current
+        with pytest.raises(DevFailed):
+            proxy.voltage = 4.
+        with pytest.raises(DevFailed):
+            _ = proxy.voltage
+
+
+def test_read_only_dynamic_attribute_with_dummy_write_method(dynamic_attribute_read_function, server_green_mode):
 
     def dummy_write_method():
         return None
