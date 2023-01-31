@@ -5,13 +5,15 @@ import threading
 import time
 import pytest
 import enum
+import numpy as np
 
 from tango import (
     AttrData, Attr, AttrDataFormat, AttrQuality, AttReqType, AttrWriteType,
     DevBoolean, DevLong, DevDouble, DevFailed,
     DevEncoded, DevEnum, DevState, DevVoid,
     Device_4Impl, Device_5Impl, DeviceClass,
-    GreenMode, LatestDeviceImpl, READ_WRITE, SCALAR
+    GreenMode, LatestDeviceImpl, ExtractAs,
+    READ_WRITE, SCALAR, SPECTRUM
 )
 from tango.server import Device
 from tango.pyutil import parse_args
@@ -19,7 +21,7 @@ from tango.server import _get_tango_type_format, command, attribute, device_prop
 from tango.test_utils import DeviceTestContext, MultiDeviceTestContext
 from tango.test_utils import GoodEnum, BadEnumNonZero, BadEnumSkipValues, BadEnumDuplicates
 from tango.test_utils import assert_close, DEVICE_SERVER_ARGUMENTS
-from tango.utils import EnumTypeError, get_enum_labels, is_pure_str
+from tango.utils import TO_TANGO_TYPE, EnumTypeError, get_enum_labels, is_pure_str
 
 # Asyncio imports
 try:
@@ -504,6 +506,104 @@ def test_read_write_wvalue_attribute(attribute_typed_values, server_green_mode):
         for value in values:
             proxy.attr = value
             assert_close(proxy.attr, expected(proxy.read_attribute('attr').w_value))
+
+
+def test_write_read_empty_spectrum_attribute(extract_as, base_type):
+    requested_type, expected_type = extract_as
+
+    if requested_type == ExtractAs.Numpy and base_type == str:
+        expected_type = tuple
+
+    if requested_type in [ExtractAs.ByteArray, ExtractAs.Bytes, ExtractAs.String] and base_type == str:
+        pytest.xfail('Conversion from (str,) to ByteArray, Bytes and String not supported. May be fixed in future')
+
+    class TestDevice(Device):
+
+        attr_value = []
+
+        @attribute(dtype=(base_type,), max_dim_x=10, access=AttrWriteType.READ_WRITE)
+        def attr(self):
+            return self.attr_value
+
+        @attr.write
+        def attr(self, value):
+            self.attr_value = value
+
+        @command(dtype_out=bool)
+        def is_attr_empty_list(self):
+            if base_type in [int, float, bool]:
+                assert self.attr_value.dtype == np.dtype(base_type)
+            else:
+                assert isinstance(self.attr_value, list)
+            assert len(self.attr_value) == 0
+
+    with DeviceTestContext(TestDevice) as proxy:
+        # first we read init value
+        attr_read = proxy.read_attribute('attr', extract_as=requested_type)
+        assert isinstance(attr_read.value, expected_type)
+        assert len(attr_read.value) == 0
+        # then we write empty list and check if it was really written
+        proxy.attr = []
+        proxy.is_attr_empty_list()
+        # and finally, we read it again and check the value and wvalue
+        attr_read = proxy.read_attribute('attr', extract_as=requested_type)
+        assert isinstance(attr_read.value, expected_type)
+        assert len(attr_read.value) == 0
+        assert isinstance(attr_read.w_value, expected_type)
+        assert len(attr_read.w_value) == 0
+
+
+@pytest.mark.parametrize("device_impl_class", [Device_4Impl, Device_5Impl, LatestDeviceImpl])
+def test_write_read_empty_spectrum_attribute_classic_api(device_impl_class, extract_as, base_type):
+    requested_type, expected_type = extract_as
+
+    if requested_type == ExtractAs.Numpy and base_type == str:
+        expected_type = tuple
+
+    if requested_type in [ExtractAs.ByteArray, ExtractAs.Bytes, ExtractAs.String] and base_type == str:
+        pytest.xfail('Conversion from (str,) to ByteArray, Bytes and String not supported. May be fixed in future')
+
+    class ClassicAPIClass(DeviceClass):
+
+        cmd_list = {"is_attr_empty_list": [[DevVoid, "none"], [DevBoolean, "none"]]}
+        attr_list = {"attr": [[TO_TANGO_TYPE[base_type], SPECTRUM, AttrWriteType.READ_WRITE, 10]]}
+
+        def __init__(self, name):
+            super().__init__(name)
+            self.set_type("TestDevice")
+
+    class ClassicAPIDeviceImpl(device_impl_class):
+
+        attr_value = []
+
+        def read_attr(self, attr):
+            attr.set_value(self.attr_value)
+
+        def write_attr(self, attr):
+            w_value = attr.get_write_value()
+            self.attr_value = w_value
+
+        def is_attr_empty_list(self):
+            if base_type in [int, float, bool]:
+                assert self.attr_value.dtype == np.dtype(base_type)
+            else:
+                assert isinstance(self.attr_value, list)
+            assert len(self.attr_value) == 0
+
+    with DeviceTestContext(ClassicAPIDeviceImpl, ClassicAPIClass) as proxy:
+        # first we read init value
+        attr_read = proxy.read_attribute('attr', extract_as=requested_type)
+        assert isinstance(attr_read.value, expected_type)
+        assert len(attr_read.value) == 0
+        # then we write empty list and check if it was really written
+        proxy.attr = []
+        proxy.is_attr_empty_list()
+        # and finally, we read it again and check the value and wvalue
+        attr_read = proxy.read_attribute('attr', extract_as=requested_type)
+        assert isinstance(attr_read.value, expected_type)
+        assert len(attr_read.value) == 0
+        assert isinstance(attr_read.w_value, expected_type)
+        assert len(attr_read.w_value) == 0
 
 
 def test_read_write_attribute_enum(server_green_mode, attr_data_format):

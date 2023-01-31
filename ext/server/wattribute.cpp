@@ -554,7 +554,7 @@ namespace PyWAttribute
         att.get_write_value(buffer);
 
 	if (buffer == NULL) {
-	    *obj = boost::python::object();
+	    *obj = boost::python::list();
 	    return;
 	}
 
@@ -573,7 +573,7 @@ namespace PyWAttribute
         const Tango::ConstDevString *ptr = NULL;
 
 	if (ptr == NULL) {
-	    *obj = boost::python::object();
+	    *obj = boost::python::list();
 	    return;
 	}
 
@@ -594,7 +594,7 @@ namespace PyWAttribute
         att.get_write_value(buffer);
 
 	if (buffer == NULL) {
-	    *obj = boost::python::object();
+	    *obj = boost::python::list();
 	    return;
 	}	
 
@@ -626,7 +626,7 @@ namespace PyWAttribute
         att.get_write_value(buffer);
 
 	if (buffer == NULL) {
-	    *obj = boost::python::object();
+	    *obj = boost::python::list();
 	    return;
 	}
 

@@ -20,6 +20,7 @@ import types
 import numbers
 import inspect
 import enum
+import numpy
 
 from argparse import HelpFormatter
 
@@ -117,6 +118,21 @@ _binary_types = (
     CmdArgType.DevVarCharArray,)
 
 
+FROM_TANGO_TO_NUMPY_TYPE = {
+    CmdArgType.DevBoolean: numpy.bool_,
+    CmdArgType.DevUChar: numpy.ubyte,
+    CmdArgType.DevShort: numpy.short,
+    CmdArgType.DevUShort: numpy.ushort,
+    CmdArgType.DevLong: numpy.int32,
+    CmdArgType.DevULong: numpy.uint32,
+    CmdArgType.DevLong64: numpy.int64,
+    CmdArgType.DevULong64: numpy.uint64,
+    CmdArgType.DevString: str,
+    CmdArgType.DevDouble: numpy.float64,
+    CmdArgType.DevFloat: numpy.float32,
+}
+
+
 def __build_to_tango_type():
     ret = {
         int: CmdArgType.DevLong64,
@@ -164,22 +180,6 @@ def __build_to_tango_type():
         if key.startswith("Dev"):
             value = getattr(CmdArgType, key)
             ret[key] = ret[value] = value
-
-    if constants.NUMPY_SUPPORT:
-        import numpy
-        FROM_TANGO_TO_NUMPY_TYPE = {
-            CmdArgType.DevBoolean: numpy.bool_,
-            CmdArgType.DevUChar: numpy.ubyte,
-            CmdArgType.DevShort: numpy.short,
-            CmdArgType.DevUShort: numpy.ushort,
-            CmdArgType.DevLong: numpy.int32,
-            CmdArgType.DevULong: numpy.uint32,
-            CmdArgType.DevLong64: numpy.int64,
-            CmdArgType.DevULong64: numpy.uint64,
-            CmdArgType.DevString: str,
-            CmdArgType.DevDouble: numpy.float64,
-            CmdArgType.DevFloat: numpy.float32,
-        }
 
         for key, value in FROM_TANGO_TO_NUMPY_TYPE.items():
             ret[value] = key

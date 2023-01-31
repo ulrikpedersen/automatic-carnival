@@ -441,8 +441,7 @@ namespace PyDeviceProxy
         }
 
         // Convert the result back to python
-        return PyDeviceAttribute::convert_to_python(dev_attr_vec, self,
-                                                    extract_as);
+        return PyDeviceAttribute::convert_to_python(dev_attr_vec, self, extract_as);
     }
 
     static bopy::object
