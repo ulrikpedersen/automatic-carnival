@@ -180,3 +180,4 @@ from .device_proxy import get_device_proxy
 
 from .pytango_init import init as __init
 __init()
+requires_tango("9.4.1", software_name="PyTango")

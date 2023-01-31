@@ -3,7 +3,7 @@
 FROM --platform=linux/amd64 condaforge/mambaforge:4.14.0-0
 
 ARG PYTHON_VERSION=3.10
-ARG CPP_TANGO_VERSION=9.4.0
+ARG CPP_TANGO_VERSION=9.4.1
 ARG TANGO_TEST_VERSION=3.6
 
 # setting default shell to bash
