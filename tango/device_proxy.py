@@ -16,6 +16,7 @@ import textwrap
 import threading
 import enum
 import collections.abc
+import warnings
 
 from ._tango import StdStringVector, DbData, DbDatum, AttributeInfo
 from ._tango import AttributeInfoEx, AttributeInfoList, AttributeInfoListEx
@@ -165,6 +166,7 @@ def __init_device_proxy_internals(proxy):
         return
     executors = {key: None for key in GreenMode.names}
     proxy.__dict__['_green_mode'] = None
+    proxy.__dict__['_dynamic_interface_frozen'] = True
     proxy.__dict__['_initialized'] = True
     proxy.__dict__['_executors'] = executors
     proxy.__dict__['_pending_unsubscribe'] = {}
@@ -267,7 +269,53 @@ def __DeviceProxy__refresh_pipe_cache(self):
     pipe_cache = [pipe_name.lower() for pipe_name in self.get_pipe_list()]
     self.__dict__['__pipe_cache'] = pipe_cache
 
+def __DeviceProxy__freeze_dynamic_interface(self):
+    """Prevent unknown attributes to be set on this DeviceProxy instance.
 
+    An exception will be raised if the Python attribute set on this DeviceProxy
+    instance does not already exist.  This prevents accidentally writing to
+    a non-existent Tango attribute when using the high-level API.
+
+    This is the default behaviour since PyTango 9.3.4.
+
+    See also :meth:`tango.DeviceProxy.unfreeze_dynamic_interface`.
+
+    New in PyTango 9.4.0
+    """
+    self._dynamic_interface_frozen = True
+    
+def __DeviceProxy__unfreeze_dynamic_interface(self):
+    """Allow new attributes to be set on this DeviceProxy instance.
+
+    An exception will not be raised if the Python attribute set on this DeviceProxy
+    instance does not exist.  Instead, the new Python attribute will be added to
+    the DeviceProxy instance's dictionary of attributes.  This may be useful, but
+    a user will not get an error if they accidentally write to a non-existent Tango
+    attribute when using the high-level API.
+
+    See also :meth:`tango.DeviceProxy.freeze_dynamic_interface`.
+
+    New in PyTango 9.4.0
+    """
+    warnings.warn(
+        f"Dynamic interface unfrozen on DeviceProxy instance {self} id=0x{id(self):x} - "
+        f"arbitrary Python attributes can be set without raising an exception."
+    )
+    self._dynamic_interface_frozen = False
+
+def __DeviceProxy__is_dynamic_interface_frozen(self):
+    """Indicates if the dynamic interface for this DeviceProxy instance is frozen.
+
+    See also :meth:`tango.DeviceProxy.freeze_dynamic_interface` and
+    :meth:`tango.DeviceProxy.unfreeze_dynamic_interface`.
+
+        :returns: True if the dynamic interface this DeviceProxy is frozen.
+        :rtype: bool
+
+    New in PyTango 9.4.0
+    """
+    return self._dynamic_interface_frozen
+    
 def __get_command_func(dp, cmd_info, name):
     _, doc = cmd_info
 
@@ -419,11 +467,13 @@ def __DeviceProxy__setattr(self, name, value):
             return self.write_pipe(name, value)
 
         try:
-            if name in self.__dict__:
+            if name in self.__dict__ or not self.is_dynamic_interface_frozen():
                 return super(DeviceProxy, self).__setattr__(name, value)
             else:
                 raise AttributeError(
-                    f"Tried to set non-existent attr {repr(name)} to {repr(value)}"
+                    f"Tried to set non-existent attr {repr(name)} to {repr(value)}.\n"
+                    f"The DeviceProxy object interface is frozen and cannot be modified - "
+                    f"see tango.DeviceProxy.freeze_dynamic_interface for details."
                 )
         except Exception as e:
             raise e from cause
@@ -1630,6 +1680,10 @@ def __init_DeviceProxy():
 
     DeviceProxy.get_green_mode = __DeviceProxy__get_green_mode
     DeviceProxy.set_green_mode = __DeviceProxy__set_green_mode
+
+    DeviceProxy.freeze_dynamic_interface = __DeviceProxy__freeze_dynamic_interface
+    DeviceProxy.unfreeze_dynamic_interface = __DeviceProxy__unfreeze_dynamic_interface
+    DeviceProxy.is_dynamic_interface_frozen = __DeviceProxy__is_dynamic_interface_frozen
 
     DeviceProxy.__getattr__ = __DeviceProxy__getattr
     DeviceProxy.__setattr__ = __DeviceProxy__setattr
