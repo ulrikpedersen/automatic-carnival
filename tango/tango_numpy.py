@@ -45,7 +45,7 @@ def _define_numpy():
             DevLong = numpy.int32
             DevDouble = numpy.float64
             DevFloat = numpy.float32
-            DevBoolean = numpy.bool8
+            DevBoolean = numpy.bool_
             DevUShort = numpy.uint16
             DevULong = numpy.uint32
             DevUChar = numpy.ubyte
