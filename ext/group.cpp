@@ -58,7 +58,7 @@ namespace PyGroup
             if (!dev_proxy)
                 continue;
             PyDeviceAttribute::update_data_format( *dev_proxy, &(i->get_data()), 1 );
-        }
+         }
     }
     
     Tango::GroupAttrReplyList read_attribute_reply (Tango::Group &self,  long req_id, long timeout_ms = 0 )

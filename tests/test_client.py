@@ -25,10 +25,10 @@ import psutil
 import pytest
 from functools import partial
 from tango import DeviceProxy, DevFailed, GreenMode
-from tango import DeviceInfo, AttributeInfo, AttributeInfoEx
+from tango import DeviceInfo, AttributeInfo, AttributeInfoEx, ExtractAs
 from tango.server import Device
 from tango.utils import is_str_type, is_int_type, is_float_type, is_bool_type
-from tango.test_utils import DeviceTestContext, assert_close, bytes_devstring, str_devstring
+from tango.test_utils import DeviceTestContext, assert_close, bytes_devstring, str_devstring, convert_to_type
 from tango.gevent import DeviceProxy as gevent_DeviceProxy
 from tango.futures import DeviceProxy as futures_DeviceProxy
 from tango.asyncio import DeviceProxy as asyncio_DeviceProxy
@@ -177,7 +177,7 @@ def ping_device(proxy):
                         GreenMode.Gevent,
                         GreenMode.Futures],
                 scope="module")
-def tango_test(request):
+def tango_test_with_green_modes(request):
     green_mode = request.param
     server = "TangoTest"
     inst = "test"
@@ -190,6 +190,21 @@ def tango_test(request):
 
     proc.terminate()
     # let's not wait for it to exit, that takes too long :)
+
+
+@pytest.fixture(scope="module")
+def tango_test():
+    green_mode = GreenMode.Synchronous
+    server = "TangoTest"
+    inst = "test"
+    device = "sys/tg_test/17"
+    host = platform.node()
+    proc = start_server(server, inst, device)
+    proxy = wait_for_proxy(host, proc, device, green_mode)
+
+    yield proxy
+
+    proc.terminate()
 
 
 @pytest.fixture(params=ATTRIBUTES)
@@ -214,6 +229,11 @@ def writable_scalar_attribute(request):
                         if "spectrum" in a and
                         a.split("_")[-1] not in ("ro", "rww")])
 def writable_spectrum_attribute(request):
+    return request.param
+
+
+@pytest.fixture(params=['double_scalar_w', 'double_spectrum', 'double_image'])
+def all_double_writable_attributes(request):
     return request.param
 
 
@@ -256,10 +276,29 @@ def test_read_attribute(tango_test, readable_attribute):
     # For read-only string spectrum and read-only string image types,
     # the following error is very likely to be raised:
     # -> MARSHAL CORBA system exception: MARSHAL_PassEndOfMessage
-    # An explicit sleep fixes the problem but it's annoying to maintain
+    # An explicit sleep fixes the problem, but it's annoying to maintain
+
     if readable_attribute in ["string_image_ro", "string_spectrum_ro"]:
         pytest.xfail()
     tango_test.read_attribute(readable_attribute, wait=True)
+
+
+def test_read_write_attribute_with_green_modes(tango_test_with_green_modes, all_double_writable_attributes):
+    """
+    Check that attributes can be read/write with all green modes
+    """
+    attr_name = all_double_writable_attributes
+    if attr_name == 'double_scalar_w':
+        write_values = -28.2
+    elif attr_name == 'double_spectrum':
+        write_values = [-28.2, 23.4]
+    else:
+        write_values = [[-28.2, 23.4], [-4.9, 6.5]]
+
+    tango_test_with_green_modes.write_attribute(attr_name, write_values, wait=True)
+    read_attr = tango_test_with_green_modes.read_attribute(attr_name, wait=True)
+    assert_close(read_attr.value, write_values)
+    assert_close(read_attr.w_value, write_values)
 
 
 def test_write_scalar_attribute(tango_test, writable_scalar_attribute):
@@ -278,32 +317,39 @@ def test_write_scalar_attribute(tango_test, writable_scalar_attribute):
         pytest.xfail("Not currently testing this type")
 
 
-def test_write_read_spectrum_attribute(tango_test, writable_spectrum_attribute):
+def test_write_read_spectrum_attribute(tango_test, writable_spectrum_attribute, extract_as):
     "Check that writable spectrum attributes can be written and read"
+    requested_type, expected_type = extract_as
     attr_name = writable_spectrum_attribute
     config = tango_test.get_attribute_config(attr_name, wait=True)
-    use_all_elements = True
     if is_bool_type(config.data_type):
         write_values = [True, False]
     elif is_int_type(config.data_type):
         write_values = [76, 77]
     elif is_float_type(config.data_type):
-        write_values = [-28.2, 44.3]
+        if requested_type == ExtractAs.String:
+            # it is hard to find a proper float values, which can be converted to str,
+            # most of them case UnicodeDecodeError, so we use the most simple one
+            write_values = [0, 0]
+        else:
+            write_values = [-28.2, 44.3]
     elif is_str_type(config.data_type):
-        # string spectrum attributes don't reduce their x dimension
-        # when written to, so we only compare the values written
-        use_all_elements = False
+        if requested_type == ExtractAs.Numpy:
+            expected_type = tuple
+        if requested_type in [ExtractAs.ByteArray, ExtractAs.Bytes, ExtractAs.String]:
+            pytest.xfail('Conversion from (str,) to ByteArray, Bytes and String not supported. May be fixed in future')
         write_values = ["hello", "hola"]
     else:
         pytest.xfail("Not currently testing this type")
 
     tango_test.write_attribute(attr_name, write_values, wait=True)
-    read_attr = tango_test.read_attribute(attr_name, wait=True)
-    if use_all_elements:
-        read_values = read_attr.value
-    else:
-        read_values = read_attr.value[0:len(write_values)]
-    assert_close(read_values, write_values)
+    read_attr = tango_test.read_attribute(attr_name, extract_as=requested_type)
+
+    assert isinstance(read_attr.value, expected_type)
+    assert_close(read_attr.value, convert_to_type(write_values, config.data_type, expected_type))
+
+    assert isinstance(read_attr.w_value, expected_type)
+    assert_close(read_attr.w_value, convert_to_type(write_values, config.data_type, expected_type))
 
 
 def test_write_read_empty_spectrum_attribute(tango_test, writable_spectrum_attribute):
@@ -311,11 +357,11 @@ def test_write_read_empty_spectrum_attribute(tango_test, writable_spectrum_attri
     attr_name = writable_spectrum_attribute
     config = tango_test.get_attribute_config(attr_name, wait=True)
     if is_str_type(config.data_type):
-        pytest.xfail("String spectrum x dimension does not reduce")
+        pytest.xfail('Conversion from (str,) to numpy not supported. Probably, may be fixed in future')
 
     tango_test.write_attribute(attr_name, [], wait=True)
     read_attr = tango_test.read_attribute(attr_name, wait=True)
-    assert read_attr.value is None
+    assert not len(read_attr.value)
 
 
 def test_write_read_string_attribute(tango_test):
@@ -329,7 +375,6 @@ def test_write_read_string_attribute(tango_test):
     expected_values = ['', '', 'Hello, World!', 'Hello, World!',
                        str_devstring, str_devstring,
                        str_big, str_big]
-
 
     for value, expected_value in zip(values, expected_values):
         tango_test.write_attribute(attr_name, value, wait=True)
@@ -393,14 +438,18 @@ def test_read_attribute_config(tango_test, attribute):
     tango_test.get_attribute_config(attribute)
 
 
-def test_attribute_list_query(tango_test):
-    attrs = tango_test.attribute_list_query()
+def test_read_attribute_config_with_green_modes(tango_test_with_green_modes, all_double_writable_attributes):
+    tango_test_with_green_modes.get_attribute_config(all_double_writable_attributes)
+
+
+def test_attribute_list_query(tango_test_with_green_modes):
+    attrs = tango_test_with_green_modes.attribute_list_query()
     assert all(isinstance(a, AttributeInfo) for a in attrs)
     assert {a.name for a in attrs} == set(ATTRIBUTES)
 
 
-def test_attribute_list_query_ex(tango_test):
-    attrs = tango_test.attribute_list_query_ex()
+def test_attribute_list_query_ex(tango_test_with_green_modes):
+    attrs = tango_test_with_green_modes.attribute_list_query_ex()
     assert all(isinstance(a, AttributeInfoEx) for a in attrs)
     assert {a.name for a in attrs} == set(ATTRIBUTES)
 

@@ -4,10 +4,10 @@ import enum
 import numpy as np
 
 # Local imports
-from . import DevState, GreenMode, AttrDataFormat
+from . import DevState, GreenMode, AttrDataFormat, ExtractAs
 from .server import Device
 from .test_context import MultiDeviceTestContext, DeviceTestContext
-from .utils import is_non_str_seq
+from .utils import is_non_str_seq, FROM_TANGO_TO_NUMPY_TYPE
 from . import DeviceClass, LatestDeviceImpl, DevLong64, SCALAR, READ
 
 # Conditional imports
@@ -15,11 +15,6 @@ try:
     import pytest
 except ImportError:
     pytest = None
-
-try:
-    import numpy.testing
-except ImportError:
-    numpy = None
 
 __all__ = (
     'MultiDeviceTestContext',
@@ -120,6 +115,17 @@ IMAGE_TYPED_VALUES = {
                  [[False, False, True], [True, False, False]], [[False]], [[True]],)
 }
 
+
+EXTRACT_AS = [(ExtractAs.Numpy, np.ndarray),
+              (ExtractAs.Tuple, tuple),
+              (ExtractAs.List, list),
+              (ExtractAs.Bytes, bytes),
+              (ExtractAs.ByteArray, bytearray),
+              (ExtractAs.String, str)
+              ]
+
+BASE_TYPES = [float, int, str, bool]
+
 # these sets to test Device Server input arguments
 
 OS_SYSTEMS = ['linux', 'win']
@@ -166,7 +172,7 @@ def repr_type(x):
 
 # Numpy helpers
 
-if numpy and pytest:
+if pytest:
 
     def __assert_all_types(a, b):
         if isinstance(a, str):
@@ -176,7 +182,7 @@ if numpy and pytest:
         try:
             assert a == pytest.approx(b)
         except (ValueError, TypeError):
-            numpy.testing.assert_allclose(a, b)
+            np.testing.assert_allclose(a, b)
 
     def assert_close(a, b):
         if is_non_str_seq(a):
@@ -186,10 +192,6 @@ if numpy and pytest:
         else:
             __assert_all_types(a, b)
 
-
-# Pytest fixtures
-
-if pytest:
 
     def __convert_value(value):
         if isinstance(value, bytes):
@@ -202,6 +204,21 @@ if pytest:
             return [create_result(dtype, v) for v in value]
 
         return __convert_value(value)
+
+    def convert_to_type(value, attr_type, expected_type):
+        if expected_type in [tuple, list]:
+            return expected_type(value)
+        elif expected_type == np.ndarray:
+            return np.array(value, dtype=FROM_TANGO_TO_NUMPY_TYPE[attr_type])
+        elif expected_type in [bytes, bytearray, str]:
+            value = np.array(value, dtype=FROM_TANGO_TO_NUMPY_TYPE[attr_type]).tobytes()
+            if expected_type == bytearray:
+                return bytearray(value)
+            elif expected_type == str:
+                return "".join([chr(b) for b in value])
+            return value
+        else:
+            pytest.xfail("Unknown extract_as type")
 
     @pytest.fixture(params=DevState.values.values())
     def state(request):
@@ -222,6 +239,15 @@ if pytest:
         dtype, values = request.param
         expected = lambda v: create_result(dtype, v)
         return dtype, values, expected
+
+    @pytest.fixture(params=EXTRACT_AS, ids=[f"extract_as.{req_type}" for req_type, _ in EXTRACT_AS])
+    def extract_as(request):
+        requested_type, expected_type = request.param
+        return requested_type, expected_type
+
+    @pytest.fixture(params=BASE_TYPES)
+    def base_type(request):
+        return request.param
 
     @pytest.fixture(params=GreenMode.values.values())
     def green_mode(request):
