@@ -349,9 +349,44 @@ def test_write_read_string_attribute(tango_test):
         assert result.value == ((expected_value,), (expected_value,))
 
 
-def test_set_non_existent_attribute_raises(tango_test):
+def test_set_non_existent_attribute_raises_by_default(tango_test):
     with pytest.raises(AttributeError, match="some_invalid_name"):
         tango_test.some_invalid_name = "123"
+
+
+def test_set_non_existent_attribute_allowed_if_dynamic_interface_unfrozen(tango_test):
+    tango_test.unfreeze_dynamic_interface()
+    tango_test.some_invalid_name = "123"
+    assert tango_test.some_invalid_name == "123"
+
+
+def test_dynamic_interface_can_be_toggled(tango_test):
+    tango_test.unfreeze_dynamic_interface()
+    tango_test.some_invalid_name = "456"
+    assert tango_test.some_invalid_name == "456"
+    tango_test.freeze_dynamic_interface()
+    with pytest.raises(AttributeError, match="another_invalid_name"):
+        tango_test.another_invalid_name = "123"
+
+
+def test_dynamic_interface_flag_can_be_read(tango_test):
+    tango_test.unfreeze_dynamic_interface()
+    assert not tango_test.is_dynamic_interface_frozen()
+    tango_test.freeze_dynamic_interface()
+    assert tango_test.is_dynamic_interface_frozen()
+
+
+def test_dynamic_interface_only_applies_to_device_proxy_instance(tango_test):
+    other_proxy = DeviceProxy(tango_test.adm_name())
+    tango_test.unfreeze_dynamic_interface()
+    other_proxy.freeze_dynamic_interface()
+    assert not tango_test.is_dynamic_interface_frozen()
+    assert other_proxy.is_dynamic_interface_frozen()
+
+
+def test_dynamic_interface_unfreeze_generates_a_user_warning(tango_test):
+    with pytest.warns(UserWarning):
+        tango_test.unfreeze_dynamic_interface()
 
 
 def test_read_attribute_config(tango_test, attribute):
