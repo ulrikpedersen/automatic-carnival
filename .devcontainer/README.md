@@ -13,7 +13,7 @@ From within this folder, run commands like the following:
 
 ```shell script
 export PYTHON_VERSION=3.10
-export CPP_TANGO_VERSION=9.4.0
+export CPP_TANGO_VERSION=9.4.1
 docker build . --platform=linux/amd64 -t pytango-dev:py${PYTHON_VERSION}-tango${CPP_TANGO_VERSION} --build-arg PYTHON_VERSION --build-arg CPP_TANGO_VERSION
 ```
 
@@ -52,7 +52,7 @@ Add a new interpreter:
 
 - Open the _Add Interpreter..._ dialog
 - Select _Docker_
-- Pick the image to use, e.g., `pytango-dev:py3.10-tango9.4.0`
+- Pick the image to use, e.g., `pytango-dev:py3.10-tango9.4.1`
 
 Running tests:
 

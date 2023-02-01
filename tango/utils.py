@@ -262,7 +262,7 @@ def requires_pytango(min_version=None, conflicts=(),
 
         from tango import requires_pytango
 
-        requires_pytango('7.1', conflicts=['8.1.1'], software='MyDS')
+        requires_pytango('7.1', conflicts=['8.1.1'], software_name='MyDS')
 
     :param min_version:
         minimum PyTango version [default: None, meaning no minimum
@@ -271,10 +271,10 @@ def requires_pytango(min_version=None, conflicts=(),
         (see: :class:`~distutils.version.LooseVersion`)
     :type min_version:
         None, str, :class:`~distutils.version.LooseVersion`
-    :param conflics:
+    :param conflicts:
         a sequence of PyTango versions which conflict with the
         software using it
-    :type conflics:
+    :type conflicts:
         seq<str|LooseVersion>
     :param software_name:
         software name using tango. Used in the exception message
@@ -290,13 +290,13 @@ def requires_pytango(min_version=None, conflicts=(),
 
 def requires_tango(min_version=None, conflicts=(), software_name="Software"):
     """
-    Determines if the required Tango version for the running
+    Determines if the required cppTango version for the running
     software is present. If not an exception is thrown.
     Example usage::
 
         from tango import requires_tango
 
-        requires_tango('7.1', conflicts=['8.1.1'], software='MyDS')
+        requires_tango('7.1', conflicts=['8.1.1'], software_name='MyDS')
 
     :param min_version:
         minimum Tango version [default: None, meaning no minimum
@@ -305,10 +305,10 @@ def requires_tango(min_version=None, conflicts=(), software_name="Software"):
         (see: :class:`~distutils.version.LooseVersion`)
     :type min_version:
         None, str, :class:`~distutils.version.LooseVersion`
-    :param conflics:
+    :param conflicts:
         a sequence of Tango versions which conflict with the
         software using it
-    :type conflics:
+    :type conflicts:
         seq<str|LooseVersion>
     :param software_name:
         software name using Tango. Used in the exception message

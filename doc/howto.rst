@@ -52,7 +52,7 @@ and the Tango C++ library version that PyTango was compiled with::
 
     >>> import tango
     >>> tango.constants.TgLibVers
-    '9.4.0'
+    '9.4.1'
 
 
 Start server from command line

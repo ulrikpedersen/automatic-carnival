@@ -30,7 +30,7 @@ PyTango_ is compatible with python 3.6+.
 
 General dependencies:
 
--  libtango_ >= 9.4, and its dependencies: omniORB4 and libzmq
+-  libtango_ >= 9.4.1, and its dependencies: omniORB4 and libzmq
 -  `Boost.Python`_ >= 1.33
 
 Python dependencies:
@@ -87,13 +87,13 @@ To test the installation, import ``tango`` and check ``tango.utils.info()``::
     PyTango compiled with:
         Python : 3.10.6
         Numpy  : 1.23.4
-        Tango  : 9.4.0
+        Tango  : 9.4.1
         Boost  : 1.80.0
 
     PyTango runtime is:
         Python : 3.10.6
         Numpy  : 1.23.4
-        Tango  : 9.4.0
+        Tango  : 9.4.1
 
     PyTango running on:
     uname_result(system='Linux', node='624986bbd0fe', release='5.10.104-linuxkit', version='#1 SMP PREEMPT Thu Mar 17 17:05:54 UTC 2022', machine='x86_64', processor='x86_64')
