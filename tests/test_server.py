@@ -13,7 +13,7 @@ from tango import (
     DevEncoded, DevEnum, DevState, DevVoid,
     Device_4Impl, Device_5Impl, DeviceClass,
     GreenMode, LatestDeviceImpl, ExtractAs,
-    READ_WRITE, SCALAR, SPECTRUM
+    READ_WRITE, SCALAR, SPECTRUM, CmdArgType
 )
 from tango.server import Device
 from tango.pyutil import parse_args
@@ -604,6 +604,40 @@ def test_write_read_empty_spectrum_attribute_classic_api(device_impl_class, extr
         assert len(attr_read.value) == 0
         assert isinstance(attr_read.w_value, expected_type)
         assert len(attr_read.w_value) == 0
+
+
+@pytest.mark.parametrize("dtype", ["state", DevState, CmdArgType.DevState])
+def test_ensure_devstate_is_pytango_enum(attr_data_format, dtype):
+
+    if attr_data_format == AttrDataFormat.SCALAR:
+        value = DevState.ON
+    elif attr_data_format == AttrDataFormat.SPECTRUM:
+        dtype = (dtype,)
+        value = (DevState.ON, DevState.RUNNING)
+    else:
+        dtype = ((dtype,),)
+        value = ((DevState.ON, DevState.RUNNING), (DevState.UNKNOWN, DevState.MOVING))
+
+    class TestDevice(Device):
+        @attribute(dtype=dtype, access=AttrWriteType.READ, max_dim_x=2, max_dim_y=2)
+        def any_name_for_state_attribute(self):
+            return value
+
+    def check_attr_type(states):
+        if attr_data_format == AttrDataFormat.SCALAR:
+            assert isinstance(states, DevState)
+        elif attr_data_format == AttrDataFormat.SPECTRUM:
+            for state in states:
+                assert isinstance(state, DevState)
+        else:
+            for state in states:
+                for stat in state:
+                    assert isinstance(stat, DevState)
+
+    with DeviceTestContext(TestDevice) as proxy:
+        states = proxy.any_name_for_state_attribute
+        assert states == value
+        check_attr_type(states)
 
 
 def test_read_write_attribute_enum(server_green_mode, attr_data_format):

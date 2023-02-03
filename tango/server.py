@@ -29,7 +29,7 @@ from .device_class import DeviceClass
 from .device_server import LatestDeviceImpl, get_worker, set_worker, run_in_executor
 from .utils import get_enum_labels
 from .utils import is_seq, is_non_str_seq, is_pure_str, is_enum_seq, is_enum, set_complex_value
-from .utils import scalar_to_array_type, TO_TANGO_TYPE
+from .utils import is_devstate, is_devstate_seq, scalar_to_array_type, TO_TANGO_TYPE
 from .green import get_green_mode, get_executor
 from .pyutil import Util
 
@@ -935,6 +935,14 @@ class attribute(AttrData):
                     dtype = (dtype,)
 
                 kwargs['enum_labels'] = get_enum_labels(_dtype)
+
+            elif is_devstate(dtype) or is_devstate_seq(dtype):
+                _dtype = dtype
+                dtype = CmdArgType.DevState
+
+                while is_devstate_seq(_dtype):
+                    _dtype = _dtype[0]
+                    dtype = (dtype,)
 
             kwargs['dtype'], kwargs['dformat'] = _get_tango_type_format(dtype, dformat, caller='attribute')
         self.build_from_dict(kwargs)
