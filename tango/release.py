@@ -45,7 +45,7 @@ class Release:
         - license: (str) the license
     """
     name = 'pytango'
-    version_info = (9, 4, 0, 'rc', 2)
+    version_info = (9, 4, 0, 'rc', 3)
     version = '.'.join(map(str, version_info[:3]))
     release = ''.join(map(str, version_info[3:]))
     separator = '.' if 'dev' in release or 'post' in release else ''
