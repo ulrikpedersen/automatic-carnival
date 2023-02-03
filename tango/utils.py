@@ -215,7 +215,6 @@ __device_classes = None
 
 bool_ = lambda value_str: value_str.lower() == "true"
 
-
 def __import(name):
     __import__(name)
     return sys.modules[name]
@@ -541,6 +540,17 @@ def is_non_str_seq(obj):
     :rtype: :py:obj:`bool`
     """
     return is_seq(obj) and not is_pure_str(obj)
+
+def is_devstate(obj):
+    return inspect.isclass(obj) and issubclass(obj, DevState)
+
+
+def is_devstate_seq(obj):
+    if is_non_str_seq(obj):
+        while is_non_str_seq(obj):
+            obj = obj[0]
+        return is_devstate(obj)
+    return False
 
 
 def is_enum(obj):
@@ -1161,21 +1171,17 @@ def document_static_method(klass, method_name, d, add=True):
 
 
 def document_enum(klass, enum_name, desc, append=True):
-    # derived = type(base)('derived', (base,), {'__doc__': 'desc'})
 
     # Get the original enum type
-    base = getattr(klass, enum_name)
+    enum_class = getattr(klass, enum_name)
 
-    # Prepare the new docstring
-    if append and base.__doc__ is not None:
-        desc = base.__doc__ + "\n" + desc
-
-    # Create a new type, derived from the original. Only difference
-    # is the docstring.
-    derived = type(base)(enum_name, (base,), {'__doc__': desc})
-
-    # Replace the original enum type with the new one
-    setattr(klass, enum_name, derived)
+    # fix the docstring
+    # is __doc__ is not empty, expand with given desc
+    if append and enum_class.__doc__ is not None:
+        enum_class.__doc__ += "\n" + desc
+    # otherwise make a new one
+    else:
+        enum_class.__doc__ = desc
 
 
 class CaselessList(list):

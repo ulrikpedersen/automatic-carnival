@@ -261,6 +261,8 @@ def __DeviceProxy__refresh_attr_cache(self):
         if attr.data_type == CmdArgType.DevEnum and attr.enum_labels:
             labels = StdStringVector_2_seq(attr.enum_labels)
             enum_class = enum.IntEnum(attr.name, labels, start=0)
+        elif attr.data_type == CmdArgType.DevState:
+            enum_class = DevState
         attr_cache[name] = (attr.name, enum_class, )
     self.__dict__['__attr_cache'] = attr_cache
 
@@ -283,7 +285,7 @@ def __DeviceProxy__freeze_dynamic_interface(self):
     New in PyTango 9.4.0
     """
     self._dynamic_interface_frozen = True
-    
+
 def __DeviceProxy__unfreeze_dynamic_interface(self):
     """Allow new attributes to be set on this DeviceProxy instance.
 
@@ -315,7 +317,7 @@ def __DeviceProxy__is_dynamic_interface_frozen(self):
     New in PyTango 9.4.0
     """
     return self._dynamic_interface_frozen
-    
+
 def __get_command_func(dp, cmd_info, name):
     _, doc = cmd_info
 
@@ -329,6 +331,7 @@ def __get_command_func(dp, cmd_info, name):
 def __get_attribute_value(self, attr_info, name):
     _, enum_class = attr_info
     attr_value = self.read_attribute(name).value
+
     if enum_class and attr_value is not None:
         if is_non_str_seq(attr_value):
             ret = []
@@ -343,12 +346,14 @@ def __get_attribute_value(self, attr_info, name):
     else:
         return attr_value
 
+
 def __convert_str_to_enum(value, enum_class, attr_name):
     try:
         return enum_class[value]
     except KeyError:
         raise AttributeError(f'Invalid enum value {value} for attribute {attr_name} '
                              f'Valid values: {[m for m in enum_class.__members__.keys()]}')
+
 
 def __set_attribute_value(self, name, value):
     attr_info = self.__get_attr_cache().get(name.lower())
