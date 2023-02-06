@@ -133,13 +133,13 @@ OS_SYSTEMS = ['linux', 'win']
 #    os_system, in string, out arguments list, raised exception
 DEVICE_SERVER_ARGUMENTS = (
     (['linux', 'win'], 'MyDs instance --nodb --port 1234',
-     ['MyDs', 'instance', '-nodb', '-ORBendPoint', 'giop:tcp::1234']),
+     ['MyDs', 'instance', '-nodb', '-ORBendPoint', 'giop:tcp:0.0.0.0:1234']),
     (['linux', 'win'], 'MyDs -port 1234 -host myhost instance',
      ['MyDs', 'instance', '-ORBendPoint', 'giop:tcp:myhost:1234']),
     (['linux', 'win'], 'MyDs instance --ORBendPoint giop:tcp::1234',
      ['MyDs', 'instance', '-ORBendPoint', 'giop:tcp::1234']),
     (['linux', 'win'], 'MyDs instance -nodb -port 1000 -dlist a/b/c;d/e/f',
-     ['MyDs', 'instance', '-ORBendPoint', 'giop:tcp::1000', '-nodb', '-dlist', 'a/b/c;d/e/f']),
+     ['MyDs', 'instance', '-ORBendPoint', 'giop:tcp:0.0.0.0:1000', '-nodb', '-dlist', 'a/b/c;d/e/f']),
     (['linux', 'win'], 'MyDs instance -file a/b/c',
      ['MyDs', 'instance', '-file=a/b/c']),
     ([], 'MyDs instance -nodb', []),  # this test should always fail

@@ -225,7 +225,7 @@ def parse_args(args):
     parser.add_argument("-file", "--file", dest="file", metavar="FILE_PATH",
                         help="start device server using an ASCII file instead of the Tango database")
 
-    parser.add_argument("-host", "--host", dest="host", default='', action="store",
+    parser.add_argument("-host", "--host", dest="host", default='0.0.0.0', action="store",
                        help="Force the host from which server accepts requests (alternatively use ORBendPoint option)")
     parser.add_argument("-port", "--port", dest="port", default='', action="store",
                        help="Force the port on which the device server listens (alternatively use ORBendPoint option)")
