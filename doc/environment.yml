@@ -5,6 +5,7 @@ dependencies:
 - gevent
 - graphviz
 - mock
+- packaging
 - pillow
 - sphinx
 - sphinx_rtd_theme
