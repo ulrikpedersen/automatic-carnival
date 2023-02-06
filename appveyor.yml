@@ -127,7 +127,7 @@ build_script:
   - cmake --build ./ -j 4 --config Release -v
 
 test_script:
-  - "%PYTHON_ROOT%/Scripts/pip.exe install \"gevent!=1.5a1\" packaging \"numpy>=1.1\""
+  - "%PYTHON_ROOT%/Scripts/pip.exe install \"gevent!=1.5a1\" packaging psutil \"numpy>=1.1\""
   - cmd: if %PYTHON_VER% LSS 37 "%PYTHON_ROOT%/Scripts/pip.exe" install "pytest<7.1" "tomli<2.0" "typing-extensions<4.0"
   - cmd: if %PYTHON_VER% GEQ 37 "%PYTHON_ROOT%/Scripts/pip.exe" install pytest
   - cmd: cd "C:\projects\pytango\tests"

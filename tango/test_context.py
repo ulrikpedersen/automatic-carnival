@@ -11,6 +11,7 @@ import tempfile
 import traceback
 import collections
 from functools import partial
+import psutil
 
 # Concurrency imports
 import threading
@@ -27,7 +28,8 @@ from .server import run
 from .utils import is_non_str_seq
 from . import DeviceProxy, Database, Util
 
-__all__ = ("MultiDeviceTestContext", "DeviceTestContext", "run_device_test_context")
+__all__ = ("MultiDeviceTestContext", "DeviceTestContext", "run_device_test_context",
+           "get_server_port_via_pid")
 
 # Helpers
 
@@ -70,6 +72,99 @@ def get_server_host_port():
     encoded_ior = util.get_dserver_ior(ds)
     ior = parse_ior(encoded_ior)
     return ior.host.decode(), ior.port
+
+
+def get_server_port_via_pid(pid, host):
+    """Return the TCP port that a device server process is listening on (GIOP).
+
+    This checks TCP sockets open on the process with the given PID, and attempts
+    to find the one that accepts GIOP traffic.  A connection will be made to each
+    listening socket, and data may be sent to them.
+
+    General Inter-ORB Protocol (GIOP) is the message protocol which object
+    request brokers (ORBs) communicate in CORBA.  This port is the one that is
+    used when connecting a DeviceProxy.  These are not the port(s) used for ZMQ
+    event traffic.
+
+    :param pid: operating system process identifier
+    :type pid: int
+    :param host: hostname/IP that device server is listening on.  E.g., 127.0.0.1,
+    IP address of a non-loopback network interface, etc.  Note that starting a device
+    server on "localhost" may fail if OmniORB creates an IPv6-only socket.
+    :type pid: str
+
+    :returns: TCP port number
+    :rtype: int
+
+    :raises RuntimeError: If the GIOP port couldn't be identified
+
+    New in PyTango 9.4.0
+    """
+    ports = _get_listening_tcp_ports(pid)
+    return _get_giop_port(host, ports)
+
+
+def _get_listening_tcp_ports(pid):
+    p = psutil.Process(pid)
+    conns = p.connections(kind="tcp")
+    return [c.laddr[1] for c in conns]
+
+
+def _get_giop_port(host, ports):
+    protocols = _try_get_protocols_on_ports(host, ports)
+    for port, protocol in protocols.items():
+        if protocol == "GIOP":
+            return port
+    raise RuntimeError(
+        f"None of ports {ports} appear to have GIOP protocol. "
+        f"Guessed protocols: {protocols}."
+    )
+
+
+def _try_get_protocols_on_ports(host, ports):
+    """Return a dict with port to protocol mapping.
+
+    This attempts to establish a TCP socket connection to the host
+    for each port, and then determine the protocol it supports.
+
+    ZMQ client sockets receive an unsolicited version check message on connection.
+    CORBA GIOP client sockets don't receive an unsolicited message, so we send
+    a requested to disconnect, and expect an empty message back.
+    """
+    zmq_response = b'\xff\x00\x00\x00\x00\x00\x00\x00\x01\x7f'  # signature + version check
+    giop_send = b'GIOP\x01\x02\x01\x05\x00\x00\x00\x00'  # request disconnect
+    giop_response = b''  # graceful disconnect
+    max_bytes_expected = len(zmq_response)
+
+    protocols = dict.fromkeys(ports, "Unknown")
+    for port in ports:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            sock.settimeout(0.001)
+            server_address = (host, port)
+            sock.connect(server_address)
+
+            try:
+                data = sock.recv(max_bytes_expected)
+                if data == zmq_response:
+                    protocols[port] = "ZMQ"
+                    continue
+            except OSError:
+                pass
+
+            try:
+                sock.sendall(giop_send)
+                data = sock.recv(max_bytes_expected)
+                if data == giop_response:
+                    protocols[port] = "GIOP"
+                    continue
+            except OSError:
+                pass
+        except OSError:
+            pass
+        finally:
+            sock.close()
+    return protocols
 
 
 def literal_dict(arg):

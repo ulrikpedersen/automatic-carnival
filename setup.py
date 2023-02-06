@@ -381,6 +381,7 @@ def setup_args():
     install_requires = [
         "numpy (>=1.13.3)",
         "packaging",
+        "psutil",
     ]
 
     setup_requires = []
@@ -388,8 +389,7 @@ def setup_args():
     if TESTING:
         setup_requires += ["pytest-runner"]
 
-    tests_require = ["gevent >= 20",
-                     "psutil"]
+    tests_require = ["gevent >= 20"]
 
     if PYTHON_VERSION < (3, 7):
         tests_require += [

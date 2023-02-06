@@ -6,7 +6,9 @@ import numpy as np
 # Local imports
 from . import DevState, GreenMode, AttrDataFormat, ExtractAs
 from .server import Device
-from .test_context import MultiDeviceTestContext, DeviceTestContext
+from .test_context import (
+    MultiDeviceTestContext, DeviceTestContext, get_server_port_via_pid
+)
 from .utils import is_non_str_seq, FROM_TANGO_TO_NUMPY_TYPE
 from . import DeviceClass, LatestDeviceImpl, DevLong64, SCALAR, READ
 
@@ -26,7 +28,8 @@ __all__ = (
     'command_typed_values',
     'attribute_typed_values',
     'server_green_mode',
-    'attr_data_format'
+    'attr_data_format',
+    'get_server_port_via_pid',
 )
 
 # char \x00 cannot be sent in a DevString. All other 1-255 chars can

@@ -7,5 +7,6 @@ dependencies:
 - mock
 - packaging
 - pillow
+- psutil
 - sphinx
 - sphinx_rtd_theme
