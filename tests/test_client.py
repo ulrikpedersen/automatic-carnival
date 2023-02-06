@@ -18,7 +18,6 @@ import weakref
 
 from distutils.spawn import find_executable
 from subprocess import Popen
-import platform
 from time import sleep
 
 import psutil
@@ -134,9 +133,9 @@ def get_ports(pid):
     return [c.laddr[1] for c in conns]
 
 
-def start_server(server, inst, device):
+def start_server(host, server, inst, device):
     exe = find_executable(server)
-    cmd = f"{exe} {inst} -ORBendPoint giop:tcp::0 -nodb -dlist {device}"
+    cmd = f"{exe} {inst} -ORBendPoint giop:tcp:{host}:0 -nodb -dlist {device}"
     proc = Popen(cmd.split(), close_fds=True)
     proc.poll()
     return proc
@@ -182,8 +181,8 @@ def tango_test_with_green_modes(request):
     server = "TangoTest"
     inst = "test"
     device = "sys/tg_test/17"
-    host = platform.node()
-    proc = start_server(server, inst, device)
+    host = "127.0.0.1"
+    proc = start_server(host, server, inst, device)
     proxy = wait_for_proxy(host, proc, device, green_mode)
 
     yield proxy
@@ -198,8 +197,8 @@ def tango_test():
     server = "TangoTest"
     inst = "test"
     device = "sys/tg_test/17"
-    host = platform.node()
-    proc = start_server(server, inst, device)
+    host = "127.0.0.1"
+    proc = start_server(host, server, inst, device)
     proxy = wait_for_proxy(host, proc, device, green_mode)
 
     yield proxy
@@ -251,7 +250,7 @@ def simple_device_fqdn():
     class TestDevice(Device):
         pass
 
-    context = DeviceTestContext(TestDevice)
+    context = DeviceTestContext(TestDevice, host="127.0.0.1")
     context.start()
     yield context.get_device_access()
     context.stop()
