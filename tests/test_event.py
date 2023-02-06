@@ -1,7 +1,6 @@
 # Imports
 
 import time
-import socket
 from functools import partial
 from threading import Thread
 
@@ -30,15 +29,6 @@ device_proxy_map = {
     GreenMode.Futures: futures_DeviceProxy,
     GreenMode.Asyncio: partial(asyncio_DeviceProxy, wait=True),
     GreenMode.Gevent: gevent_DeviceProxy}
-
-
-def get_open_port():
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(("", 0))
-    s.listen(1)
-    port = s.getsockname()[1]
-    s.close()
-    return port
 
 
 # Test device
@@ -90,9 +80,7 @@ class EventDevice(Device):
                 scope="module")
 def event_device(request):
     green_mode = request.param
-    # Hack: a port have to be specified explicitely for events to work
-    port = get_open_port()
-    context = DeviceTestContext(EventDevice, port=port, process=True)
+    context = DeviceTestContext(EventDevice, host="127.0.0.1", process=True)
     with context:
         yield device_proxy_map[green_mode](context.get_device_access())
 
