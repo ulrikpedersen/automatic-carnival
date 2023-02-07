@@ -21,7 +21,13 @@ from tango.server import _get_tango_type_format, command, attribute, device_prop
 from tango.test_utils import DeviceTestContext, MultiDeviceTestContext
 from tango.test_utils import GoodEnum, BadEnumNonZero, BadEnumSkipValues, BadEnumDuplicates
 from tango.test_utils import assert_close, DEVICE_SERVER_ARGUMENTS
-from tango.utils import TO_TANGO_TYPE, EnumTypeError, get_enum_labels, is_pure_str
+from tango.utils import (
+    EnumTypeError,
+    FROM_TANGO_TO_NUMPY_TYPE,
+    TO_TANGO_TYPE,
+    get_enum_labels,
+    is_pure_str,
+)
 
 # Asyncio imports
 try:
@@ -532,7 +538,8 @@ def test_write_read_empty_spectrum_attribute(extract_as, base_type):
         @command(dtype_out=bool)
         def is_attr_empty_list(self):
             if base_type in [int, float, bool]:
-                assert self.attr_value.dtype == np.dtype(base_type)
+                expected_numpy_type = FROM_TANGO_TO_NUMPY_TYPE[TO_TANGO_TYPE[base_type]]
+                assert self.attr_value.dtype == np.dtype(expected_numpy_type)
             else:
                 assert isinstance(self.attr_value, list)
             assert len(self.attr_value) == 0
@@ -585,7 +592,8 @@ def test_write_read_empty_spectrum_attribute_classic_api(device_impl_class, extr
 
         def is_attr_empty_list(self):
             if base_type in [int, float, bool]:
-                assert self.attr_value.dtype == np.dtype(base_type)
+                expected_numpy_type = FROM_TANGO_TO_NUMPY_TYPE[TO_TANGO_TYPE[base_type]]
+                assert self.attr_value.dtype == np.dtype(expected_numpy_type)
             else:
                 assert isinstance(self.attr_value, list)
             assert len(self.attr_value) == 0
@@ -2036,6 +2044,6 @@ def os_system(request):
 )
 def test_arguments(applicable_os, test_input, expected_output, os_system):
     try:
-        assert set(expected_output) == set(parse_args(test_input.split()))
+        assert set(parse_args(test_input.split())) == set(expected_output)
     except SystemExit:
         assert sys.platform not in applicable_os

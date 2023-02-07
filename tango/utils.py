@@ -23,6 +23,7 @@ import enum
 import numpy
 
 from argparse import HelpFormatter
+from packaging.version import Version
 
 import collections.abc
 
@@ -222,16 +223,15 @@ def __import(name):
 
 def __requires(package_name, min_version=None, conflicts=(),
                software_name="Software"):
-    from distutils.version import LooseVersion
     package_name_l = package_name.lower()
     if package_name_l == 'pytango':
-        curr_version = LooseVersion(Release.version)
+        curr_version = Version(Release.version)
     elif package_name_l == 'tango':
-        curr_version = LooseVersion(TgLibVers)
+        curr_version = Version(TgLibVers)
     else:
         try:
             package = __import(package_name)
-            curr_version = LooseVersion(package.__version__)
+            curr_version = Version(package.__version__)
         except ImportError:
             msg = f"Could not find package {package_name} required by {software_name}"
             raise Exception(msg)
@@ -240,12 +240,12 @@ def __requires(package_name, min_version=None, conflicts=(),
             raise Exception(msg)
 
     if min_version is not None:
-        min_version = LooseVersion(min_version)
+        min_version = Version(min_version)
         if min_version > curr_version:
             msg = f"{software_name} requires {package_name} {min_version} but {curr_version} installed"
             raise Exception(msg)
 
-    conflicts = map(LooseVersion, conflicts)
+    conflicts = map(Version, conflicts)
     if curr_version in conflicts:
         msg = f"{software_name} cannot run with {package_name} {curr_version}"
         raise Exception(msg)
@@ -267,14 +267,14 @@ def requires_pytango(min_version=None, conflicts=(),
         minimum PyTango version [default: None, meaning no minimum
         required]. If a string is given, it must be in the valid
         version number format
-        (see: :class:`~distutils.version.LooseVersion`)
+        (see: :class:`~packaging.version.Version`)
     :type min_version:
-        None, str, :class:`~distutils.version.LooseVersion`
+        None, str, :class:`~packaging.version.Version`
     :param conflicts:
         a sequence of PyTango versions which conflict with the
         software using it
     :type conflicts:
-        seq<str|LooseVersion>
+        seq<str|Version>
     :param software_name:
         software name using tango. Used in the exception message
     :type software_name: str
@@ -301,14 +301,14 @@ def requires_tango(min_version=None, conflicts=(), software_name="Software"):
         minimum Tango version [default: None, meaning no minimum
         required]. If a string is given, it must be in the valid
         version number format
-        (see: :class:`~distutils.version.LooseVersion`)
+        (see: :class:`~packaging.version.Version`)
     :type min_version:
-        None, str, :class:`~distutils.version.LooseVersion`
+        None, str, :class:`~packaging.version.Version`
     :param conflicts:
         a sequence of Tango versions which conflict with the
         software using it
     :type conflicts:
-        seq<str|LooseVersion>
+        seq<str|Version>
     :param software_name:
         software name using Tango. Used in the exception message
     :type software_name: str

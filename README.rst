@@ -36,6 +36,8 @@ General dependencies:
 Python dependencies:
 
 -  numpy_ >= 1.13.3
+-  packaging_
+-  psutil_
 
 Build dependencies:
 
@@ -149,6 +151,8 @@ All contributions,  `PR and bug reports`_ are welcome, please see: `How to Contr
 .. _libtango: http://tango-controls.org/downloads
 .. _Boost.Python: https://www.boost.org/doc/libs/release/libs/python/doc/html/index.html
 .. _numpy: http://pypi.python.org/pypi/numpy
+.. _packaging: http://pypi.python.org/pypi/packaging
+.. _psutil: http://pypi.python.org/pypi/psutil
 .. _setuptools: http://pypi.python.org/pypi/setuptools
 .. _gevent: http://pypi.python.org/pypi/gevent
 

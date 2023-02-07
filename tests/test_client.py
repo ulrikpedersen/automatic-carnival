@@ -18,17 +18,22 @@ import weakref
 
 from distutils.spawn import find_executable
 from subprocess import Popen
-import platform
 from time import sleep
 
-import psutil
 import pytest
 from functools import partial
 from tango import DeviceProxy, DevFailed, GreenMode
 from tango import DeviceInfo, AttributeInfo, AttributeInfoEx, ExtractAs
 from tango.server import Device
 from tango.utils import is_str_type, is_int_type, is_float_type, is_bool_type
-from tango.test_utils import DeviceTestContext, assert_close, bytes_devstring, str_devstring, convert_to_type
+from tango.test_utils import (
+    DeviceTestContext,
+    assert_close,
+    bytes_devstring,
+    convert_to_type,
+    get_server_port_via_pid,
+    str_devstring,
+)
 from tango.gevent import DeviceProxy as gevent_DeviceProxy
 from tango.futures import DeviceProxy as futures_DeviceProxy
 from tango.asyncio import DeviceProxy as asyncio_DeviceProxy
@@ -122,21 +127,9 @@ device_proxy_map = {
 
 # Helpers
 
-def get_ports(pid):
-    p = psutil.Process(pid)
-    conns = p.connections(kind="tcp")
-    # Sorting by family in order to make any IPv6 address go first.
-    # Otherwise there's a 50% chance that the proxy will just
-    # hang (presumably because it's connecting on the wrong port)
-    # This works on my machine, not sure if it's a general
-    # solution though.
-    conns = reversed(sorted(conns, key=lambda c: c.family))
-    return [c.laddr[1] for c in conns]
-
-
-def start_server(server, inst, device):
+def start_server(host, server, inst, device):
     exe = find_executable(server)
-    cmd = f"{exe} {inst} -ORBendPoint giop:tcp::0 -nodb -dlist {device}"
+    cmd = f"{exe} {inst} -ORBendPoint giop:tcp:{host}:0 -nodb -dlist {device}"
     proc = Popen(cmd.split(), close_fds=True)
     proc.poll()
     return proc
@@ -148,19 +141,33 @@ def get_proxy(host, port, device, green_mode):
 
 
 def wait_for_proxy(host, proc, device, green_mode, retries=400, delay=0.01):
-    for i in range(retries):
-        ports = get_ports(proc.pid)
-        if ports:
+    last_error = None
+    count = 0
+    port = None
+    while port is None and count < retries:
+        try:
+            port = get_server_port_via_pid(proc.pid, host)
+        except RuntimeError as exc:
+            last_error = str(exc)
+            sleep(delay)
+        count += 1
+
+    if port is not None:
+        count = 0
+        while count < retries:
             try:
-                proxy = get_proxy(host, ports[0], device, green_mode)
+                proxy = get_proxy(host, port, device, green_mode)
                 proxy.ping()
                 proxy.state()
                 return proxy
-            except DevFailed:
-                pass
-        sleep(delay)
-    else:
-        raise RuntimeError("TangoTest device did not start up!")
+            except DevFailed as exc:
+                last_error = str(exc)
+                sleep(delay)
+            count += 1
+    raise RuntimeError(
+        f"TangoTest device did not start up within {retries * delay:.1f} sec!\n"
+        f"Last error: {last_error}."
+    )
 
 
 def ping_device(proxy):
@@ -182,8 +189,8 @@ def tango_test_with_green_modes(request):
     server = "TangoTest"
     inst = "test"
     device = "sys/tg_test/17"
-    host = platform.node()
-    proc = start_server(server, inst, device)
+    host = "127.0.0.1"
+    proc = start_server(host, server, inst, device)
     proxy = wait_for_proxy(host, proc, device, green_mode)
 
     yield proxy
@@ -198,8 +205,8 @@ def tango_test():
     server = "TangoTest"
     inst = "test"
     device = "sys/tg_test/17"
-    host = platform.node()
-    proc = start_server(server, inst, device)
+    host = "127.0.0.1"
+    proc = start_server(host, server, inst, device)
     proxy = wait_for_proxy(host, proc, device, green_mode)
 
     yield proxy
@@ -251,7 +258,7 @@ def simple_device_fqdn():
     class TestDevice(Device):
         pass
 
-    context = DeviceTestContext(TestDevice)
+    context = DeviceTestContext(TestDevice, host="127.0.0.1")
     context.start()
     yield context.get_device_access()
     context.stop()
