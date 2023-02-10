@@ -2,6 +2,8 @@
 
 FROM sphinxdoc/sphinx
 
-RUN python -m pip install --upgrade pip
-RUN python -m pip install numpy gevent
-RUN python -m pip install sphinx_rtd_theme
+# GCC may be required to compile psutil, depending on platform
+RUN apt update && apt install -y gcc
+
+RUN python -m pip install --upgrade pip && \
+    python -m pip install numpy gevent psutil sphinx_rtd_theme

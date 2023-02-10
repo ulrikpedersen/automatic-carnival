@@ -54,6 +54,7 @@ run-pre-commit:
 build-wheel:
   stage: build
   extends: .matrix-wheel
+  cache: []
   script:
     # build wheel
     - /opt/python/${PYTHON_TAG}/bin/python -m build --wheel
@@ -75,6 +76,7 @@ build-wheel:
 build-sdist:
   stage: build
   image: python:3.8
+  cache: []
   script:
     - python setup.py check sdist
   artifacts:
@@ -85,6 +87,7 @@ build-sdist:
 build-docker-image:
   stage: image
   image: docker:latest
+  cache: []
   services:
     - docker:dind
   only:
@@ -152,6 +155,7 @@ test-source:
 test-wheel:
   stage: test
   extends: .matrix-wheel
+  cache: []
   before_script:
     - /opt/python/${PYTHON_TAG}/bin/python -m venv venv
     - source venv/bin/activate
@@ -167,9 +171,27 @@ test-wheel:
       when: manual
       allow_failure: true
 
+test-docs:
+  # official build is on https://readthedocs.org/projects/pytango/ but we test doc generation
+  stage: test
+  image: sphinxdoc/sphinx:latest
+  cache: []
+  script:
+    - python -m pip install numpy gevent psutil sphinx_rtd_theme
+    - python -m sphinx doc build/sphinx
+    - echo "Documentation can be found at https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/build/sphinx/index.html"
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - build/sphinx
+  environment:
+    name: Docs-dev
+    url: "https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/build/sphinx/index.html"
+
 release-pypi-package:
   stage: release
   image: python:3.8
+  cache: []
   before_script:
     - pip install twine
   script:
