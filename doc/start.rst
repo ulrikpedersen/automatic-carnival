@@ -135,6 +135,14 @@ Since it is rarely needed and the instructions are so complicated, I have
 choosen to place the how-to in a separate text file. You can find it in the
 source package under :file:`doc/windows_notes.txt`.
 
+MacOS
+~~~~~
+
+Compilation of cppTango and PyTango directly on MacOS is non-trivial.  Rather use a Conda environment
+to compile PyTango.  If you really want to try it, see https://gitlab.com/tjuerges/build_tango for
+some guidelines.  Also take note of the `patch required <https://gitlab.com/tango-controls/tango-doc/-/issues/387>`_
+for omniorb <= 4.2.5 on Apple Silicon.
+
 Testing
 -------
 
