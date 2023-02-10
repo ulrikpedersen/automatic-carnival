@@ -264,14 +264,14 @@ rst_epilog = """\
 # -- Options for reference to other documentation ------------------------------
 
 intersphinx_mapping = {
-    'http://docs.python.org/dev': None,
-    'http://docs.scipy.org/doc/scipy/reference': None,
-    'http://docs.scipy.org/doc/numpy': None,
-    'http://ipython.org/ipython-doc/stable': None,
-    'http://api.mongodb.org/python/current': None,
-    'http://couchdb-python.readthedocs.io/en/latest': None,
-    'http://pycassa.github.io/pycassa': None,
-    'http://docs.sqlalchemy.org/en/latest': None,
+    'https://docs.python.org/dev': None,
+    'https://docs.scipy.org/doc/scipy': None,
+    'https://numpy.org/doc/stable': None,
+    'https://ipython.org/ipython-doc/stable': None,
+    'https://pymongo.readthedocs.io/en/stable': None,
+    'https://couchdb-python.readthedocs.io/en/latest': None,
+    'https://pycassa.github.io/pycassa': None,
+    'https://docs.sqlalchemy.org/en/latest': None,
 }
 
 todo_include_todos = True
