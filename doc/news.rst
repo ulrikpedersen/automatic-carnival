@@ -31,11 +31,11 @@ Changed
   attribute will get an empty sequence (list/tuple/numpy array) instead of a :obj:`None` value.  Similarly,
   devices that have an empty sequence written will receive that in the write method instead of a :obj:`None`
   value.
-- Pytho dependencies:  `numpy`_ is no longer optional - it is required.
-  New requirements are `packaging <https://pypi.org/project/packaging>`_ and
+- Python dependencies:  `numpy`_ is no longer optional - it is required.
+  Other new requirements are `packaging <https://pypi.org/project/packaging>`_ and
   `psutil <https://pypi.org/project/psutil>`_.
-- Binary wheels for more platforms, including Linux, are available on `PyPI`_.  Fast installation without compiling or
-  finding all the dependencies!
+- Binary wheels for more platforms, including Linux, are available on `PyPI`_.  Fast installation without compiling and
+  figuring out all the dependencies!
 - The dependencies packaged with the binary PyPI wheels are as follows:
     - Linux:
         - cpptango: 9.4.1
@@ -65,14 +65,14 @@ Added
   can be plain functions.  They don't need to be methods on the device class anymore.  There was some
   inconsistency with this previously, but now it is the same for static and dynamic attributes,
   and for commands.  Static and dynamic commands can also take an ``fisallowed`` keyword argument.
-- Developer's can optionally allow Python attributes to be added to a :class:`~tango.DeviceProxy` instance
-  by calling :meth:`~tango.DeviceProxy.unfreeze_dynamic_interface`.  The default behaviour is still
-  to raise an exception when accessing unknown attributes.
-- High-level API support for accessing and creating DevEnum spectrum and image attributes.
 - Device methods for reading and writing dynamic attributes can use the high-level API instead of getting
   and setting values inside :class:`~tango.Attr` objects.  See :ref:`dynamic-attributes-howto` for updated
   usage.
-- Attribute decorators have additional fields: :meth:`~tango.server.attribute.getter`,
+- High-level API support for accessing and creating DevEnum spectrum and image attributes.
+- Developer's can optionally allow Python attributes to be added to a :class:`~tango.DeviceProxy` instance
+  by calling :meth:`~tango.DeviceProxy.unfreeze_dynamic_interface`.  The default behaviour is still
+  to raise an exception when accessing unknown attributes.
+- Attribute decorators have additional methods: :meth:`~tango.server.attribute.getter`,
   :meth:`~tango.server.attribute.read` and :meth:`~tango.server.attribute.is_allowed`.
 - Python 3.11 support.
 - MacOS support.  This is easiest installing from `Conda-forge`_.  Compiling locally is not recommended.

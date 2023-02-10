@@ -15,4 +15,146 @@ In most cases, your existing PyTango devices and clients will continue to
 work as before, however there are important changes.  Below you can find
 the incompatibilities and the necessary migration steps.
 
+Installation
+============
+
+Environments created with Python 2 needs to be ported to Python 3.
+You will need at least Python 3.6 and cppTango 9.4.1.  Python dependencies will be
+installed automatically, including `numpy`_ - this is no longer optional, and doesn't
+have to be installed before installing PyTango.
+
+The binary wheels on `PyPI`_ and `Conda-forge`_ makes installation very simple on many
+platforms.  No need for compilation.  See :ref:`Getting started <getting-started>`.
+
+Empty spectrum and image attributes
+===================================
+
+This is the most significant API change.  It could cause errors in existing Tango clients and devices.
+
+Writing
+-------
+
+When an empty sequence is written to a spectrum or image attribute of type :obj:`str`, the
+write function used to receive a :obj:`None` value, but now it will receive an empty list.
+For other types, the behaviour is unchanged - they were already receiving empty arrays.
+
+Example device::
+
+    from tango import AttrWriteType
+    from tango.server import Device, attribute
+
+    class Test(Device):
+        str1d = attribute(dtype=(str,), max_dim_x=4, access=AttrWriteType.WRITE)
+        int1d = attribute(dtype=(int,), max_dim_x=4, access=AttrWriteType.WRITE)
+        str2d = attribute(dtype=((str,),), max_dim_x=4, max_dim_y=4, access=AttrWriteType.WRITE)
+        int2d = attribute(dtype=((int,),), max_dim_x=4, max_dim_y=4, access=AttrWriteType.WRITE)
+
+        def write_str1d(self, value):
+            print(f"Writing str1d: value={value!r}, type={type(value)}")
+
+        def write_int1d(self, value):
+            print(f"Writing int1d: value={value!r}, type={type(value)}")
+
+        def write_str2d(self, value):
+            print(f"Writing str2d: value={value!r}, type={type(value)}")
+
+        def write_int2d(self, value):
+            print(f"Writing int2d: value={value!r}, type={type(value)}")
+
+
+If a client writes "empty" data to the device::
+
+    >>> dp = tango.DeviceProxy("tango://127.0.0.1:8888/test/nodb/test#dbase=no")
+    >>> dp.str1d = []
+    >>> dp.int1d = []
+    >>> dp.str2d = [[]]
+    >>> dp.int2d = [[]]
+
+The output from a v9.3.x PyTango device would be::
+
+    Writing str1d: value=None, type=<class 'NoneType'>
+    Writing int1d: value=array([], dtype=int64), type=<class 'numpy.ndarray'>
+    Writing str2d: value=None, type=<class 'NoneType'>
+    Writing int2d: value=array([], shape=(1, 0), dtype=int64), type=<class 'numpy.ndarray'>
+
+The output from a v9.4.0 PyTango device would be::
+
+    Writing str1d: value=[], type=<class 'list'>
+    Writing int1d: value=array([], dtype=int64), type=<class 'numpy.ndarray'>
+    Writing str2d: value=[], type=<class 'list'>
+    Writing int2d: value=array([], shape=(1, 0), dtype=int64), type=<class 'numpy.ndarray'>
+
+Note the change in value received for the ``str1d`` and ``str2d`` attributes.  If your existing devices have
+specially handling for :obj:`None`, then they may need to change.
+
+Reading
+-------
+
+TODO
+
+Using ExtractAs when reading spectrum and image attributes
+===========================================================
+
+- migration guide
+    - example of spectrum/image read and write changes
+    - attr.value and attr.w_value changes
+
+Non-bound user functions for read/write/isallowed and commands
+==============================================================
+
+TODO
+
+High-level API for dynamic attributes
+=====================================
+
+TODO
+
+High-level API support for DevEnum spectrum and image attributes
+================================================================
+
+TODO
+
+Optionally added Python attributes to DeviceProxy instances
+===========================================================
+
+Prior to PyTango 9.3.4, developers could add arbitrary Python attributes to a
+:class:`~tango.DeviceProxy` instance.  From version 9.3.4 PyTango raises an
+exception if this is attempted.  To aid backwards compatibility, where the
+old use case was beneficial, some new methods have been added to the :class:`~tango.DeviceProxy`.
+We use the term *dynamic interface* to refer this.  When the *dynamic interface* is frozen
+(the default) it cannot be changed, and you get an exception if you try.  Unfreeze it
+by calling :meth:`~tango.DeviceProxy.unfreeze_dynamic_interface` if you want to make these
+kinds of changes.  Here is an example::
+
+    >>> import tango
+    >>> dp = tango.DeviceProxy("sys/tg_test/1")
+    >>> dp.is_dynamic_interface_frozen()
+    True
+    >>> dp.non_tango_attr = 123
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+      File "/lib/python3.11/site-packages/tango/device_proxy.py", line 484, in __DeviceProxy__setattr
+        raise e from cause
+      File "/lib/python3.11/site-packages/tango/device_proxy.py", line 478, in __DeviceProxy__setattr
+        raise AttributeError(
+    AttributeError: Tried to set non-existent attr 'non_tango_attr' to 123.
+    The DeviceProxy object interface is frozen and cannot be modified - see tango.DeviceProxy.freeze_dynamic_interface for details.
+    >>> dp.unfreeze_dynamic_interface()
+    /lib/python3.11/site-packages/tango/device_proxy.py:302: UserWarning: Dynamic interface unfrozen on DeviceProxy instance TangoTest(sys/tg_test/1) id=0x102a4ea20 - arbitrary Python attributes can be set without raising an exception.
+      warnings.warn(
+    >>> dp.non_tango_attr = 123
+    >>> dp.non_tango_attr
+    123
+    >>> dp.freeze_dynamic_interface()
+    >>> dp.is_dynamic_interface_frozen()
+    True
+
+New attribute decorators
+========================
+
+TODO
+
+Broken logging with "%"
+=======================
+
 TODO
