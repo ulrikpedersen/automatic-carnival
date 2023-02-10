@@ -31,7 +31,7 @@ __all__ = ('tango',)
 
 
 # Constants
-TANGO_VERSION = '9.2.2'
+TANGO_VERSION = '9.4.1'
 TANGO_VERSION_INT = int(TANGO_VERSION[::2])
 
 
