@@ -53,8 +53,8 @@ def get_device_proxy(*args, **kwargs):
     :class:`~tango.DeviceProxy` constructor if you use the default kwargs.
 
     The added value of this function becomes evident when you choose a green_mode
-    to be *Futures* or *Gevent*. The DeviceProxy constructor internally makes some
-    network calls which makes it *slow*. By using one of the *green modes* as
+    to be *Futures* or *Gevent* or *Asyncio*. The DeviceProxy constructor internally
+    makes some network calls which makes it *slow*. By using one of the *green modes* as
     green_mode you are allowing other python code to be executed in a cooperative way.
 
     .. note::
@@ -87,6 +87,8 @@ def get_device_proxy(*args, **kwargs):
             :class:`concurrent.futures.Future`
         else if green_mode is Gevent:
             :class:`gevent.event.AsynchResult`
+        else if green_mode is Asyncio:
+            :class:`asyncio.Future`
     :throws:
         * a *DevFailed* if green_mode is Synchronous or wait is True
           and there is an error creating the device.
@@ -95,6 +97,9 @@ def get_device_proxy(*args, **kwargs):
           has expired.
         * a *gevent.timeout.Timeout* if green_mode is Gevent, wait is False,
           timeout is not None and the time to create the device has expired.
+        * a *asyncio.TimeoutError* if green_mode is Asyncio,
+          wait is False, timeout is not None and the time to create the device
+          has expired.
 
     New in PyTango 8.1.0
     """
