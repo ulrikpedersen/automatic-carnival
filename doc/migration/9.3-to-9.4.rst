@@ -1,0 +1,18 @@
+.. _9.3to9.4:
+
+=============
+v9.3 -> v9.4
+=============
+
+PyTango v9.4.0 is the first release which **only** supports Python 3.6 or
+higher.  If you haven't moved all your clients and devices to Python 3, now
+is the time!
+
+PyTango v9.4.0 moved from cppTango 9.3.x to at least cppTango 9.4.1.  It
+will not run with cppTango 9.4.0 or earlier.
+
+In most cases, your existing PyTango devices and clients will continue to
+work as before, however there are important changes.  Below you can find
+the incompatibilities and the necessary migration steps.
+
+TODO

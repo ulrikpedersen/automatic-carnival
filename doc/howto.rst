@@ -845,6 +845,8 @@ device server than before but with one C++ Tango class called SerialLine::
 :Line 6: The C++ class is registered in the device server
 :Line 7 and 8: The two Python classes are registered in the device server
 
+.. _dynamic-attributes-howto:
+
 Create attributes dynamically
 -----------------------------
 
