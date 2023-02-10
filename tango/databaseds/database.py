@@ -1770,7 +1770,7 @@ def main(argv = None):
         except Exception:
             port = 10000
 
-    options.argv += ["-ORBendPoint", f"giop:tcp::{port}"]
+    options.argv += ["-ORBendPoint", f"giop:tcp:0.0.0.0:{port}"]
 
     log_fmt = '%(threadName)-14s %(levelname)-8s %(asctime)s %(name)s: %(message)s'
     if options.logging_level == 1:
@@ -1836,7 +1836,7 @@ def __run(db_name,argv):
     """
     Runs the Database DS as a standalone database. Run it with::
 
-        ./DataBaseds pydb-test -ORBendPoint giop:tcp::11000
+        ./DataBaseds pydb-test -ORBendPoint giop:tcp:0.0.0.0:11000
     """
     tango.Util.set_use_db(False)
     util = tango.Util(argv)
