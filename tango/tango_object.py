@@ -281,7 +281,7 @@ class Server:
         args = [self.server_type, self.__server_name]
         if self.__port is not None:
             args.extend(["-ORBendPoint",
-                         f"giop:tcp::{self.__port}"])
+                         f"giop:tcp:0.0.0.0:{self.__port}"])
         return args
 
     def __exec_cb(self, cb):
