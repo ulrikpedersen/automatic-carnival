@@ -148,6 +148,7 @@ Version history
 |          |     - `!492: Change DServer inheritance from Device_4Impl to Device_5Impl <https://gitlab.com/tango-controls/pytango/-/merge_requests/492>`_                                        |
 |          |     - `!514: Remove Python 2 compatibility code <https://gitlab.com/tango-controls/pytango/-/merge_requests/514>`_                                                                  |
 |          |     - `!539: Update CI to cppTango 9.4.1, change default ORBendpoint host to 0.0.0.0, fix tests <https://gitlab.com/tango-controls/pytango/-/merge_requests/539>`_                  |
+|          |     - `!541: Workaround cppTango#1055 for DatabaseDS startup <https://gitlab.com/tango-controls/pytango/-/merge_requests/541>`_                                                     |
 |          |                                                                                                                                                                                     |
 |          | Bug fixes:                                                                                                                                                                          |
 |          |     - `!495: Fix log streams with % and no args <https://gitlab.com/tango-controls/pytango/-/merge_requests/495>`_                                                                  |

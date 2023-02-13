@@ -81,7 +81,7 @@ Added
 Fixed
 =====
 
-- Log streams calls that include literal ``%`` symbols but no args now work properly without
+- Log stream calls that include literal ``%`` symbols but no args now work properly without
   raising an exception.  E.g., ``self.debug_stream("I want to log a %s symbol")``.
 - Writing a :obj:`numpy.array` to a spectrum attribute of type :obj:`str` no longer crashes.
 - Reading an enum attribute with :class:`~tango.AttrQuality.ATTR_INVALID` quality via the high-level API
