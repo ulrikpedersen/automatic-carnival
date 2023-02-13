@@ -1,13 +1,21 @@
 .. highlight:: python
-   :linenothreshold: 5
+   :linenothreshold: 10
 
 .. _getting-started:
 
 Getting started
 ===============
 
-Installing
-----------
+The first section show the easy way, with pre-compiled packages.  If that doesn't work, or you
+need to compile from source, see the second section.
+
+.. contents:: Contents
+   :depth: 1
+   :local:
+   :backlinks: none
+
+Installing pre-compiled packages (easy)
+---------------------------------------
 
 PyPI
 ~~~~
@@ -19,6 +27,9 @@ Install PyTango with pip (common platforms have binary wheels, so no compilation
 .. sourcecode:: console
 
     $ python -m pip install pytango
+
+(If this step downloads a ``.tar.gz`` file instead of a ``.whl`` file, then we don't have a binary package
+for your platform.  Try Conda).
 
 If you are going to utilize gevent green mode of PyTango it is recommended to have a recent version of gevent.
 You can force gevent installation with "gevent" keyword:
@@ -74,14 +85,29 @@ Windows
 First, make sure `Python`_  is installed.  Then follow the same instructions as for `PyPI`_ above.
 There are binary wheels for some Windows platforms available.
 
-Compiling
----------
+Building and installing from source (hard)
+------------------------------------------
+
+This is the more complicated option, as you need to have all the correct dependencies and build tools
+installed.
 
 Conda
 ~~~~~
 
-See the folder ``.devcontainer`` in the root of the source repository for more details about
-requirements and an example of the compilation in a Docker container.  The ``.gitlab-ci.yml``
+The basic steps are shown below (specify your Python version).
+
+.. sourcecode:: console
+
+   $ conda create -n pytangodev -c conda-forge boost cpptango cppzmq cxx-compiler numpy pkg-config psutil python=3.11
+   $ conda activate pytangodev
+   $ git clone https://gitlab.com/tango-controls/pytango.git
+   $ cd pytango
+   $ export BOOST_ROOT=$CONDA_PREFIX TANGO_ROOT=$CONDA_PREFIX ZMQ_ROOT=$CONDA_PREFIX OMNI_ROOT=$CONDA_PREFIX
+   $ python setup.py build
+   $ python setup.py install
+
+For more variations, see the folder ``.devcontainer`` in the root of the source repository
+with an example of the compilation in a Docker container.  The ``.gitlab-ci.yml``
 file in the source repo is another good reference for Conda-based compilation.
 
 Linux
@@ -143,13 +169,14 @@ to compile PyTango.  If you really want to try it, see https://gitlab.com/tjuerg
 some guidelines.  Also take note of the `patch required <https://gitlab.com/tango-controls/tango-doc/-/issues/387>`_
 for omniorb <= 4.2.5 on Apple Silicon.
 
-Testing
--------
+Basic installation check
+------------------------
 
 To test the installation, import ``tango`` and check ``tango.Release.version``:
 
 .. sourcecode:: console
 
+    $ cd  # move to a folder that doesn't contain the source code, if you built it
     $ python -c "import tango; print(tango.Release.version)"
     9.4.0
 
