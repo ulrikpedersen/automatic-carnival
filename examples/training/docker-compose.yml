@@ -53,7 +53,7 @@ services:
       - /usr/local/bin/DataBaseds
       - "2"
       - -ORBendPoint
-      - giop:tcp::10000
+      - giop:tcp:0.0.0.0:10000
 
   tangotest:
     image: artefact.skao.int/ska-tango-images-tango-test:3.0.2
