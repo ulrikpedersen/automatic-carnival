@@ -26,7 +26,7 @@ Type: major release
 Changed
 =======
 
-- PyTango requires at least cppTango 9.4.1.
+- PyTango requires at least `cppTango`_ 9.4.1.
 - Breaking change to the API when using empty spectrum and image attributes.  Clients reading an empty
   attribute will get an empty sequence (list/tuple/numpy array) instead of a :obj:`None` value.  Similarly,
   devices that have an empty sequence written will receive that in the write method instead of a :obj:`None`

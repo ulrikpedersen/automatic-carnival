@@ -287,7 +287,7 @@ def __DeviceProxy__freeze_dynamic_interface(self):
 
     See also :meth:`tango.DeviceProxy.unfreeze_dynamic_interface`.
 
-    New in PyTango 9.4.0
+    .. versionadded:: 9.4.0
     """
     self._dynamic_interface_frozen = True
 
@@ -302,7 +302,7 @@ def __DeviceProxy__unfreeze_dynamic_interface(self):
 
     See also :meth:`tango.DeviceProxy.freeze_dynamic_interface`.
 
-    New in PyTango 9.4.0
+    .. versionadded:: 9.4.0
     """
     warnings.warn(
         f"Dynamic interface unfrozen on DeviceProxy instance {self} id=0x{id(self):x} - "
@@ -319,7 +319,7 @@ def __DeviceProxy__is_dynamic_interface_frozen(self):
         :returns: True if the dynamic interface this DeviceProxy is frozen.
         :rtype: bool
 
-    New in PyTango 9.4.0
+    .. versionadded:: 9.4.0
     """
     return self._dynamic_interface_frozen
 
@@ -2094,7 +2094,7 @@ def __doc_DeviceProxy():
     .. versionchanged:: 8.0.0
         For DevEncoded attributes, now returns a DeviceAttribute.value
         as a tuple **(format<str>, data<bytes>)** unless *extract_as* is String,
-        in which case it returns **(format<str>, data<str>)**. Carefull, if
+        in which case it returns **(format<str>, data<str>)**. Careful, if
         using python >= 3 data<str> is decoded using default python
         *utf-8* encoding. This means that PyTango assumes tango DS was written
         encapsulating string into *utf-8* which is the default python encoding.
@@ -2103,6 +2103,13 @@ def __doc_DeviceProxy():
         *green_mode* parameter.
         *wait* parameter.
         *timeout* parameter.
+        
+    .. versionchanged:: 9.4.0
+        For spectrum and image attributes with an empty sequence, no longer
+        returns DeviceAttribute.value and DeviceAttribute.w_value as
+        :obj:`None`.  Instead, DevString and DevEnum types get an empty :obj:`tuple`,
+        while other types get an empty :obj:`numpy.ndarray`.  Using *extract_as* can
+        change the sequence type, but it still won't be :obj:`None`. 
     """)
 
     document_method("read_attributes", """

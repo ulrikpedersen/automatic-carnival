@@ -98,7 +98,7 @@ def get_server_port_via_pid(pid, host):
 
     :raises RuntimeError: If the GIOP port couldn't be identified
 
-    New in PyTango 9.4.0
+    .. versionadded:: 9.4.0
     """
     ports = _get_listening_tcp_ports(pid)
     return _get_giop_port(host, ports)

@@ -10,6 +10,6 @@ different PyTango API versions.
 
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
-    9.3-to-9.4
+    to-9.4/index
