@@ -167,7 +167,7 @@ Version history
 |          |     - `!507: Update version for 9.4.0rc2 <https://gitlab.com/tango-controls/pytango/-/merge_requests/507>`_                                                                         |
 |          |     - `!538: Update version for 9.4.0rc3 <https://gitlab.com/tango-controls/pytango/-/merge_requests/538>`_                                                                         |
 |          |     - `!512: Add some more training examples <https://gitlab.com/tango-controls/pytango/-/merge_requests/512>`_                                                                     |
-|          |     - `!540: Update docs for 9.4.0 release <https://gitlab.com/tango-controls/pytango/-/merge_requests/540>`_                                                                       |
+|          |     - `!540: Update docs and bump version for 9.4.0 release <https://gitlab.com/tango-controls/pytango/-/merge_requests/540>`_                                                      |
 |          |                                                                                                                                                                                     |
 |          | Deprecation fixes:                                                                                                                                                                  |
 |          |     - `!491: Remove unused method CppDeviceClassWrap::delete_class <https://gitlab.com/tango-controls/pytango/-/merge_requests/491>`_                                               |
