@@ -91,7 +91,9 @@ features of the development branch released is free to make a new release.  The 
 steps required are as follows:
 
 Pick a version number
-  * Semantic version numbering is used:  <major>.<minor>.<patch>
+  * A 3-part version numbering scheme is used:  <major>.<minor>.<patch>
+  * Note that PyTango **does not** follow `Semantic Versioning <https://semver.org>`_.
+    API changes can occur at minor releases (but avoid them if at all possible).
   * The major and minor version fields (e.g., 9.4) track the TANGO C++ core version.
   * Small changes are done as patch releases.  For these the version
     number should correspond the current development number since each

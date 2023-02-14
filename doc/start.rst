@@ -1,40 +1,69 @@
 .. highlight:: python
-   :linenothreshold: 5
+   :linenothreshold: 10
 
 .. _getting-started:
 
 Getting started
 ===============
 
-Installing
-----------
+The first section show the easy way, with pre-compiled packages.  If that doesn't work, or you
+need to compile from source, see the second section.
 
-PyPi
-~~~~
+.. contents:: Contents
+   :depth: 1
+   :local:
+   :backlinks: none
 
-You can also install the latest version from `PyPi`_.
+Installing pre-compiled packages (easy)
+---------------------------------------
+
+PyPI (Linux, Windows)
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can install the latest version from `PyPI`_.
 
 Install PyTango with pip (common platforms have binary wheels, so no compilation or dependencies required):
 
 .. sourcecode:: console
 
-    $ python -m pip install PyTango
+    $ python -m pip install pytango
 
-Installation options:
+If this step downloads a ``.tar.gz`` file instead of a ``.whl`` file, then we don't have a binary package
+for your platform.  Try Conda.
 
-If you are going to utilize gevent green mode of PyTango it is recommended to have a recent version of gevent.
-You can force gevent installation with "gevent" keyword:
+If you are going to utilize the gevent green mode of PyTango it is recommended to have a recent version of gevent.
+You can force gevent installation with the "gevent" keyword:
 
 .. sourcecode:: console
 
-    $ python -m pip install PyTango[gevent]
+    $ python -m pip install pytango[gevent]
+
+Conda (Linux, Windows, MacOS)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can install the latest version from `Conda-forge`_.
+
+Conda-forge provides binary wheels for different platforms, compared to `PyPI`_.
+MacOS binaries are available since version 9.4.0.
+
+If you don't already have conda, try the `Mambaforge`_ installer (an alternative installer to `Miniconda`_).
+
+To install PyTango in a new conda environment (you can choose a different version of Python):
+
+.. sourcecode:: console
+
+    $ conda create --channel conda-forge --name pytango-env python=3.11 pytango
+    $ conda activate pytango-env
+
+Other useful packages on conda-forge include:  ``tango-test``, ``jive`` and ``tango-database``.
 
 Linux
 ~~~~~
 
 PyTango is available on linux as an official debian/ubuntu package (however, this may not be the latest release):
 
-- for Python 3.X:
+For Python 3:
+
 .. sourcecode:: console
 
     $ sudo apt-get install python3-tango
@@ -53,17 +82,33 @@ RPM packages are also available for RHEL & CentOS:
 Windows
 ~~~~~~~
 
-First, make sure `Python`_ and `numpy`_ are installed.
+First, make sure `Python`_  is installed.  Then follow the same instructions as for `PyPI`_ above.
+There are binary wheels for some Windows platforms available.
 
-PyTango team provides a limited set of binary PyTango distributables for
-Windows XP/Vista/7/8. The complete list of binaries can be downloaded from
-`PyPI`_.
+Building and installing from source (hard)
+------------------------------------------
 
-Select the proper windows package, download it and finally execute the
-installion wizard.
+This is the more complicated option, as you need to have all the correct dependencies and build tools
+installed.
 
-Compiling
----------
+Conda
+~~~~~
+
+The basic steps are shown below (specify your Python version).
+
+.. sourcecode:: console
+
+   $ conda create -n pytangodev -c conda-forge boost cpptango cppzmq cxx-compiler numpy pkg-config psutil python=3.11
+   $ conda activate pytangodev
+   $ git clone https://gitlab.com/tango-controls/pytango.git
+   $ cd pytango
+   $ export BOOST_ROOT=$CONDA_PREFIX TANGO_ROOT=$CONDA_PREFIX ZMQ_ROOT=$CONDA_PREFIX OMNI_ROOT=$CONDA_PREFIX
+   $ python setup.py build
+   $ python setup.py install
+
+For more variations, see the folder ``.devcontainer`` in the root of the source repository
+with an example of the compilation in a Docker container.  The ``.gitlab-ci.yml``
+file in the source repo is another good reference for Conda-based compilation.
 
 Linux
 ~~~~~
@@ -74,7 +119,7 @@ setuptools.
 First, make sure you have the following packages already installed (all of them
 are available from the major official distribution repositories):
 
-* ``libtango9``
+* libtango9 from `cppTango`_.
 * `boost-python`_ (including boost-python-dev)
 * `numpy`_
 
@@ -93,7 +138,7 @@ the latest source checkout:
 
 This will install PyTango in the system python installation directory.
 (Since PyTango9, :ref:`itango` has been removed to a separate project and it will not be installed with PyTango.)
-If you whish to install in a different directory, replace the last line with:
+If you wish to install in a different directory, replace the last line with:
 
 .. sourcecode:: console
 
@@ -103,6 +148,11 @@ If you whish to install in a different directory, replace the last line with:
     $ # or specific installation directory
     $ python setup.py install --prefix=/home/homer/local
 
+.. note::
+   For custom `boost-python`_ installation locations, environment variables can be used
+   to modify the default paths.  See the description of the ``BOOST_ROOT`` and related
+   variables in the ``setup.py`` file.
+
 Windows
 ~~~~~~~
 
@@ -111,13 +161,22 @@ Since it is rarely needed and the instructions are so complicated, I have
 choosen to place the how-to in a separate text file. You can find it in the
 source package under :file:`doc/windows_notes.txt`.
 
-Testing
--------
+MacOS
+~~~~~
+
+Compilation of cppTango and PyTango directly on MacOS is non-trivial.  Rather use a Conda environment
+to compile PyTango.  If you really want to try it, see https://gitlab.com/tjuerges/build_tango for
+some guidelines.  Also take note of the `patch required <https://gitlab.com/tango-controls/tango-doc/-/issues/387>`_
+for omniorb <= 4.2.5 on Apple Silicon.
+
+Basic installation check
+------------------------
 
 To test the installation, import ``tango`` and check ``tango.Release.version``:
 
 .. sourcecode:: console
 
+    $ cd  # move to a folder that doesn't contain the source code, if you built it
     $ python -c "import tango; print(tango.Release.version)"
     9.4.0
 

@@ -968,9 +968,9 @@ class attribute(AttrData):
 
     def setter(self, fset):
         """
-        To be used as a decorator. Will define the decorated method
-        as a write attribute method to be called when client writes
-        the attribute
+        To be used as a decorator, ``@attribute.setter``. Defines the decorated method
+        as the write attribute method to be called when a client writes
+        the attribute. Equivalent to ``@attribute.write``.
         """
         self.fset = fset
         if self.attr_write == AttrWriteType.READ:
@@ -982,17 +982,17 @@ class attribute(AttrData):
 
     def write(self, fset):
         """
-        To be used as a decorator. Will define the decorated method
-        as a write attribute method to be called when client writes
-        the attribute
+        To be used as a decorator, ``@attribute.write``. Defines the decorated method
+        as the write attribute method to be called when a client writes
+        the attribute. Equivalent to ``@attribute.setter``.
         """
         return self.setter(fset)
 
     def getter(self, fget):
         """
-        To be used as a decorator. Will define the decorated method
-        as a read attribute method to be called when client reads
-        the attribute
+        To be used as a decorator, ``@attribute.getter``. Defines the decorated method
+        as the read attribute method to be called when a client reads
+        the attribute. Equivalent to ``@attribute.read``.
         """
         self.fget = fget
         if self.attr_write == AttrWriteType.WRITE:
@@ -1002,18 +1002,18 @@ class attribute(AttrData):
                 self.attr_write = AttrWriteType.READ
         return self
 
-    def read(self, fset):
+    def read(self, fget):
         """
-        To be used as a decorator. Will define the decorated method
-        as a read attribute method to be called when client reads
-        the attribute
+        To be used as a decorator, ``@attribute.read``. Defines the decorated method
+        as the read attribute method to be called when a client reads
+        the attribute. Equivalent to ``@attribute.getter``.
         """
-        return self.getter(fset)
+        return self.getter(fget)
 
     def is_allowed(self, fisallowed):
         """
-        To be used as a decorator. Will define the decorated method
-        as is allowed attribute method
+        To be used as a decorator, ``@attribute.is_allowed``. Defines the decorated
+        method as the is allowed attribute method
         """
         self.fisallowed = fisallowed
         return self

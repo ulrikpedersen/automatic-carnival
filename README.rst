@@ -57,7 +57,7 @@ Optional dependencies:
 Install
 -------
 
-PyTango_ is available on PyPI_ as ``pytango``::
+PyTango_ is available on PyPI_ as ``pytango`, with pre-built binaries for some platforms`::
 
     $ python -m pip install pytango
 
@@ -66,17 +66,7 @@ Alternatively, pre-built PyTango_ binaries can be installed from `Conda Forge_`:
     $ conda install -c conda-forge pytango
 
 For the very latest code, or for development purposes, PyTango_ can be built and installed from the
-`sources`_::
-
-    $ python -m pip install .
-
-The installation may take a few minutes if the ``_tango`` boost
-extension has to compile.
-
-.. note::
-   For custom `Boost.Python`_ installation locations, environment variables can be used
-   to modify the default paths.  See the description of the ``BOOST_ROOT`` and related
-   variables in the ``setup.py`` file.
+`sources`_.  This is complicated by the dependencies - see the Getting Started section in the documentation_.
 
 Usage
 -----

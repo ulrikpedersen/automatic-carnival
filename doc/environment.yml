@@ -4,7 +4,6 @@ dependencies:
 - numpy
 - gevent
 - graphviz
-- mock
 - packaging
 - pillow
 - psutil

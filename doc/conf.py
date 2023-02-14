@@ -126,7 +126,9 @@ html_theme = 'sphinx_rtd_theme'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = {
+    "navigation_depth": 6,
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = ['_theme']
@@ -245,30 +247,34 @@ latex_show_urls = 'no'
 # -- Options for RST -----------------------------------------------------------
 
 rst_epilog = """\
-.. _Tango: http://www.tango-controls.org
-.. _Python: http://python.org
-.. _IPython: http://ipython.org
-.. _numpy: http://www.numpy.org
-.. _gevent: http://www.gevent.org
+.. _Tango: https://www.tango-controls.org
+.. _cppTango: https://gitlab.com/tango-controls/cppTango/
+.. _Python: https://www.python.org
+.. _IPython: https://ipython.org
+.. _numpy: https://numpy.org
+.. _gevent: https://www.gevent.org
 .. _asyncio: https://asyncio.readthedocs.io/en/latest/
-.. _boost-python: http://www.boost.org/libs/python
+.. _boost-python: https://www.boost.org/libs/python
 .. _PyPi: https://pypi.python.org/pypi/pytango
 .. _issues: https://gitlab.com/tango-controls/pytango/issues
 .. _PRs: https://gitlab.com/tango-controls/pytango/-/merge_requests
+.. _Conda-forge: https://anaconda.org/conda-forge/pytango
+.. _Mambaforge: https://github.com/conda-forge/miniforge#mambaforge
+.. _Miniconda: https://docs.conda.io/en/latest/miniconda.html
 
 """
 
 # -- Options for reference to other documentation ------------------------------
 
 intersphinx_mapping = {
-    'http://docs.python.org/dev': None,
-    'http://docs.scipy.org/doc/scipy/reference': None,
-    'http://docs.scipy.org/doc/numpy': None,
-    'http://ipython.org/ipython-doc/stable': None,
-    'http://api.mongodb.org/python/current': None,
-    'http://couchdb-python.readthedocs.io/en/latest': None,
-    'http://pycassa.github.io/pycassa': None,
-    'http://docs.sqlalchemy.org/en/latest': None,
+    'https://docs.python.org/dev': None,
+    'https://docs.scipy.org/doc/scipy': None,
+    'https://numpy.org/doc/stable': None,
+    'https://ipython.org/ipython-doc/stable': None,
+    'https://pymongo.readthedocs.io/en/stable': None,
+    'https://couchdb-python.readthedocs.io/en/latest': None,
+    'https://pycassa.github.io/pycassa': None,
+    'https://docs.sqlalchemy.org/en/latest': None,
 }
 
 todo_include_todos = True

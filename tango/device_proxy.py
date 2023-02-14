@@ -53,8 +53,8 @@ def get_device_proxy(*args, **kwargs):
     :class:`~tango.DeviceProxy` constructor if you use the default kwargs.
 
     The added value of this function becomes evident when you choose a green_mode
-    to be *Futures* or *Gevent*. The DeviceProxy constructor internally makes some
-    network calls which makes it *slow*. By using one of the *green modes* as
+    to be *Futures* or *Gevent* or *Asyncio*. The DeviceProxy constructor internally
+    makes some network calls which makes it *slow*. By using one of the *green modes* as
     green_mode you are allowing other python code to be executed in a cooperative way.
 
     .. note::
@@ -87,6 +87,8 @@ def get_device_proxy(*args, **kwargs):
             :class:`concurrent.futures.Future`
         else if green_mode is Gevent:
             :class:`gevent.event.AsynchResult`
+        else if green_mode is Asyncio:
+            :class:`asyncio.Future`
     :throws:
         * a *DevFailed* if green_mode is Synchronous or wait is True
           and there is an error creating the device.
@@ -95,6 +97,9 @@ def get_device_proxy(*args, **kwargs):
           has expired.
         * a *gevent.timeout.Timeout* if green_mode is Gevent, wait is False,
           timeout is not None and the time to create the device has expired.
+        * a *asyncio.TimeoutError* if green_mode is Asyncio,
+          wait is False, timeout is not None and the time to create the device
+          has expired.
 
     New in PyTango 8.1.0
     """
@@ -282,7 +287,7 @@ def __DeviceProxy__freeze_dynamic_interface(self):
 
     See also :meth:`tango.DeviceProxy.unfreeze_dynamic_interface`.
 
-    New in PyTango 9.4.0
+    .. versionadded:: 9.4.0
     """
     self._dynamic_interface_frozen = True
 
@@ -297,7 +302,7 @@ def __DeviceProxy__unfreeze_dynamic_interface(self):
 
     See also :meth:`tango.DeviceProxy.freeze_dynamic_interface`.
 
-    New in PyTango 9.4.0
+    .. versionadded:: 9.4.0
     """
     warnings.warn(
         f"Dynamic interface unfrozen on DeviceProxy instance {self} id=0x{id(self):x} - "
@@ -314,7 +319,7 @@ def __DeviceProxy__is_dynamic_interface_frozen(self):
         :returns: True if the dynamic interface this DeviceProxy is frozen.
         :rtype: bool
 
-    New in PyTango 9.4.0
+    .. versionadded:: 9.4.0
     """
     return self._dynamic_interface_frozen
 
@@ -2089,7 +2094,7 @@ def __doc_DeviceProxy():
     .. versionchanged:: 8.0.0
         For DevEncoded attributes, now returns a DeviceAttribute.value
         as a tuple **(format<str>, data<bytes>)** unless *extract_as* is String,
-        in which case it returns **(format<str>, data<str>)**. Carefull, if
+        in which case it returns **(format<str>, data<str>)**. Careful, if
         using python >= 3 data<str> is decoded using default python
         *utf-8* encoding. This means that PyTango assumes tango DS was written
         encapsulating string into *utf-8* which is the default python encoding.
@@ -2098,6 +2103,13 @@ def __doc_DeviceProxy():
         *green_mode* parameter.
         *wait* parameter.
         *timeout* parameter.
+        
+    .. versionchanged:: 9.4.0
+        For spectrum and image attributes with an empty sequence, no longer
+        returns DeviceAttribute.value and DeviceAttribute.w_value as
+        :obj:`None`.  Instead, DevString and DevEnum types get an empty :obj:`tuple`,
+        while other types get an empty :obj:`numpy.ndarray`.  Using *extract_as* can
+        change the sequence type, but it still won't be :obj:`None`. 
     """)
 
     document_method("read_attributes", """

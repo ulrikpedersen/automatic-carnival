@@ -485,6 +485,8 @@ instance of :class:`~tango.EnsureOmniThread`.  However, calling the
 :meth:`~tango.EnsureOmniThread.__exit__()` method on the corresponding
 object at shutdown is a problem.  Maybe it could be submitted as work.
 
+.. _howto_write_a_server:
+
 Write a server
 --------------
 
@@ -844,6 +846,8 @@ device server than before but with one C++ Tango class called SerialLine::
 
 :Line 6: The C++ class is registered in the device server
 :Line 7 and 8: The two Python classes are registered in the device server
+
+.. _dynamic-attributes-howto:
 
 Create attributes dynamically
 -----------------------------
