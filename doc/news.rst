@@ -77,6 +77,9 @@ Added
 - Python 3.11 support.
 - MacOS support.  This is easiest installing from `Conda-forge`_.  Compiling locally is not recommended.
   See :ref:`Getting started <getting-started>`.
+- Integrated development environment (IDE) autocompletion for methods inherited from
+  :class:`tango.server.Device` and :class:`tango.LatestDeviceImpl`.  Attributes from the full class
+  hierarchy are now more easily accessible directly in your editor.
 
 Fixed
 =====

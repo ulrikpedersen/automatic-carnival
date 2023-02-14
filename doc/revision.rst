@@ -138,6 +138,7 @@ Version history
 |          |     - `!510: Added high level API for dynamic attributes <https://gitlab.com/tango-controls/pytango/-/merge_requests/510>`_                                                         |
 |          |     - `!511: Added fisallowed kwarg for static/dynamic commands and is_allowed method for dynamic commands <https://gitlab.com/tango-controls/pytango/-/merge_requests/511>`_       |
 |          |     - `!528: Added getter, read and is_allowed attribute decorators <https://gitlab.com/tango-controls/pytango/-/merge_requests/528>`_                                              |
+|          |     - `!542: Improve device types autocompletion in IDEs <https://gitlab.com/tango-controls/pytango/-/merge_requests/542>`_                                                         |
 |          |                                                                                                                                                                                     |
 |          | Changes:                                                                                                                                                                            |
 |          |     - `!490: Drop Python 2.7 and 3.5 support <https://gitlab.com/tango-controls/pytango/-/merge_requests/490>`_                                                                     |
