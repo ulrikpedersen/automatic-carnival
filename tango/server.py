@@ -1728,12 +1728,12 @@ def server_run(classes, args=None, msg_stream=sys.stdout,
                green_mode=green_mode)
 
 
-# Instanciate DeviceMeta using BaseDevice
-Device = DeviceMeta("Device", (BaseDevice,), {'__doc__': """\
+class Device(BaseDevice, metaclass=DeviceMeta):
+    """
     Device class for the high-level API.
 
-    All device specific classes should inherit from this class.
-    """})
+    All device-specific classes should inherit from this class.
+    """
 
 # Avoid circular imports
 from .tango_object import Server  # noqa: E402

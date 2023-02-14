@@ -15,7 +15,7 @@ from tango import (
     GreenMode, LatestDeviceImpl, ExtractAs,
     READ_WRITE, SCALAR, SPECTRUM, CmdArgType
 )
-from tango.server import Device
+from tango.server import BaseDevice, Device
 from tango.pyutil import parse_args
 from tango.server import _get_tango_type_format, command, attribute, device_property
 from tango.test_utils import DeviceTestContext, MultiDeviceTestContext
@@ -26,6 +26,7 @@ from tango.utils import (
     FROM_TANGO_TO_NUMPY_TYPE,
     TO_TANGO_TYPE,
     get_enum_labels,
+    get_latest_device_class,
     is_pure_str,
 )
 
@@ -37,6 +38,13 @@ except ImportError:
 
 # Constants
 WINDOWS = "nt" in os.name
+
+# Test implementation classes
+
+def test_device_classes_use_latest_implementation():
+    assert issubclass(LatestDeviceImpl, get_latest_device_class())
+    assert issubclass(BaseDevice, LatestDeviceImpl)
+    assert issubclass(Device, BaseDevice)
 
 
 # Test state/status

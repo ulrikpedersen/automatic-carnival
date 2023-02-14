@@ -82,7 +82,11 @@ def get_source_location():
     return "(unknown)", 0
 
 
-class LatestDeviceImpl(get_latest_device_class()):
+# Note: the inheritance below doesn't call get_latest_device_class(),
+#       because such dynamic inheritance breaks auto-completion in IDEs.
+#       Instead, we manually provide the correct class here, and verify
+#       that the inheritance is correct via a unit test, in test_server.py.
+class LatestDeviceImpl(Device_5Impl):
     __doc__ = f"""\
     Latest implementation of the TANGO device base class (alias for {get_latest_device_class().__name__}).
 
