@@ -17,8 +17,8 @@ need to compile from source, see the second section.
 Installing pre-compiled packages (easy)
 ---------------------------------------
 
-PyPI
-~~~~
+PyPI (Linux, Windows)
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can install the latest version from `PyPI`_.
 
@@ -28,18 +28,18 @@ Install PyTango with pip (common platforms have binary wheels, so no compilation
 
     $ python -m pip install pytango
 
-(If this step downloads a ``.tar.gz`` file instead of a ``.whl`` file, then we don't have a binary package
-for your platform.  Try Conda).
+If this step downloads a ``.tar.gz`` file instead of a ``.whl`` file, then we don't have a binary package
+for your platform.  Try Conda.
 
-If you are going to utilize gevent green mode of PyTango it is recommended to have a recent version of gevent.
-You can force gevent installation with "gevent" keyword:
+If you are going to utilize the gevent green mode of PyTango it is recommended to have a recent version of gevent.
+You can force gevent installation with the "gevent" keyword:
 
 .. sourcecode:: console
 
     $ python -m pip install pytango[gevent]
 
-Conda
-~~~~~
+Conda (Linux, Windows, MacOS)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can install the latest version from `Conda-forge`_.
 

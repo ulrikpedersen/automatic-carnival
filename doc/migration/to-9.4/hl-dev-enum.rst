@@ -34,9 +34,9 @@ Example of server::
         def read_displays(self):
             return self._display_types
 
-        def write_displays(self, display_types):
+        def write_displays(self, values):
+            display_types = [DisplayType(value) for value in values]  # optional conversion from int values
             self._display_types = display_types
-
 
 Example of client-side usage::
 

@@ -40,7 +40,7 @@ A simple example::
         @voltage.is_allowed
         def voltage_can_be_changed(self, req_type):
             if req_type == AttReqType.WRITE_REQ:
-                return self.get_state() == DevState.STANDBY
+                return self.get_state() == DevState.ON
             else:
                 return True
 

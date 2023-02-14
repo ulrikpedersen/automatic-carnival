@@ -15,8 +15,8 @@ PyTango v9.4.0 moved from `cppTango`_ 9.3.x to at least cppTango 9.4.1.  It
 will not run with cppTango 9.4.0 or earlier.
 
 In most cases, your existing PyTango devices and clients will continue to
-work as before, however there are important changes.  Below you can find
-the incompatibilities and the necessary migration steps.
+work as before, however there are important changes.  In the other sections of
+the migration guide, you can find the incompatibilities and the necessary migration steps.
 
 Installation
 ============

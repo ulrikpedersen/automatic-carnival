@@ -4,9 +4,9 @@
 High-level API for dynamic attributes
 =====================================
 
-The read and write methods for dynamic attributes can now be written in
-simpler way, similar to those used with static attributes. This is a new feature,
-so existing code does not have to be modified.
+The read and write methods for dynamic attributes can now be coded in a
+more Pythonic way, similar to the approach used with static attributes.
+This is a new feature so existing code does not have to be modified.
 
 Prior to 9.4.x, the methods had to look something like::
 

@@ -76,19 +76,23 @@ special handling for :obj:`None`, then they may need to change.
 Reading - client side
 ---------------------
 
-When clients read from **read-only** spectrum and image attributes with empty values, clients will receive
+When clients read from spectrum and image attributes with empty values, clients will now receive
 an empty sequence instead of a :obj:`None` value.  For :class:`~tango.CmdArgType.DevString` and
-:class:`~tango.CmdArgType.DevEnum` types, the "sequence" is a :obj:`tuple`, while other types
+:class:`~tango.CmdArgType.DevEnum` types, the *sequence* is a :obj:`tuple`, while other types
 get a :obj:`numpy.ndarray` by default.
 
-There is a subtle inconsistency in PyTango 9.3.x - **read-write** spectrum attributes already returned
-empty sequences instead of :obj:`None` values.  From PyTango 9.4.x, the behaviour is more consistent.
+There is a subtle inconsistency in PyTango 9.3.x - empty **read-only** spectrum and image attributes always
+returned :obj:`None` values, but **read-write** spectrum attributes *can* return empty sequences
+instead of :obj:`None` values.  It depends on the set point (written value) stored for the attribute -
+if it is non-empty, then the client gets an empty sequence.  This is shown in the examples below.
+From PyTango 9.4.x, the behaviour is more consistent.
 
 .. warning::
     Reading attributes of any type can still produce a :obj:`None` value if the
     quality is :class:`~tango.AttrQuality.ATTR_INVALID`.  Client-side code should
     always be prepared for this.  This behaviour is unchanged in PyTango 9.4.x
-    (an exception being the fix for enumerated types using the high-level API).
+    (an exception being the fix for enumerated types using the high-level API, so that they
+    also return :obj:`None`).
 
 .. note::
     It is possible to get the data returned in other container types using the
@@ -101,7 +105,7 @@ uses, :meth:`tango.DeviceProxy.read_attribute`.  It also affects all related rea
 :meth:`tango.DeviceProxy.read_attributes_reply`.
 
 The read attribute methods return data via :class:`tango.DeviceAttribute` objects.  These include
-a ``value`` field for the read value, and a ``w_value`` for the last set point (i.e., last value written).
+a ``value`` field for the read value, and a ``w_value`` field for the last set point (i.e., last value written).
 Both of these fields are affected by this change.
 
 Example device::
@@ -161,9 +165,13 @@ High-level API reads
     >>> value, type(value)
     (None, <class 'NoneType'>)
 
-    >>> value = dp.int1d_rw  # read-write attribute
+    >>> value = dp.int1d_rw  # read-write attribute (default set point is [0])
     >>> value, type(value)
     (array([], dtype=int64), <class 'numpy.ndarray'>)
+    >>> dp.int1d_rw = []  # write empty value (set point changed to empty)
+    >>> value = dp.int1d_rw  # read again, after set point changed
+    >>> value, type(value)
+    (None, <class 'NoneType'>)
 
     >>> value = dp.str2d
     >>> value, type(value)
@@ -175,10 +183,11 @@ High-level API reads
 
 In the above example, notice that high-level API reads of enumerated spectrum types fail under PyTango 9.3.x.
 Also see the difference in behaviour between read-only attributes like ``int1d`` and read-write attributes
-like ``int1d_rw``.  Read-write spectrum attributes were already working correctly with empty data prior to
+like ``int1d_rw``.  Read-write spectrum attributes behave inconsistently with empty data prior to
 PyTango 9.4.x.
 
-**New**: A PyTango 9.4.x client reads the empty data from the device using the high-level API::
+**New**: A PyTango 9.4.x client reads the empty data from the device using the high-level API (device server
+has been restarted after previous example)::
 
     >>> dp = tango.DeviceProxy("tango://127.0.0.1:8888/test/nodb/test#dbase=no")
 
@@ -194,7 +203,11 @@ PyTango 9.4.x.
     >>> value, type(value)
     (array([], dtype=int64), <class 'numpy.ndarray'>)
 
-    >>> value = dp.int1d_rw  # read-write attribute
+    >>> value = dp.int1d_rw  # read-write attribute (default set point is [0])
+    >>> value, type(value)
+    (array([], dtype=int64), <class 'numpy.ndarray'>)
+    >>> dp.int1d_rw = []  # write empty value (set point changed to empty)
+    >>> value = dp.int1d_rw  # read again, after set point changed
     >>> value, type(value)
     (array([], dtype=int64), <class 'numpy.ndarray'>)
 
@@ -392,19 +405,21 @@ In these examples, focus on the ``w_value`` field which is the set point, or las
 
     >>> dp = tango.DeviceProxy("tango://127.0.0.1:8888/test/nodb/test#dbase=no")
 
-    >>> dp.int1d = [1, 2]
-    >>> print(dp.read_attribute("int1d"))
+    >>> dp.int1d_rw = [1, 2]
+    >>> print(dp.read_attribute("int1d_rw"))
     DeviceAttribute[
         ...
+           type = tango._tango.CmdArgType.DevLong64
         w_dim_x = 2
         w_dim_y = 0
     w_dimension = AttributeDimension(dim_x = 2, dim_y = 0)
         w_value = array([1, 2])]
 
-    >>> dp.int1d = []
-    >>> print(dp.read_attribute("int1d"))
+    >>> dp.int1d_rw = []
+    >>> print(dp.read_attribute("int1d_rw"))
     DeviceAttribute[
         ...
+           type = tango._tango.CmdArgType(100)
         w_dim_x = 0
         w_dim_y = 0
     w_dimension = AttributeDimension(dim_x = 0, dim_y = 0)
@@ -414,19 +429,21 @@ In these examples, focus on the ``w_value`` field which is the set point, or las
 
     >>> dp = tango.DeviceProxy("tango://127.0.0.1:8888/test/nodb/test#dbase=no")
 
-    >>> dp.int1d = [1, 2]
-    >>> print(dp.read_attribute("int1d"))
+    >>> dp.int1d_rw = [1, 2]
+    >>> print(dp.read_attribute("int1d_rw"))
     DeviceAttribute[
         ...
+           type = tango._tango.CmdArgType.DevLong64
         w_dim_x = 2
         w_dim_y = 0
     w_dimension = AttributeDimension(dim_x = 2, dim_y = 0)
         w_value = array([1, 2])]
 
-    >>> dp.int1d = []
-    >>> print(dp.read_attribute("int1d"))
+    >>> dp.int1d_rw = []
+    >>> print(dp.read_attribute("int1d_rw"))
     DeviceAttribute[
         ...
+           type = tango._tango.CmdArgType.DevLong64
         w_dim_x = 0
         w_dim_y = 0
     w_dimension = AttributeDimension(dim_x = 0, dim_y = 0)

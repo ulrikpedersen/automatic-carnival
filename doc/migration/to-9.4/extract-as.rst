@@ -19,7 +19,7 @@ Keep value and w_value separate
 
 Prior to 9.4.x, the data in the :class:`tango.DeviceAttribute` ``value`` and ``w_value``
 fields would be concatenated (respectively) and returned in the ``value`` field.  For
-a read-only field, this was reasonable, but not for read-write fields.
+a read-only attributes this was reasonable, but not for read-write attributes.
 
 In 9.4.x, the data in the two fields remains independent.
 
@@ -27,7 +27,7 @@ Disabled types
 ==============
 
 Extracting data to bytes and strings has been disabled for attributes of type
-:class:`~tango.CmdArgType.DevString` because concatening the data from all the strings
+:class:`~tango.CmdArgType.DevString` because concatenating the data from all the strings
 is not clearly defined.  E.g., should null termination characters be included for each
 item?  This may be re-enabled in future, once the solution becomes clear.
 
