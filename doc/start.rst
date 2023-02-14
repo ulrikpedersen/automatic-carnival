@@ -119,7 +119,7 @@ setuptools.
 First, make sure you have the following packages already installed (all of them
 are available from the major official distribution repositories):
 
-* ``libtango9``
+* libtango9 from `cppTango`_.
 * `boost-python`_ (including boost-python-dev)
 * `numpy`_
 

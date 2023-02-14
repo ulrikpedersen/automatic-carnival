@@ -4,7 +4,7 @@
 History of changes
 ==================
 
-:Contributers: PyTango Team - see source repo history for full details.
+:Contributers: PyTango Team - see `source repo history <https://gitlab.com/tango-controls/pytango/-/graphs/develop?ref_type=heads>`_ for full details.
 
 :Last Update: |today|
 

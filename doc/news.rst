@@ -56,7 +56,7 @@ Changed
         - boost: 1.73.0
 - When using the ``--port`` commandline option without ``--host``, the ``ORBendpoint`` for ``gio::tcp`` passed
   to cppTango will use ``"0.0.0.0"`` as the host instead of an empty string.  This is to workaround a
-  regression with cppTango 9.4.1.
+  `regression with cppTango 9.4.1 <https://gitlab.com/tango-controls/cppTango/-/issues/1055>`_.
   Note that if the ``--ORBendPoint`` commandline option is specified directly, it will not be modified.
   This will lead to a crash if an empty host is used, e.g., ``--ORBendPoint giop:tcp::1234``.
 
@@ -72,7 +72,7 @@ Added
   and setting values inside :class:`~tango.Attr` objects.  See the :ref:`migration guide <to9.4_hl_dynamic>`.
 - High-level API support for accessing and creating DevEnum spectrum and image attributes.
   See the :ref:`migration guide <to9.4_hl_dev_enum>`.
-- Developer's can optionally allow Python attributes to be added to a :class:`~tango.DeviceProxy` instance
+- Developers can optionally allow Python attributes to be added to a :class:`~tango.DeviceProxy` instance
   by calling :meth:`~tango.DeviceProxy.unfreeze_dynamic_interface`.  The default behaviour is still
   to raise an exception when accessing unknown attributes.
   See the :ref:`migration guide <to9.4_optional_proxy_attrs>`.
