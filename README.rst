@@ -57,7 +57,7 @@ Optional dependencies:
 Install
 -------
 
-PyTango_ is available on PyPI_ as ``pytango`, with pre-built binaries for some platforms`::
+PyTango_ is available on PyPI_ as ``pytango``, with pre-built binaries for some platforms::
 
     $ python -m pip install pytango
 

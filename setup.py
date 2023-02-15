@@ -500,6 +500,7 @@ def setup_args():
         version=Release.version_long,
         description=Release.description,
         long_description=long_description,
+        long_description_content_type="text/x-rst",
         author=author[0],
         author_email=author[1],
         url=Release.url,

@@ -77,8 +77,11 @@ build-sdist:
   stage: build
   image: python:3.8
   cache: []
+  before_script:
+    - pip install twine
   script:
     - python setup.py check sdist
+    - twine check dist/*
   artifacts:
     expire_in: 1 day
     paths:

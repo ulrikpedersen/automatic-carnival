@@ -192,6 +192,7 @@ Version history
 |          |     - `!503: Disable AppVeyor builds temporarily <https://gitlab.com/tango-controls/pytango/-/merge_requests/503>`_                                                                 |
 |          |     - `!504: Update AppVeyor CI for cppTango 9.4.0 <https://gitlab.com/tango-controls/pytango/-/merge_requests/504>`_                                                               |
 |          |     - `!506: Update AppVeyor cppTango 9.4.0.windows1 package <https://gitlab.com/tango-controls/pytango/-/merge_requests/506>`_                                                     |
+|          |     - `!543: Fix readme syntax and add twine check <https://gitlab.com/tango-controls/pytango/-/merge_requests/543>`_                                                               |
 |          |                                                                                                                                                                                     |
 |          | More details in the `full changelog <https://gitlab.com/tango-controls/pytango/-/compare/v9.3.6...v9.4.0>`_                                                                         |
 |          |                                                                                                                                                                                     |
