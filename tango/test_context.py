@@ -440,7 +440,7 @@ class MultiDeviceTestContext:
         if class_list and device_list:
             self.delete_db()
             raise ValueError(
-                "mixing HLAPI and classical API in devices_info " "is not supported"
+                "mixing HLAPI and classical API in devices_info is not supported"
             )
         if class_list:
             runserver = partial(run, class_list, cmd_args, green_mode=green_mode)

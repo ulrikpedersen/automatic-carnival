@@ -1526,7 +1526,7 @@ def _notifd2db_real_db(ior_string, host=None, out=sys.stdout):
     from . import Database
 
     print(
-        "going to export notification service event factory to " "Tango database ...",
+        "going to export notification service event factory to Tango database ...",
         file=out,
     )
 
@@ -1559,7 +1559,7 @@ def _notifd2db_real_db(ior_string, host=None, out=sys.stdout):
         try:
             db.command_inout("DbExportEvent", args)
             print(
-                "Successfully exported notification service event " "factory for host",
+                "Successfully exported notification service event factory for host",
                 host_name,
                 "to Tango database !",
                 file=out,
@@ -1579,7 +1579,7 @@ def _notifd2db_real_db(ior_string, host=None, out=sys.stdout):
 
     if num_retries == 0:
         print(
-            "Failed to export notification service event factory " "to TANGO database",
+            "Failed to export notification service event factory to TANGO database",
             file=out,
         )
 

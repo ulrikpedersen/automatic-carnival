@@ -131,7 +131,7 @@ def __EncodedAttribute_generic_encode_gray8(
     if is_str:
         if not width or not height:
             raise ValueError(
-                "When giving a string as data, you must also " "supply width and height"
+                "When giving a string as data, you must also supply width and height"
             )
 
     if np and isinstance(gray8, np.ndarray):
@@ -148,11 +148,11 @@ def __EncodedAttribute_generic_encode_gray8(
                 raise TypeError("Expected numpy array with itemsize == 1")
         if not gray8.flags.c_contiguous:
             raise TypeError(
-                "Currently, only contiguous, aligned numpy arrays " "are supported"
+                "Currently, only contiguous, aligned numpy arrays are supported"
             )
         if not gray8.flags.aligned:
             raise TypeError(
-                "Currently, only contiguous, aligned numpy arrays " "are supported"
+                "Currently, only contiguous, aligned numpy arrays are supported"
             )
 
     if not is_str and (not width or not height):
@@ -217,7 +217,7 @@ def __EncodedAttribute_encode_gray16(self, gray16, width=0, height=0):
     if is_str:
         if not width or not height:
             raise ValueError(
-                "When giving a string as data, you must also " "supply width and height"
+                "When giving a string as data, you must also supply width and height"
             )
 
     if np and isinstance(gray16, np.ndarray):
@@ -234,11 +234,11 @@ def __EncodedAttribute_encode_gray16(self, gray16, width=0, height=0):
                 raise TypeError("Expected numpy array with itemsize == 2")
         if not gray16.flags.c_contiguous:
             raise TypeError(
-                "Currently, only contiguous, aligned numpy arrays " "are supported"
+                "Currently, only contiguous, aligned numpy arrays are supported"
             )
         if not gray16.flags.aligned:
             raise TypeError(
-                "Currently, only contiguous, aligned numpy arrays " "are supported"
+                "Currently, only contiguous, aligned numpy arrays are supported"
             )
 
     if not is_str and (not width or not height):
@@ -357,7 +357,7 @@ def __EncodedAttribute_generic_encode_rgb24(
     if is_str:
         if not width or not height:
             raise ValueError(
-                "When giving a string as data, you must also " "supply width and height"
+                "When giving a string as data, you must also supply width and height"
             )
 
     if np and isinstance(rgb24, np.ndarray):
@@ -374,11 +374,11 @@ def __EncodedAttribute_generic_encode_rgb24(
                 raise TypeError("Expected numpy array with itemsize == 1")
         if not rgb24.flags.c_contiguous:
             raise TypeError(
-                "Currently, only contiguous, aligned numpy arrays " "are supported"
+                "Currently, only contiguous, aligned numpy arrays are supported"
             )
         if not rgb24.flags.aligned:
             raise TypeError(
-                "Currently, only contiguous, aligned numpy arrays " "are supported"
+                "Currently, only contiguous, aligned numpy arrays are supported"
             )
 
     if not is_str and (not width or not height):
@@ -443,7 +443,7 @@ def __EncodedAttribute_encode_jpeg_rgb32(self, rgb32, width=0, height=0, quality
     if is_str:
         if not width or not height:
             raise ValueError(
-                "When giving a string as data, you must also " "supply width and height"
+                "When giving a string as data, you must also supply width and height"
             )
 
     if np and isinstance(rgb32, np.ndarray):
@@ -460,11 +460,11 @@ def __EncodedAttribute_encode_jpeg_rgb32(self, rgb32, width=0, height=0, quality
                 raise TypeError("Expected numpy array with itemsize == 4")
         if not rgb32.flags.c_contiguous:
             raise TypeError(
-                "Currently, only contiguous, aligned numpy arrays " "are supported"
+                "Currently, only contiguous, aligned numpy arrays are supported"
             )
         if not rgb32.flags.aligned:
             raise TypeError(
-                "Currently, only contiguous, aligned numpy arrays " "are supported"
+                "Currently, only contiguous, aligned numpy arrays are supported"
             )
 
     if not is_str and (not width or not height):

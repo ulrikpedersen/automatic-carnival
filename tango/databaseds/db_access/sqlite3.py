@@ -159,7 +159,7 @@ class SqlDatabase:
     def purge_property(self, table, field, obj, name):
         cursor = self.cursor
         cursor.execute(
-            "SELECT DISTINCT id FROM ? WHERE ? = ? AND name = ? " "ORDER BY date",
+            "SELECT DISTINCT id FROM ? WHERE ? = ? AND name = ? ORDER BY date",
             (table, field, obj, name),
         )
         rows = cursor.fetchall()
@@ -284,7 +284,7 @@ class SqlDatabase:
         prop_name = replace_wildcard(prop_name)
         # Is there something to delete ?
         cursor.execute(
-            "SELECT DISTINCT name FROM property_class WHERE class=? AND " "name LIKE ?",
+            "SELECT DISTINCT name FROM property_class WHERE class=? AND name LIKE ?",
             (klass_name, prop_name),
         )
         for row in cursor.fetchall():
@@ -402,7 +402,7 @@ class SqlDatabase:
 
         # Is there something to delete ?
         cursor.execute(
-            "SELECT DISTINCT name FROM property WHERE object=? AND " "name LIKE ?",
+            "SELECT DISTINCT name FROM property WHERE object=? AND name LIKE ?",
             (obj_name, prop_name),
         )
         for row in cursor.fetchall():

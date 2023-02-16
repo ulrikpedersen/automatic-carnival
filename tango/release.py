@@ -55,7 +55,7 @@ class Release:
     version_description = "This version implements the C++ Tango 9.4 API."
     version_number = int(version.replace(".", ""))
     description = "A python binding for the Tango control system"
-    long_description = "This module implements the Python Tango Device API " "mapping."
+    long_description = "This module implements the Python Tango Device API mapping."
     license = "LGPL"
     authors = {"Coutinho": ("Tiago Coutinho", "coutinho@esrf.fr")}
     author_lines = "\n".join([f"{x[0]} <{x[1]}>" for x in authors.values()])

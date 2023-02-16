@@ -361,7 +361,7 @@ def __Database__generic_put_attr_pipe_property(self, obj_name, value, f):
                 new_value.append(db_datum)
     else:
         raise TypeError(
-            "Value must be a tango.DbData," "a sequence<DbDatum> or a dictionary"
+            "Value must be a tango.DbData, a sequence<DbDatum> or a dictionary"
         )
 
     return f(obj_name, new_value)

@@ -322,7 +322,7 @@ class Server:
                     dserver.ping()
                     raise Exception("Server already running")
                 except Exception:
-                    self.log.info("Last time server was not properly " "shutdown!")
+                    self.log.info("Last time server was not properly shutdown!")
             _, db_device_map = self.get_devices()
         else:
             db_device_map = {}
@@ -461,7 +461,7 @@ class Server:
         if gm == self.__green_mode:
             return
         if self.__running:
-            raise RuntimeError("Cannot change green mode while " "server is running")
+            raise RuntimeError("Cannot change green mode while server is running")
         self.__green_mode = gm
 
     @property
@@ -524,7 +524,7 @@ class Server:
     def register_tango_class(self, klass):
         if self._phase > Server.Phase1:
             raise RuntimeError(
-                "Cannot add new class after phase 1 " "(i.e. after server_init)"
+                "Cannot add new class after phase 1 (i.e. after server_init)"
             )
         self.__tango_classes.append(klass)
 
