@@ -22,12 +22,16 @@ try:
     print(f"command_inout DevShort result: {data_out}")
     my_dbl = 1.22  # here my_dbl is a float
     my_str = "ABC"  # here my_str is a string
-    print(f"types of variables before data_out extraction: "
-          f"{type(data_out)}, {type(my_dbl)}, {type(my_str)}")
+    print(
+        f"types of variables before data_out extraction: "
+        f"{type(data_out)}, {type(my_dbl)}, {type(my_str)}"
+    )
     my_dbl = data_out  # here my_dbl turns into a short
     my_str = data_out  # here my_str turns into a short
-    print(f"command_inout DevVoid results extracted to existing variable: "
-          f"{data_out}, {my_dbl}, {my_str}, {type(data_out)}, {type(my_dbl)}, {type(my_str)}")
+    print(
+        f"command_inout DevVoid results extracted to existing variable: "
+        f"{data_out}, {my_dbl}, {my_str}, {type(data_out)}, {type(my_dbl)}, {type(my_str)}"
+    )
     # type of variables changes if handled by python! powerful, easy, can play tricks...
 except DevFailed as ex:
     print("failed to execute command DevShort")

@@ -55,9 +55,9 @@ def _chain_future(source, dest):
     Compatible with both asyncio.Future and concurrent.futures.Future.
     """
     if not isinstance(source, (asyncio.Future, concurrent.futures.Future)):
-        raise TypeError('A future is required for source argument')
+        raise TypeError("A future is required for source argument")
     if not isinstance(dest, (asyncio.Future, concurrent.futures.Future)):
-        raise TypeError('A future is required for destination argument')
+        raise TypeError("A future is required for destination argument")
     source_loop = source._loop if isinstance(source, asyncio.Future) else None
     dest_loop = dest._loop if isinstance(dest, asyncio.Future) else None
 
@@ -89,7 +89,7 @@ def run_coroutine_threadsafe(coro, loop):
     Return a concurrent.futures.Future to access the result.
     """
     if not asyncio.iscoroutine(coro):
-        raise TypeError('A coroutine object is required')
+        raise TypeError("A coroutine object is required")
     future = concurrent.futures.Future()
 
     def callback():
@@ -121,10 +121,11 @@ def coroutine(func):
     if inspect.isgeneratorfunction(func):
         coro = func
     else:
+
         @functools.wraps(func)
         def coro(*args, **kw):
             res = func(*args, **kw)
-            if (asyncio.isfuture(res) or inspect.isgenerator(res)):
+            if asyncio.isfuture(res) or inspect.isgenerator(res):
                 res = yield from res
             else:
                 # If 'res' is an awaitable, run it.
@@ -139,6 +140,7 @@ def coroutine(func):
 
     coro = types.coroutine(coro)
     wrapper = coro
-    wrapper._is_coroutine = asyncio.coroutines._is_coroutine  # For iscoroutinefunction().
+    wrapper._is_coroutine = (
+        asyncio.coroutines._is_coroutine
+    )  # For iscoroutinefunction().
     return wrapper
-

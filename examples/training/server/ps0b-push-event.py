@@ -16,7 +16,6 @@ from tango.server import Device, attribute, command
 
 
 class PowerSupply(Device):
-
     def init_device(self):
         self.set_change_event("voltage", True, False)
         self.set_archive_event("voltage", True, False)

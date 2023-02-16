@@ -7,7 +7,9 @@ import numpy as np
 from . import DevState, GreenMode, AttrDataFormat, ExtractAs
 from .server import Device
 from .test_context import (
-    MultiDeviceTestContext, DeviceTestContext, get_server_port_via_pid
+    MultiDeviceTestContext,
+    DeviceTestContext,
+    get_server_port_via_pid,
 )
 from .utils import is_non_str_seq, FROM_TANGO_TO_NUMPY_TYPE
 from . import DeviceClass, LatestDeviceImpl, DevLong64, SCALAR, READ
@@ -19,25 +21,26 @@ except ImportError:
     pytest = None
 
 __all__ = (
-    'MultiDeviceTestContext',
-    'DeviceTestContext',
-    'SimpleDevice',
-    'ClassicAPISimpleDeviceImpl',
-    'ClassicAPISimpleDeviceClass',
-    'state',
-    'command_typed_values',
-    'attribute_typed_values',
-    'server_green_mode',
-    'attr_data_format',
-    'get_server_port_via_pid',
+    "MultiDeviceTestContext",
+    "DeviceTestContext",
+    "SimpleDevice",
+    "ClassicAPISimpleDeviceImpl",
+    "ClassicAPISimpleDeviceClass",
+    "state",
+    "command_typed_values",
+    "attribute_typed_values",
+    "server_green_mode",
+    "attr_data_format",
+    "get_server_port_via_pid",
 )
 
 # char \x00 cannot be sent in a DevString. All other 1-255 chars can
 ints = tuple(range(1, 256))
 bytes_devstring = bytes(ints)
-str_devstring = bytes_devstring.decode('latin-1')
+str_devstring = bytes_devstring.decode("latin-1")
 
 # Test devices
+
 
 class SimpleDevice(Device):
     def init_device(self):
@@ -62,6 +65,7 @@ class ClassicAPISimpleDeviceClass(DeviceClass):
 
 
 # Test enums
+
 
 class GoodEnum(enum.IntEnum):
     START = 0
@@ -97,80 +101,168 @@ class BadEnumDuplicates(enum.IntEnum):
 
 GENERAL_TYPED_VALUES = {
     int: (1, 2, -65535, 23),
-    float: (2.71, 3.14, -34.678e-10, 12.678e+15),
-    str: ('hey hey', 'my my', bytes_devstring, str_devstring),
+    float: (2.71, 3.14, -34.678e-10, 12.678e15),
+    str: ("hey hey", "my my", bytes_devstring, str_devstring),
     bool: (False, True, True, False),
-    (int,): (np.array([1, 2]), [1, 2, 3], [9, 8, 7], [-65535, 2224], [0, 0], ),
-    (float,): (np.array([0.1, 0.2]), [0.1, 0.2, 0.3], [0.9, 0.8, 0.7], [-6.3232e-3], [0.0, 12.56e+12]),
-    (str,): (np.array(['foo', 'bar']), ['ab', 'cd', 'ef'], ['gh', 'ij', 'kl'], 10*[bytes_devstring], 10*[str_devstring]),
-    (bool,): (np.array([True, False]), [False, False, True], [True, False, False], [False], [True]),
+    (int,): (
+        np.array([1, 2]),
+        [1, 2, 3],
+        [9, 8, 7],
+        [-65535, 2224],
+        [0, 0],
+    ),
+    (float,): (
+        np.array([0.1, 0.2]),
+        [0.1, 0.2, 0.3],
+        [0.9, 0.8, 0.7],
+        [-6.3232e-3],
+        [0.0, 12.56e12],
+    ),
+    (str,): (
+        np.array(["foo", "bar"]),
+        ["ab", "cd", "ef"],
+        ["gh", "ij", "kl"],
+        10 * [bytes_devstring],
+        10 * [str_devstring],
+    ),
+    (bool,): (
+        np.array([True, False]),
+        [False, False, True],
+        [True, False, False],
+        [False],
+        [True],
+    ),
 }
 
 IMAGE_TYPED_VALUES = {
-    ((int,),): (np.vstack((np.array([1, 2]), np.array([3, 4]))),
-                [[1, 2, 3], [4, 5, 6]], [[-65535, 2224], [-65535, 2224]],),
-    ((float,),): (np.vstack((np.array([0.1, 0.2]), np.array([0.3, 0.4]))),
-                  [[0.1, 0.2, 0.3], [0.9, 0.8, 0.7]], [[-6.3232e-3, 0.0], [0.0, 12.56e+12]],),
-    ((str,),): (np.vstack((np.array(['hi-hi', 'ha-ha']), np.array(['hu-hu', 'yuhuu']))),
-                [['ab', 'cd', 'ef'], ['gh', 'ij', 'kl']], [10*[bytes_devstring],10*[bytes_devstring]],
-                [10*[str_devstring], 10*[str_devstring]],),
-    ((bool,),): (np.vstack((np.array([True, False]), np.array([False, True]))),
-                 [[False, False, True], [True, False, False]], [[False]], [[True]],)
+    ((int,),): (
+        np.vstack((np.array([1, 2]), np.array([3, 4]))),
+        [[1, 2, 3], [4, 5, 6]],
+        [[-65535, 2224], [-65535, 2224]],
+    ),
+    ((float,),): (
+        np.vstack((np.array([0.1, 0.2]), np.array([0.3, 0.4]))),
+        [[0.1, 0.2, 0.3], [0.9, 0.8, 0.7]],
+        [[-6.3232e-3, 0.0], [0.0, 12.56e12]],
+    ),
+    ((str,),): (
+        np.vstack((np.array(["hi-hi", "ha-ha"]), np.array(["hu-hu", "yuhuu"]))),
+        [["ab", "cd", "ef"], ["gh", "ij", "kl"]],
+        [10 * [bytes_devstring], 10 * [bytes_devstring]],
+        [10 * [str_devstring], 10 * [str_devstring]],
+    ),
+    ((bool,),): (
+        np.vstack((np.array([True, False]), np.array([False, True]))),
+        [[False, False, True], [True, False, False]],
+        [[False]],
+        [[True]],
+    ),
 }
 
 
-EXTRACT_AS = [(ExtractAs.Numpy, np.ndarray),
-              (ExtractAs.Tuple, tuple),
-              (ExtractAs.List, list),
-              (ExtractAs.Bytes, bytes),
-              (ExtractAs.ByteArray, bytearray),
-              (ExtractAs.String, str)
-              ]
+EXTRACT_AS = [
+    (ExtractAs.Numpy, np.ndarray),
+    (ExtractAs.Tuple, tuple),
+    (ExtractAs.List, list),
+    (ExtractAs.Bytes, bytes),
+    (ExtractAs.ByteArray, bytearray),
+    (ExtractAs.String, str),
+]
 
 BASE_TYPES = [float, int, str, bool]
 
 # these sets to test Device Server input arguments
 
-OS_SYSTEMS = ['linux', 'win']
+OS_SYSTEMS = ["linux", "win"]
 
 #    os_system, in string, out arguments list, raised exception
 DEVICE_SERVER_ARGUMENTS = (
-    (['linux', 'win'], 'MyDs instance --nodb --port 1234',
-     ['MyDs', 'instance', '-nodb', '-ORBendPoint', 'giop:tcp:0.0.0.0:1234']),
-    (['linux', 'win'], 'MyDs -port 1234 -host myhost instance',
-     ['MyDs', 'instance', '-ORBendPoint', 'giop:tcp:myhost:1234']),
-    (['linux', 'win'], 'MyDs instance --ORBendPoint giop:tcp::1234',
-     ['MyDs', 'instance', '-ORBendPoint', 'giop:tcp::1234']),
-    (['linux', 'win'], 'MyDs instance -nodb -port 1000 -dlist a/b/c;d/e/f',
-     ['MyDs', 'instance', '-ORBendPoint', 'giop:tcp:0.0.0.0:1000', '-nodb', '-dlist', 'a/b/c;d/e/f']),
-    (['linux', 'win'], 'MyDs instance -file a/b/c',
-     ['MyDs', 'instance', '-file=a/b/c']),
-    ([], 'MyDs instance -nodb', []),  # this test should always fail
-    ([], 'MyDs instance -dlist a/b/c;d/e/f', []),  # this test should always fail
-
-# the most complicated case: verbose
-    (['linux', 'win'], 'MyDs instance -vvvv', ['MyDs', 'instance', '-v4']),
-    (['linux', 'win'], 'MyDs instance --verbose --verbose --verbose --verbose', ['MyDs', 'instance', '-v4']),
-    (['linux', 'win'], 'MyDs instance -v4', ['MyDs', 'instance', '-v4']),
-    (['linux', 'win'], 'MyDs instance -v 4', ['MyDs', 'instance', '-v4']),
-
-# some options can be only in win, in linux should be error
-    (['win'], 'MyDs instance -dbg -i -s -u', ['MyDs', 'instance', '-dbg', '-i', '-s', '-u']),
-
-# variable ORB options
-    (['linux', 'win'], 'MyDs instance -ORBtest1 test1 --ORBtest2 test2',
-     ['MyDs', 'instance', '-ORBtest1', 'test1', '-ORBtest2', 'test2']),
-    (['linux', 'win'], 'MyDs ORBinstance -ORBtest myORBparam',
-     ['MyDs', 'ORBinstance', '-ORBtest', 'myORBparam']),
-    (['linux', 'win'], 'MyDs instance -nodb -ORBendPoint giop:tcp:localhost:1234 -ORBendPointPublish giop:tcp:myhost.local:2345',
-     ['MyDs', 'instance', '-nodb', '-ORBendPoint', 'giop:tcp:localhost:1234', '-ORBendPointPublish', 'giop:tcp:myhost.local:2345']),
-    ([], 'MyDs instance -ORBtest1 test1 --orbinvalid value', []),  # lowercase "orb" should fail
+    (
+        ["linux", "win"],
+        "MyDs instance --nodb --port 1234",
+        ["MyDs", "instance", "-nodb", "-ORBendPoint", "giop:tcp:0.0.0.0:1234"],
+    ),
+    (
+        ["linux", "win"],
+        "MyDs -port 1234 -host myhost instance",
+        ["MyDs", "instance", "-ORBendPoint", "giop:tcp:myhost:1234"],
+    ),
+    (
+        ["linux", "win"],
+        "MyDs instance --ORBendPoint giop:tcp::1234",
+        ["MyDs", "instance", "-ORBendPoint", "giop:tcp::1234"],
+    ),
+    (
+        ["linux", "win"],
+        "MyDs instance -nodb -port 1000 -dlist a/b/c;d/e/f",
+        [
+            "MyDs",
+            "instance",
+            "-ORBendPoint",
+            "giop:tcp:0.0.0.0:1000",
+            "-nodb",
+            "-dlist",
+            "a/b/c;d/e/f",
+        ],
+    ),
+    (
+        ["linux", "win"],
+        "MyDs instance -file a/b/c",
+        ["MyDs", "instance", "-file=a/b/c"],
+    ),
+    ([], "MyDs instance -nodb", []),  # this test should always fail
+    ([], "MyDs instance -dlist a/b/c;d/e/f", []),  # this test should always fail
+    # the most complicated case: verbose
+    (["linux", "win"], "MyDs instance -vvvv", ["MyDs", "instance", "-v4"]),
+    (
+        ["linux", "win"],
+        "MyDs instance --verbose --verbose --verbose --verbose",
+        ["MyDs", "instance", "-v4"],
+    ),
+    (["linux", "win"], "MyDs instance -v4", ["MyDs", "instance", "-v4"]),
+    (["linux", "win"], "MyDs instance -v 4", ["MyDs", "instance", "-v4"]),
+    # some options can be only in win, in linux should be error
+    (
+        ["win"],
+        "MyDs instance -dbg -i -s -u",
+        ["MyDs", "instance", "-dbg", "-i", "-s", "-u"],
+    ),
+    # variable ORB options
+    (
+        ["linux", "win"],
+        "MyDs instance -ORBtest1 test1 --ORBtest2 test2",
+        ["MyDs", "instance", "-ORBtest1", "test1", "-ORBtest2", "test2"],
+    ),
+    (
+        ["linux", "win"],
+        "MyDs ORBinstance -ORBtest myORBparam",
+        ["MyDs", "ORBinstance", "-ORBtest", "myORBparam"],
+    ),
+    (
+        ["linux", "win"],
+        "MyDs instance -nodb -ORBendPoint giop:tcp:localhost:1234 -ORBendPointPublish giop:tcp:myhost.local:2345",
+        [
+            "MyDs",
+            "instance",
+            "-nodb",
+            "-ORBendPoint",
+            "giop:tcp:localhost:1234",
+            "-ORBendPointPublish",
+            "giop:tcp:myhost.local:2345",
+        ],
+    ),
+    (
+        [],
+        "MyDs instance -ORBtest1 test1 --orbinvalid value",
+        [],
+    ),  # lowercase "orb" should fail
 )
+
 
 def repr_type(x):
     if isinstance(x, (list, tuple)):
-        return f'({repr_type(x[0])},)'
-    return f'{x.__name__}'
+        return f"({repr_type(x[0])},)"
+    return f"{x.__name__}"
 
 
 # Numpy helpers
@@ -195,10 +287,9 @@ if pytest:
         else:
             __assert_all_types(a, b)
 
-
     def __convert_value(value):
         if isinstance(value, bytes):
-            return value.decode('latin-1')
+            return value.decode("latin-1")
         return value
 
     def create_result(dtype, value):
@@ -228,8 +319,8 @@ if pytest:
         return request.param
 
     @pytest.fixture(
-        params=list(GENERAL_TYPED_VALUES.items()),
-        ids=lambda x: repr_type(x[0]))
+        params=list(GENERAL_TYPED_VALUES.items()), ids=lambda x: repr_type(x[0])
+    )
     def command_typed_values(request):
         dtype, values = request.param
         expected = lambda v: create_result(dtype, v)
@@ -237,13 +328,16 @@ if pytest:
 
     @pytest.fixture(
         params=list({**GENERAL_TYPED_VALUES, **IMAGE_TYPED_VALUES}.items()),
-        ids=lambda x: repr_type(x[0]))
+        ids=lambda x: repr_type(x[0]),
+    )
     def attribute_typed_values(request):
         dtype, values = request.param
         expected = lambda v: create_result(dtype, v)
         return dtype, values, expected
 
-    @pytest.fixture(params=EXTRACT_AS, ids=[f"extract_as.{req_type}" for req_type, _ in EXTRACT_AS])
+    @pytest.fixture(
+        params=EXTRACT_AS, ids=[f"extract_as.{req_type}" for req_type, _ in EXTRACT_AS]
+    )
     def extract_as(request):
         requested_type, expected_type = request.param
         return requested_type, expected_type
@@ -256,16 +350,12 @@ if pytest:
     def green_mode(request):
         return request.param
 
-    @pytest.fixture(params=[
-        GreenMode.Synchronous,
-        GreenMode.Asyncio,
-        GreenMode.Gevent])
+    @pytest.fixture(params=[GreenMode.Synchronous, GreenMode.Asyncio, GreenMode.Gevent])
     def server_green_mode(request):
         return request.param
 
-    @pytest.fixture(params=[
-        AttrDataFormat.SCALAR,
-        AttrDataFormat.SPECTRUM,
-        AttrDataFormat.IMAGE])
+    @pytest.fixture(
+        params=[AttrDataFormat.SCALAR, AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE]
+    )
     def attr_data_format(request):
         return request.param

@@ -21,8 +21,7 @@ from .attribute_proxy import get_attribute_proxy
 __all__ = ("DeviceProxy", "AttributeProxy")
 
 
-DeviceProxy = partial(get_device_proxy,
-                      green_mode=GreenMode.Asyncio)
+DeviceProxy = partial(get_device_proxy, green_mode=GreenMode.Asyncio)
 DeviceProxy.__doc__ = """
     DeviceProxy(self, dev_name, wait=False, timeout=None)
         -> DeviceProxy
@@ -67,8 +66,7 @@ DeviceProxy.__doc__ = """
     New in PyTango 8.1.0
 """
 
-AttributeProxy = partial(get_attribute_proxy,
-                         green_mode=GreenMode.Asyncio)
+AttributeProxy = partial(get_attribute_proxy, green_mode=GreenMode.Asyncio)
 AttributeProxy.__doc__ = """
     AttributeProxy(self, full_attr_name, wait=False, timeout=False)
         -> AttributeProxy

@@ -21,7 +21,6 @@ class TrackingMode(enum.IntEnum):
 
 
 class PowerSupply(Device):
-
     _tracking_mode = TrackingMode.SYNCED
 
     @attribute(dtype=TrackingMode, access=AttrWriteType.READ_WRITE)
@@ -32,10 +31,7 @@ class PowerSupply(Device):
     def output_tracking(self, value):
         self._tracking_mode = value
 
-    @attribute(
-        dtype=float,
-        polling_period=3000,  # milliseconds
-        rel_change=1e-3)
+    @attribute(dtype=float, polling_period=3000, rel_change=1e-3)  # milliseconds
     @DebugIt(show_args=False, show_kwargs=False, show_ret=True)
     def voltage(self):
         noise = -0.05 + 0.1 * random.random()
@@ -47,5 +43,5 @@ class PowerSupply(Device):
         sleep(0.1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     PowerSupply.run_server()

@@ -10,7 +10,6 @@ from tango.test_utils import DeviceTestContext, assert_close
 
 
 def test_read_attribute():
-
     class TestDevice(Device):
         _voltage = 0.0
 
@@ -46,7 +45,6 @@ def test_read_attribute():
 
 
 def test_read_attribute_full():
-
     class TestDevice(Device):
         green_mode = GreenMode.Synchronous
 

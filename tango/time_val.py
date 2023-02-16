@@ -30,15 +30,15 @@ def __TimeVal__init(self, a=None, b=None, c=None):
         return
 
     if isinstance(a, datetime.datetime):
-        assert (b is None and c is None)
-        a = time.mktime(a.timetuple()) + a.microsecond * 1E-6
+        assert b is None and c is None
+        a = time.mktime(a.timetuple()) + a.microsecond * 1e-6
 
     elif isinstance(a, numbers.Number):
         if b is None:
             self.tv_sec = int(a)
-            usec = (a - self.tv_sec) * 1E6
+            usec = (a - self.tv_sec) * 1e6
             self.tv_usec = int(usec)
-            self.tv_nsec = int((usec - self.tv_usec) * 1E3)
+            self.tv_nsec = int((usec - self.tv_usec) * 1e3)
         else:
             self.tv_sec, self.tv_usec, self.tv_nsec = a, b, c
 
@@ -53,7 +53,7 @@ def __TimeVal__totime(self):
         Return     : a float representing the time value
 
     .. versionadded:: 7.1.0"""
-    return self.tv_sec + 1E-6 * self.tv_usec + 1E-9 * self.tv_nsec
+    return self.tv_sec + 1e-6 * self.tv_usec + 1e-9 * self.tv_nsec
 
 
 def __TimeVal__todatetime(self):
@@ -140,7 +140,7 @@ def __TimeVal__strftime(self, format):
     return self.todatetime().strftime(format)
 
 
-def __TimeVal__isoformat(self, sep='T'):
+def __TimeVal__isoformat(self, sep="T"):
     """
     isoformat(self, sep='T') -> str
 

@@ -49,6 +49,7 @@ TESTING = any(x in sys.argv for x in ["test", "pytest"])
 try:
     from numpy.distutils.ccompiler import CCompiler_compile
     import distutils.ccompiler
+
     distutils.ccompiler.CCompiler.compile = CCompiler_compile
     print("Using numpy-patched parallel compiler")
 except ImportError:
@@ -214,7 +215,6 @@ def add_lib_boost(dirs):
 
 
 class build(dftbuild):
-
     user_options = list(dftbuild.user_options)
 
     # Strip library option
@@ -294,7 +294,7 @@ class build_ext(dftbuild_ext):
 
 
 class check_tests_errors(Command):
-    """ Checks tests summary.json for failed tests and raises errror if found """
+    """Checks tests summary.json for failed tests and raises errror if found"""
 
     description = (
         "Checks tests summary.json for failed tests and raises errror if found"
@@ -332,7 +332,6 @@ class check_tests_errors(Command):
 
 
 def setup_args():
-
     directories = {
         "include_dirs": [],
         "library_dirs": [],
@@ -402,9 +401,7 @@ def setup_args():
     else:
         tests_require += ["pytest", "pytest-forked"]
 
-    extras_require = {"tests": tests_require,
-                      "gevent": ['gevent >= 20.0']
-                     }
+    extras_require = {"tests": tests_require, "gevent": ["gevent >= 20.0"]}
 
     package_data = {
         "tango.databaseds": ["*.xmi", "*.sql", "*.sh", "DataBaseds"],

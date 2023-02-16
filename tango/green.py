@@ -23,15 +23,21 @@ except Exception:
 # Tango imports
 from ._tango import GreenMode
 
-__all__ = ('get_green_mode', 'set_green_mode', 'green', 'green_callback',
-           'get_executor', 'get_object_executor')
+__all__ = (
+    "get_green_mode",
+    "set_green_mode",
+    "green",
+    "green_callback",
+    "get_executor",
+    "get_object_executor",
+)
 
 # Handle current green mode
 
 try:
     _CURRENT_GREEN_MODE = getattr(
-        GreenMode,
-        os.environ["PYTANGO_GREEN_MODE"].capitalize())
+        GreenMode, os.environ["PYTANGO_GREEN_MODE"].capitalize()
+    )
 except Exception:
     _CURRENT_GREEN_MODE = GreenMode.Synchronous
 
@@ -64,6 +70,7 @@ def get_green_mode():
 
 # Abstract executor class
 
+
 class AbstractExecutor:
     asynchronous = NotImplemented
     default_wait = NotImplemented
@@ -77,13 +84,13 @@ class AbstractExecutor:
     def delegate(self, fn, *args, **kwargs):
         """Delegate an operation and return an accessor."""
         if not self.asynchronous:
-            raise ValueError('Not supported in synchronous mode')
+            raise ValueError("Not supported in synchronous mode")
         raise NotImplementedError
 
     def access(self, accessor, timeout=None):
         """Return a result from an accessor."""
         if not self.asynchronous:
-            raise ValueError('Not supported in synchronous mode')
+            raise ValueError("Not supported in synchronous mode")
         raise NotImplementedError
 
     def submit(self, fn, *args, **kwargs):
@@ -103,7 +110,7 @@ class AbstractExecutor:
             wait = self.default_wait
         # Wait and timeout are not supported in synchronous mode
         if not self.asynchronous and (not wait or timeout):
-            raise ValueError('Not supported in synchronous mode')
+            raise ValueError("Not supported in synchronous mode")
         # Synchronous (no delegation)
         if not self.asynchronous or not self.in_executor_context():
             return fn(*args, **kwargs)
@@ -121,6 +128,7 @@ class SynchronousExecutor(AbstractExecutor):
 
 # Default synchronous executor
 
+
 def get_synchronous_executor():
     return _SYNCHRONOUS_EXECUTOR
 
@@ -129,6 +137,7 @@ _SYNCHRONOUS_EXECUTOR = SynchronousExecutor()
 
 
 # Getters
+
 
 def get_object_green_mode(obj):
     if hasattr(obj, "get_green_mode"):
@@ -144,12 +153,15 @@ def get_executor(green_mode=None):
         return get_synchronous_executor()
     if green_mode == GreenMode.Gevent:
         from . import gevent_executor
+
         return gevent_executor.get_global_executor()
     if green_mode == GreenMode.Futures:
         from . import futures_executor
+
         return futures_executor.get_global_executor()
     if green_mode == GreenMode.Asyncio:
         from . import asyncio_executor
+
         return asyncio_executor.get_global_executor()
     # Invalid green mode
     raise TypeError("Not a valid green mode")
@@ -170,7 +182,7 @@ def get_object_executor(obj, green_mode=None):
         green_mode = get_object_green_mode(obj)
     # Get executor
     executor = None
-    if hasattr(obj, '_executors'):
+    if hasattr(obj, "_executors"):
         executor = obj._executors.get(green_mode, None)
     if executor is None:
         executor = get_executor(green_mode)
@@ -180,6 +192,7 @@ def get_object_executor(obj, green_mode=None):
 
 # Green modifiers
 
+
 def green(fn=None, consume_green_mode=True):
     """Make a function green. Can be used as a decorator."""
 
@@ -187,10 +200,10 @@ def green(fn=None, consume_green_mode=True):
         @wraps(fn)
         def greener(obj, *args, **kwargs):
             args = (obj,) + args
-            wait = kwargs.pop('wait', None)
-            timeout = kwargs.pop('timeout', None)
+            wait = kwargs.pop("wait", None)
+            timeout = kwargs.pop("timeout", None)
             access = kwargs.pop if consume_green_mode else kwargs.get
-            green_mode = access('green_mode', None)
+            green_mode = access("green_mode", None)
             executor = get_object_executor(obj, green_mode)
             return executor.run(fn, args, kwargs, wait=wait, timeout=timeout)
 

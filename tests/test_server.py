@@ -8,18 +8,41 @@ import enum
 import numpy as np
 
 from tango import (
-    AttrData, Attr, AttrDataFormat, AttrQuality, AttReqType, AttrWriteType,
-    DevBoolean, DevLong, DevDouble, DevFailed,
-    DevEncoded, DevEnum, DevState, DevVoid,
-    Device_4Impl, Device_5Impl, DeviceClass,
-    GreenMode, LatestDeviceImpl, ExtractAs,
-    READ_WRITE, SCALAR, SPECTRUM, CmdArgType
+    AttrData,
+    Attr,
+    AttrDataFormat,
+    AttrQuality,
+    AttReqType,
+    AttrWriteType,
+    DevBoolean,
+    DevLong,
+    DevDouble,
+    DevFailed,
+    DevEncoded,
+    DevEnum,
+    DevState,
+    DevVoid,
+    Device_4Impl,
+    Device_5Impl,
+    DeviceClass,
+    GreenMode,
+    LatestDeviceImpl,
+    ExtractAs,
+    READ_WRITE,
+    SCALAR,
+    SPECTRUM,
+    CmdArgType,
 )
 from tango.server import BaseDevice, Device
 from tango.pyutil import parse_args
 from tango.server import _get_tango_type_format, command, attribute, device_property
 from tango.test_utils import DeviceTestContext, MultiDeviceTestContext
-from tango.test_utils import GoodEnum, BadEnumNonZero, BadEnumSkipValues, BadEnumDuplicates
+from tango.test_utils import (
+    GoodEnum,
+    BadEnumNonZero,
+    BadEnumSkipValues,
+    BadEnumDuplicates,
+)
 from tango.test_utils import assert_close, DEVICE_SERVER_ARGUMENTS
 from tango.utils import (
     EnumTypeError,
@@ -41,6 +64,7 @@ WINDOWS = "nt" in os.name
 
 # Test implementation classes
 
+
 def test_device_classes_use_latest_implementation():
     assert issubclass(LatestDeviceImpl, get_latest_device_class())
     assert issubclass(BaseDevice, LatestDeviceImpl)
@@ -49,18 +73,18 @@ def test_device_classes_use_latest_implementation():
 
 # Test state/status
 
-def test_empty_device(server_green_mode):
 
+def test_empty_device(server_green_mode):
     class TestDevice(Device):
         green_mode = server_green_mode
 
     with DeviceTestContext(TestDevice) as proxy:
         assert proxy.state() == DevState.UNKNOWN
-        assert proxy.status() == 'The device is in UNKNOWN state.'
+        assert proxy.status() == "The device is in UNKNOWN state."
 
 
 def test_set_state(state, server_green_mode):
-    status = f'The device is in {state!s} state.'
+    status = f"The device is in {state!s} state."
 
     class TestDevice(Device):
         green_mode = server_green_mode
@@ -74,11 +98,13 @@ def test_set_state(state, server_green_mode):
 
 
 def test_set_status(server_green_mode):
-
-    status = '\n'.join((
-        "This is a multiline status",
-        "with special characters such as",
-        "Café à la crème"))
+    status = "\n".join(
+        (
+            "This is a multiline status",
+            "with special characters such as",
+            "Café à la crème",
+        )
+    )
 
     class TestDevice(Device):
         green_mode = server_green_mode
@@ -94,11 +120,12 @@ def test_set_status(server_green_mode):
 
 # Test commands
 
+
 def test_identity_command(command_typed_values, server_green_mode):
     dtype, values, expected = command_typed_values
 
     if dtype == (bool,):
-        pytest.xfail('Not supported for some reasons')
+        pytest.xfail("Not supported for some reasons")
 
     class TestDevice(Device):
         green_mode = server_green_mode
@@ -113,7 +140,6 @@ def test_identity_command(command_typed_values, server_green_mode):
 
 
 def test_command_isallowed(server_green_mode):
-
     is_allowed = None
 
     def sync_allowed():
@@ -123,7 +149,6 @@ def test_command_isallowed(server_green_mode):
         return is_allowed
 
     class IsAllowedCallableClass:
-
         def __init__(self):
             self._is_allowed = None
 
@@ -150,13 +175,17 @@ def test_command_isallowed(server_green_mode):
         def identity_kwarg_string(self, arg):
             return arg
 
-        @command(dtype_in=int, dtype_out=int,
-                 fisallowed=sync_allowed if server_green_mode != GreenMode.Asyncio else async_allowed)
+        @command(
+            dtype_in=int,
+            dtype_out=int,
+            fisallowed=sync_allowed
+            if server_green_mode != GreenMode.Asyncio
+            else async_allowed,
+        )
         def identity_kwarg_callable(self, arg):
             return arg
 
-        @command(dtype_in=int, dtype_out=int,
-                 fisallowed=is_allowed_callable_class)
+        @command(dtype_in=int, dtype_out=int, fisallowed=is_allowed_callable_class)
         def identity_kwarg_callable_class(self, arg):
             return arg
 
@@ -168,10 +197,12 @@ def test_command_isallowed(server_green_mode):
         def make_allowed(self, yesno):
             self._is_allowed = yesno
 
-        synchronous_code = textwrap.dedent("""\
+        synchronous_code = textwrap.dedent(
+            """\
             def is_identity_allowed(self):
                 return self._is_allowed
-            """)
+            """
+        )
 
         asynchronous_code = synchronous_code.replace("def ", "async def ")
 
@@ -181,7 +212,6 @@ def test_command_isallowed(server_green_mode):
             exec(asynchronous_code)
 
     with DeviceTestContext(TestDevice) as proxy:
-
         proxy.make_allowed(True)
         is_allowed_callable_class.make_allowed(True)
         is_allowed = True
@@ -217,7 +247,6 @@ def device_command_level(request):
 
 
 def test_dynamic_command(server_green_mode, device_command_level):
-
     is_allowed = None
 
     def sync_allowed():
@@ -227,7 +256,6 @@ def test_dynamic_command(server_green_mode, device_command_level):
         return is_allowed
 
     class IsAllowedCallable:
-
         def __init__(self):
             self._is_allowed = None
 
@@ -269,20 +297,38 @@ def test_dynamic_command(server_green_mode, device_command_level):
             cmd = command(f=self.identity, dtype_in=int, dtype_out=int)
             self.add_command(cmd, device_command_level)
 
-            cmd = command(f=self.identity_kwarg_string, dtype_in=int, dtype_out=int,
-                          fisallowed="is_identity_allowed")
+            cmd = command(
+                f=self.identity_kwarg_string,
+                dtype_in=int,
+                dtype_out=int,
+                fisallowed="is_identity_allowed",
+            )
             self.add_command(cmd, device_command_level)
 
-            cmd = command(f=self.identity_kwarg_callable, dtype_in=int, dtype_out=int,
-                          fisallowed=self.is_identity_allowed)
+            cmd = command(
+                f=self.identity_kwarg_callable,
+                dtype_in=int,
+                dtype_out=int,
+                fisallowed=self.is_identity_allowed,
+            )
             self.add_command(cmd, device_command_level)
 
-            cmd = command(f=self.identity_kwarg_callable_outside_class, dtype_in=int, dtype_out=int,
-                          fisallowed=sync_allowed if server_green_mode != GreenMode.Asyncio else async_allowed)
+            cmd = command(
+                f=self.identity_kwarg_callable_outside_class,
+                dtype_in=int,
+                dtype_out=int,
+                fisallowed=sync_allowed
+                if server_green_mode != GreenMode.Asyncio
+                else async_allowed,
+            )
             self.add_command(cmd, device_command_level)
 
-            cmd = command(f=self.identity_kwarg_callable_class, dtype_in=int, dtype_out=int,
-                          fisallowed=is_allowed_callable_class)
+            cmd = command(
+                f=self.identity_kwarg_callable_class,
+                dtype_in=int,
+                dtype_out=int,
+                fisallowed=is_allowed_callable_class,
+            )
             self.add_command(cmd, device_command_level)
 
             cmd = command(f=self.identity_always_allowed, dtype_in=int, dtype_out=int)
@@ -292,10 +338,12 @@ def test_dynamic_command(server_green_mode, device_command_level):
         def make_allowed(self, yesno):
             self._is_allowed = yesno
 
-        synchronous_code = textwrap.dedent("""\
+        synchronous_code = textwrap.dedent(
+            """\
                 def is_identity_allowed(self):
                     return self._is_allowed
-                """)
+                """
+        )
 
         asynchronous_code = synchronous_code.replace("def ", "async def ")
 
@@ -341,10 +389,7 @@ def test_dynamic_command(server_green_mode, device_command_level):
 
 
 def test_polled_command(server_green_mode):
-
-    dct = {'Polling1': 100,
-           'Polling2': 100000,
-           'Polling3': 500}
+    dct = {"Polling1": 100, "Polling2": 100000, "Polling3": 500}
 
     class TestDevice(Device):
         green_mode = server_green_mode
@@ -365,14 +410,13 @@ def test_polled_command(server_green_mode):
         ans = proxy.polling_status()
 
     for info in ans:
-        lines = info.split('\n')
-        comm = lines[0].split('= ')[1]
-        period = int(lines[1].split('= ')[1])
+        lines = info.split("\n")
+        comm = lines[0].split("= ")[1]
+        period = int(lines[1].split("= ")[1])
         assert dct[comm] == period
 
 
 def test_wrong_command_result(server_green_mode):
-
     class TestDevice(Device):
         green_mode = server_green_mode
 
@@ -386,7 +430,7 @@ def test_wrong_command_result(server_green_mode):
 
         @command(dtype_out=[str])
         def cmd_str_list_err(self):
-            return ['hello', 55]
+            return ["hello", 55]
 
     with DeviceTestContext(TestDevice) as proxy:
         with pytest.raises(DevFailed):
@@ -405,8 +449,9 @@ def test_read_write_attribute(attribute_typed_values, server_green_mode):
         green_mode = server_green_mode
         _is_allowed = None
 
-        @attribute(dtype=dtype, max_dim_x=10, max_dim_y=10,
-                   access=AttrWriteType.READ_WRITE)
+        @attribute(
+            dtype=dtype, max_dim_x=10, max_dim_y=10, access=AttrWriteType.READ_WRITE
+        )
         def attr(self):
             return self.attr_value
 
@@ -436,8 +481,7 @@ def test_read_write_attribute(attribute_typed_values, server_green_mode):
 
 
 def test_read_write_attribute_unbound_methods(server_green_mode):
-
-    class Value():
+    class Value:
         _value = None
 
         def set(self, val):
@@ -450,6 +494,7 @@ def test_read_write_attribute_unbound_methods(server_green_mode):
     is_allowed = None
 
     if server_green_mode == GreenMode.Asyncio:
+
         async def read_attr():
             return v.get()
 
@@ -459,7 +504,9 @@ def test_read_write_attribute_unbound_methods(server_green_mode):
         async def is_attr_allowed(req_type):
             assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
             return is_allowed
+
     else:
+
         def read_attr():
             return v.get()
 
@@ -473,11 +520,13 @@ def test_read_write_attribute_unbound_methods(server_green_mode):
     class TestDevice(Device):
         green_mode = server_green_mode
 
-        attr = attribute(fget=read_attr,
-                         fset=write_attr,
-                         fisallowed=is_attr_allowed,
-                         dtype=int,
-                         access=AttrWriteType.READ_WRITE)
+        attr = attribute(
+            fget=read_attr,
+            fset=write_attr,
+            fisallowed=is_attr_allowed,
+            dtype=int,
+            access=AttrWriteType.READ_WRITE,
+        )
 
     with DeviceTestContext(TestDevice) as proxy:
         is_allowed = True
@@ -500,14 +549,16 @@ def test_read_write_wvalue_attribute(attribute_typed_values, server_green_mode):
     class TestDevice(Device):
         green_mode = server_green_mode
 
-        @attribute(dtype=dtype, max_dim_x=10, max_dim_y=10, access=AttrWriteType.READ_WRITE)
+        @attribute(
+            dtype=dtype, max_dim_x=10, max_dim_y=10, access=AttrWriteType.READ_WRITE
+        )
         def attr(self):
             return self.value
 
         @attr.write
         def attr(self, value):
             self.value = value
-            w_attr = self.get_device_attr().get_w_attr_by_name('attr')
+            w_attr = self.get_device_attr().get_w_attr_by_name("attr")
             fmt = w_attr.get_data_format()
             if fmt == AttrDataFormat.SPECTRUM:
                 w_attr.set_write_value(value, len(value))
@@ -519,7 +570,7 @@ def test_read_write_wvalue_attribute(attribute_typed_values, server_green_mode):
     with DeviceTestContext(TestDevice) as proxy:
         for value in values:
             proxy.attr = value
-            assert_close(proxy.attr, expected(proxy.read_attribute('attr').w_value))
+            assert_close(proxy.attr, expected(proxy.read_attribute("attr").w_value))
 
 
 def test_write_read_empty_spectrum_attribute(extract_as, base_type):
@@ -528,11 +579,15 @@ def test_write_read_empty_spectrum_attribute(extract_as, base_type):
     if requested_type == ExtractAs.Numpy and base_type == str:
         expected_type = tuple
 
-    if requested_type in [ExtractAs.ByteArray, ExtractAs.Bytes, ExtractAs.String] and base_type == str:
-        pytest.xfail('Conversion from (str,) to ByteArray, Bytes and String not supported. May be fixed in future')
+    if (
+        requested_type in [ExtractAs.ByteArray, ExtractAs.Bytes, ExtractAs.String]
+        and base_type == str
+    ):
+        pytest.xfail(
+            "Conversion from (str,) to ByteArray, Bytes and String not supported. May be fixed in future"
+        )
 
     class TestDevice(Device):
-
         attr_value = []
 
         @attribute(dtype=(base_type,), max_dim_x=10, access=AttrWriteType.READ_WRITE)
@@ -554,41 +609,50 @@ def test_write_read_empty_spectrum_attribute(extract_as, base_type):
 
     with DeviceTestContext(TestDevice) as proxy:
         # first we read init value
-        attr_read = proxy.read_attribute('attr', extract_as=requested_type)
+        attr_read = proxy.read_attribute("attr", extract_as=requested_type)
         assert isinstance(attr_read.value, expected_type)
         assert len(attr_read.value) == 0
         # then we write empty list and check if it was really written
         proxy.attr = []
         proxy.is_attr_empty_list()
         # and finally, we read it again and check the value and wvalue
-        attr_read = proxy.read_attribute('attr', extract_as=requested_type)
+        attr_read = proxy.read_attribute("attr", extract_as=requested_type)
         assert isinstance(attr_read.value, expected_type)
         assert len(attr_read.value) == 0
         assert isinstance(attr_read.w_value, expected_type)
         assert len(attr_read.w_value) == 0
 
 
-@pytest.mark.parametrize("device_impl_class", [Device_4Impl, Device_5Impl, LatestDeviceImpl])
-def test_write_read_empty_spectrum_attribute_classic_api(device_impl_class, extract_as, base_type):
+@pytest.mark.parametrize(
+    "device_impl_class", [Device_4Impl, Device_5Impl, LatestDeviceImpl]
+)
+def test_write_read_empty_spectrum_attribute_classic_api(
+    device_impl_class, extract_as, base_type
+):
     requested_type, expected_type = extract_as
 
     if requested_type == ExtractAs.Numpy and base_type == str:
         expected_type = tuple
 
-    if requested_type in [ExtractAs.ByteArray, ExtractAs.Bytes, ExtractAs.String] and base_type == str:
-        pytest.xfail('Conversion from (str,) to ByteArray, Bytes and String not supported. May be fixed in future')
+    if (
+        requested_type in [ExtractAs.ByteArray, ExtractAs.Bytes, ExtractAs.String]
+        and base_type == str
+    ):
+        pytest.xfail(
+            "Conversion from (str,) to ByteArray, Bytes and String not supported. May be fixed in future"
+        )
 
     class ClassicAPIClass(DeviceClass):
-
         cmd_list = {"is_attr_empty_list": [[DevVoid, "none"], [DevBoolean, "none"]]}
-        attr_list = {"attr": [[TO_TANGO_TYPE[base_type], SPECTRUM, AttrWriteType.READ_WRITE, 10]]}
+        attr_list = {
+            "attr": [[TO_TANGO_TYPE[base_type], SPECTRUM, AttrWriteType.READ_WRITE, 10]]
+        }
 
         def __init__(self, name):
             super().__init__(name)
             self.set_type("TestDevice")
 
     class ClassicAPIDeviceImpl(device_impl_class):
-
         attr_value = []
 
         def read_attr(self, attr):
@@ -608,14 +672,14 @@ def test_write_read_empty_spectrum_attribute_classic_api(device_impl_class, extr
 
     with DeviceTestContext(ClassicAPIDeviceImpl, ClassicAPIClass) as proxy:
         # first we read init value
-        attr_read = proxy.read_attribute('attr', extract_as=requested_type)
+        attr_read = proxy.read_attribute("attr", extract_as=requested_type)
         assert isinstance(attr_read.value, expected_type)
         assert len(attr_read.value) == 0
         # then we write empty list and check if it was really written
         proxy.attr = []
         proxy.is_attr_empty_list()
         # and finally, we read it again and check the value and wvalue
-        attr_read = proxy.read_attribute('attr', extract_as=requested_type)
+        attr_read = proxy.read_attribute("attr", extract_as=requested_type)
         assert isinstance(attr_read.value, expected_type)
         assert len(attr_read.value) == 0
         assert isinstance(attr_read.w_value, expected_type)
@@ -624,7 +688,6 @@ def test_write_read_empty_spectrum_attribute_classic_api(device_impl_class, extr
 
 @pytest.mark.parametrize("dtype", ["state", DevState, CmdArgType.DevState])
 def test_ensure_devstate_is_pytango_enum(attr_data_format, dtype):
-
     if attr_data_format == AttrDataFormat.SCALAR:
         value = DevState.ON
     elif attr_data_format == AttrDataFormat.SPECTRUM:
@@ -662,13 +725,13 @@ def test_read_write_attribute_enum(server_green_mode, attr_data_format):
 
     if attr_data_format == AttrDataFormat.SCALAR:
         good_type = GoodEnum
-        good_type_str = 'DevEnum'
+        good_type_str = "DevEnum"
     elif attr_data_format == AttrDataFormat.SPECTRUM:
         good_type = (GoodEnum,)
-        good_type_str = ('DevEnum',)
+        good_type_str = ("DevEnum",)
     else:
         good_type = ((GoodEnum,),)
-        good_type_str = (('DevEnum',),)
+        good_type_str = (("DevEnum",),)
 
     class TestDevice(Device):
         green_mode = server_green_mode
@@ -685,7 +748,9 @@ def test_read_write_attribute_enum(server_green_mode, attr_data_format):
                 self.attr_from_enum_value = ((0,),)
                 self.attr_from_labels_value = ((0,),)
 
-        @attribute(dtype=good_type, max_dim_x=10, max_dim_y=10, access=AttrWriteType.READ_WRITE)
+        @attribute(
+            dtype=good_type, max_dim_x=10, max_dim_y=10, access=AttrWriteType.READ_WRITE
+        )
         def attr_from_enum(self):
             return self.attr_from_enum_value
 
@@ -693,8 +758,13 @@ def test_read_write_attribute_enum(server_green_mode, attr_data_format):
         def attr_from_enum(self, value):
             self.attr_from_enum_value = value
 
-        @attribute(dtype=good_type_str, max_dim_x=10, max_dim_y=10,
-                   enum_labels=enum_labels, access=AttrWriteType.READ_WRITE)
+        @attribute(
+            dtype=good_type_str,
+            max_dim_x=10,
+            max_dim_y=10,
+            enum_labels=enum_labels,
+            access=AttrWriteType.READ_WRITE,
+        )
         def attr_from_labels(self):
             return self.attr_from_labels_value
 
@@ -704,7 +774,7 @@ def test_read_write_attribute_enum(server_green_mode, attr_data_format):
 
     def make_nd_value(value):
         if attr_data_format == AttrDataFormat.SCALAR:
-           return value
+            return value
         elif attr_data_format == AttrDataFormat.SPECTRUM:
             return (value,)
         else:
@@ -766,6 +836,7 @@ def test_read_write_attribute_enum(server_green_mode, attr_data_format):
             check_read_attr(read_attr, value, label)
 
     with pytest.raises(TypeError) as context:
+
         class BadTestDevice(Device):
             green_mode = server_green_mode
 
@@ -779,12 +850,14 @@ def test_read_write_attribute_enum(server_green_mode, attr_data_format):
                     self.attr_value = ((0,),)
 
             # enum_labels may not be specified if dtype is an enum.Enum
-            @attribute(dtype=good_type, max_dim_x=10, max_dim_y=10, enum_labels=enum_labels)
+            @attribute(
+                dtype=good_type, max_dim_x=10, max_dim_y=10, enum_labels=enum_labels
+            )
             def bad_attr(self):
                 return self.attr_value
 
         BadTestDevice()  # dummy instance for Codacy
-    assert 'enum_labels' in str(context.value)
+    assert "enum_labels" in str(context.value)
 
 
 def test_read_attribute_with_invalid_quality_is_none(attribute_typed_values):
@@ -805,7 +878,6 @@ def test_read_attribute_with_invalid_quality_is_none(attribute_typed_values):
 
 
 def test_read_enum_attribute_with_invalid_quality_is_none():
-
     class TestDevice(Device):
         @attribute(dtype=GoodEnum)
         def attr(self):
@@ -821,7 +893,6 @@ def test_read_enum_attribute_with_invalid_quality_is_none():
 
 
 def test_wrong_attribute_read(server_green_mode):
-
     class TestDevice(Device):
         green_mode = server_green_mode
 
@@ -835,7 +906,7 @@ def test_wrong_attribute_read(server_green_mode):
 
         @attribute(dtype=[str])
         def attr_str_list_err(self):
-            return ['hello', 55]
+            return ["hello", 55]
 
     with DeviceTestContext(TestDevice) as proxy:
         with pytest.raises(DevFailed):
@@ -847,7 +918,6 @@ def test_wrong_attribute_read(server_green_mode):
 
 
 def test_attribute_access_with_default_method_names(server_green_mode):
-
     class TestDevice(Device):
         green_mode = server_green_mode
         _read_write_value = ""
@@ -859,7 +929,8 @@ def test_attribute_access_with_default_method_names(server_green_mode):
         # the following methods are written in plain text which looks
         # weird. This is done so that it is easy to change for async
         # tests without duplicating all the code.
-        synchronous_code = textwrap.dedent("""\
+        synchronous_code = textwrap.dedent(
+            """\
             def read_attr_r(self):
                 return "readable"
 
@@ -879,7 +950,8 @@ def test_attribute_access_with_default_method_names(server_green_mode):
                 assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
                 return self._is_allowed
     
-            """)
+            """
+        )
 
         @command(dtype_in=bool)
         def make_allowed(self, yesno):
@@ -909,42 +981,57 @@ def test_attribute_access_with_default_method_names(server_green_mode):
             _ = proxy.attr_rw
 
 
-@pytest.fixture(ids=["low_level_read",
-                     "high_level_read_with_attr",
-                     "high_level_read_no_attr"],
-                params=[textwrap.dedent("""\
+@pytest.fixture(
+    ids=["low_level_read", "high_level_read_with_attr", "high_level_read_no_attr"],
+    params=[
+        textwrap.dedent(
+            """\
                         def read_dyn_attr(self, attr):
                             attr.set_value(self.attr_value)
-                            """),
-                        textwrap.dedent("""\
+                            """
+        ),
+        textwrap.dedent(
+            """\
                         def read_dyn_attr(self, attr):
                             return self.attr_value
-                            """),
-                        textwrap.dedent("""\
+                            """
+        ),
+        textwrap.dedent(
+            """\
                         def read_dyn_attr(self):
                             return self.attr_value
-                            """),
-                        ])
+                            """
+        ),
+    ],
+)
 def dynamic_attribute_read_function(request):
     return request.param
 
 
-@pytest.fixture(ids=["low_level_write",
-                     "high_level_write"],
-                params=[textwrap.dedent("""\
+@pytest.fixture(
+    ids=["low_level_write", "high_level_write"],
+    params=[
+        textwrap.dedent(
+            """\
                         def write_dyn_attr(self, attr):
                             self.attr_value = attr.get_write_value()
-                            """),
-                        textwrap.dedent("""\
+                            """
+        ),
+        textwrap.dedent(
+            """\
                         def write_dyn_attr(self, attr, value):
                             self.attr_value = value
-                            """)
-                        ])
+                            """
+        ),
+    ],
+)
 def dynamic_attribute_write_function(request):
     return request.param
 
-def test_read_write_dynamic_attribute(dynamic_attribute_read_function, dynamic_attribute_write_function,
-                                      server_green_mode):
+
+def test_read_write_dynamic_attribute(
+    dynamic_attribute_read_function, dynamic_attribute_write_function, server_green_mode
+):
     class TestDevice(Device):
         green_mode = server_green_mode
 
@@ -959,7 +1046,8 @@ def test_read_write_dynamic_attribute(dynamic_attribute_read_function, dynamic_a
                 dtype=int,
                 access=AttrWriteType.READ_WRITE,
                 fget=self.read_dyn_attr,
-                fset=self.write_dyn_attr)
+                fset=self.write_dyn_attr,
+            )
             self.add_attribute(attr)
 
         @command
@@ -1010,13 +1098,16 @@ def test_read_write_dynamic_attribute_enum(server_green_mode, attr_data_format):
         @command
         def add_dyn_attr_old(self):
             attr = AttrData(
-                            "dyn_attr",
-                            None,
-                            attr_info=[attr_info, {"enum_labels": enum_labels},],
-                            )
-            self.add_attribute(attr,
-                               r_meth=self.read_dyn_attr,
-                               w_meth=self.write_dyn_attr)
+                "dyn_attr",
+                None,
+                attr_info=[
+                    attr_info,
+                    {"enum_labels": enum_labels},
+                ],
+            )
+            self.add_attribute(
+                attr, r_meth=self.read_dyn_attr, w_meth=self.write_dyn_attr
+            )
 
         @command
         def add_dyn_attr_new(self):
@@ -1027,20 +1118,23 @@ def test_read_write_dynamic_attribute_enum(server_green_mode, attr_data_format):
                 max_dim_y=10,
                 access=AttrWriteType.READ_WRITE,
                 fget=self.read_dyn_attr,
-                fset=self.write_dyn_attr)
+                fset=self.write_dyn_attr,
+            )
             self.add_attribute(attr)
 
         @command
         def delete_dyn_attr(self):
             self.remove_attribute("dyn_attr")
 
-        sync_code = textwrap.dedent("""\
+        sync_code = textwrap.dedent(
+            """\
             def read_dyn_attr(self):
                 return self.attr_value
 
             def write_dyn_attr(self, attr, value):
                 self.attr_value = value
-                """)
+                """
+        )
 
         if server_green_mode != GreenMode.Asyncio:
             exec(sync_code)
@@ -1096,7 +1190,6 @@ def test_read_write_dynamic_attribute_enum(server_green_mode, attr_data_format):
 
 
 def test_read_write_dynamic_attribute_is_allowed_with_async(server_green_mode):
-
     class TestDevice(Device):
         green_mode = server_green_mode
 
@@ -1181,33 +1274,47 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(server_green_mode):
         # the following methods are written in plain text which looks
         # weird. This is done so that it is easy to change for async
         # tests without duplicating all the code.
-        read_code = textwrap.dedent("""\
+        read_code = textwrap.dedent(
+            """\
             def read_dyn_attr(self):
                 return self.attr_value
-                """)
+                """
+        )
 
-        write_code = textwrap.dedent("""\
+        write_code = textwrap.dedent(
+            """\
             def write_dyn_attr(self, attr, value):
                 self.attr_value = value
-                """)
+                """
+        )
 
-        is_allowed_code = textwrap.dedent("""\
+        is_allowed_code = textwrap.dedent(
+            """\
             def is_attr_allowed(self, req_type):
                 assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
                 return self.attr_allowed
-            """)
+            """
+        )
 
         for attr_num in range(1, 7):
             read_method = read_code.replace("read_dyn_attr", f"read_dyn_attr{attr_num}")
             read_method = read_method.replace("attr_value", f"attr{attr_num}_value")
-            write_method = write_code.replace("write_dyn_attr", f"write_dyn_attr{attr_num}")
+            write_method = write_code.replace(
+                "write_dyn_attr", f"write_dyn_attr{attr_num}"
+            )
             write_method = write_method.replace("attr_value", f"attr{attr_num}_value")
             if attr_num < 6:
-                is_allowed_method = is_allowed_code.replace("is_attr_allowed", f"is_attr{attr_num}_allowed")
+                is_allowed_method = is_allowed_code.replace(
+                    "is_attr_allowed", f"is_attr{attr_num}_allowed"
+                )
             else:
                 # default name differs
-                is_allowed_method = is_allowed_code.replace("is_attr_allowed", f"is_dyn_attr{attr_num}_allowed")
-            is_allowed_method = is_allowed_method.replace("self.attr_allowed", f"self.attr{attr_num}_allowed")
+                is_allowed_method = is_allowed_code.replace(
+                    "is_attr_allowed", f"is_dyn_attr{attr_num}_allowed"
+                )
+            is_allowed_method = is_allowed_method.replace(
+                "self.attr_allowed", f"self.attr{attr_num}_allowed"
+            )
 
             if server_green_mode != GreenMode.Asyncio:
                 exec(read_method)
@@ -1265,13 +1372,13 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(server_green_mode):
             _ = proxy.dyn_attr6
 
 
-@pytest.mark.parametrize("device_impl_class", [Device_4Impl, Device_5Impl, LatestDeviceImpl])
+@pytest.mark.parametrize(
+    "device_impl_class", [Device_4Impl, Device_5Impl, LatestDeviceImpl]
+)
 def test_dynamic_attribute_using_classic_api_like_sardana(device_impl_class):
-
     class ClassicAPIClass(DeviceClass):
-
         cmd_list = {
-            'make_allowed': [[DevBoolean, "allow access"], [DevVoid, "none"]],
+            "make_allowed": [[DevBoolean, "allow access"], [DevVoid, "none"]],
         }
 
         def __init__(self, name):
@@ -1279,7 +1386,6 @@ def test_dynamic_attribute_using_classic_api_like_sardana(device_impl_class):
             self.set_type("TestDevice")
 
     class ClassicAPIDeviceImpl(device_impl_class):
-
         def __init__(self, cl, name):
             super().__init__(cl, name)
             ClassicAPIDeviceImpl.init_device(self)
@@ -1323,10 +1429,13 @@ def test_dynamic_attribute_using_classic_api_like_sardana(device_impl_class):
             proxy.attr1 = 12.0
 
 
-@pytest.mark.parametrize("read_function_signature", ['low_level', 'high_level_mixed', 'high_level'])
+@pytest.mark.parametrize(
+    "read_function_signature", ["low_level", "high_level_mixed", "high_level"]
+)
 @pytest.mark.parametrize("patched", [True, False])
-def test_dynamic_attribute_with_non_device_method(read_function_signature, patched, server_green_mode):
-
+def test_dynamic_attribute_with_non_device_method(
+    read_function_signature, patched, server_green_mode
+):
     class Value:
         _value = None
 
@@ -1340,6 +1449,7 @@ def test_dynamic_attribute_with_non_device_method(read_function_signature, patch
     is_allowed = None
 
     if server_green_mode == GreenMode.Asyncio:
+
         async def low_level_read_function(attr):
             attr.set_value(value.read())
 
@@ -1360,6 +1470,7 @@ def test_dynamic_attribute_with_non_device_method(read_function_signature, patch
             return is_allowed
 
     else:
+
         def low_level_read_function(attr):
             attr.set_value(value.read())
 
@@ -1395,25 +1506,31 @@ def test_dynamic_attribute_with_non_device_method(read_function_signature, patch
 
             # trick to run server with non device method: patch __dict__
             if patched:
-                self.__dict__['read_dyn_attr1'] = read_function
-                self.__dict__['write_dyn_attr1'] = write_function
-                self.__dict__['is_dyn_attr1_allowed'] = is_allowed_function
-                attr = attribute(name="dyn_attr1", dtype=int, access=AttrWriteType.READ_WRITE)
+                self.__dict__["read_dyn_attr1"] = read_function
+                self.__dict__["write_dyn_attr1"] = write_function
+                self.__dict__["is_dyn_attr1_allowed"] = is_allowed_function
+                attr = attribute(
+                    name="dyn_attr1", dtype=int, access=AttrWriteType.READ_WRITE
+                )
                 self.add_attribute(attr)
 
-                setattr(self, 'read_dyn_attr2', read_function)
-                setattr(self, 'write_dyn_attr2', write_function)
-                setattr(self, 'is_dyn_attr2_allowed', is_allowed_function)
-                attr = attribute(name="dyn_attr2", dtype=int, access=AttrWriteType.READ_WRITE)
+                setattr(self, "read_dyn_attr2", read_function)
+                setattr(self, "write_dyn_attr2", write_function)
+                setattr(self, "is_dyn_attr2_allowed", is_allowed_function)
+                attr = attribute(
+                    name="dyn_attr2", dtype=int, access=AttrWriteType.READ_WRITE
+                )
                 self.add_attribute(attr)
 
             else:
-                attr = attribute(name="dyn_attr",
-                                 fget=read_function,
-                                 fset=write_function,
-                                 fisallowed=is_allowed_function,
-                                 dtype=int,
-                                 access=AttrWriteType.READ_WRITE)
+                attr = attribute(
+                    name="dyn_attr",
+                    fget=read_function,
+                    fset=write_function,
+                    fisallowed=is_allowed_function,
+                    dtype=int,
+                    access=AttrWriteType.READ_WRITE,
+                )
                 self.add_attribute(attr)
 
     with DeviceTestContext(TestDevice) as proxy:
@@ -1450,7 +1567,6 @@ def test_dynamic_attribute_with_non_device_method(read_function_signature, patch
 
 
 def test_attribute_decorators(server_green_mode):
-
     class TestDevice(Device):
         green_mode = server_green_mode
         current_value = None
@@ -1460,7 +1576,8 @@ def test_attribute_decorators(server_green_mode):
         current = attribute(label="Current", unit="mA", dtype=float)
         voltage = attribute(label="Voltage", unit="V", dtype=float)
 
-        sync_code = textwrap.dedent("""
+        sync_code = textwrap.dedent(
+            """
         @current.getter
         def cur_read(self):
             return self.current_value
@@ -1484,7 +1601,8 @@ def test_attribute_decorators(server_green_mode):
         @voltage.is_allowed
         def vol_allo(self, req_type):
             return self.is_allowed
-        """)
+        """
+        )
 
         @command(dtype_in=bool)
         def make_allowed(self, yesno):
@@ -1497,24 +1615,25 @@ def test_attribute_decorators(server_green_mode):
 
     with DeviceTestContext(TestDevice) as proxy:
         proxy.make_allowed(True)
-        proxy.current = 2.
-        assert_close(proxy.current, 2.)
-        proxy.voltage = 3.
-        assert_close(proxy.voltage, 3.)
+        proxy.current = 2.0
+        assert_close(proxy.current, 2.0)
+        proxy.voltage = 3.0
+        assert_close(proxy.voltage, 3.0)
 
         proxy.make_allowed(False)
         with pytest.raises(DevFailed):
-            proxy.current = 4.
+            proxy.current = 4.0
         with pytest.raises(DevFailed):
             _ = proxy.current
         with pytest.raises(DevFailed):
-            proxy.voltage = 4.
+            proxy.voltage = 4.0
         with pytest.raises(DevFailed):
             _ = proxy.voltage
 
 
-def test_read_only_dynamic_attribute_with_dummy_write_method(dynamic_attribute_read_function, server_green_mode):
-
+def test_read_only_dynamic_attribute_with_dummy_write_method(
+    dynamic_attribute_read_function, server_green_mode
+):
     def dummy_write_method():
         return None
 
@@ -1527,15 +1646,17 @@ def test_read_only_dynamic_attribute_with_dummy_write_method(dynamic_attribute_r
 
         def initialize_dynamic_attributes(self):
             self.add_attribute(
-                Attr('dyn_attr', DevLong, AttrWriteType.READ),
+                Attr("dyn_attr", DevLong, AttrWriteType.READ),
                 r_meth=self.read_dyn_attr,
                 w_meth=dummy_write_method,
             )
 
-        sync_code = textwrap.dedent("""\
+        sync_code = textwrap.dedent(
+            """\
             def read_dyn_attr(self):
                 return self.attr_value
-                """)
+                """
+        )
 
         if server_green_mode != GreenMode.Asyncio:
             exec(sync_code)
@@ -1547,6 +1668,7 @@ def test_read_only_dynamic_attribute_with_dummy_write_method(dynamic_attribute_r
 
 
 # Test properties
+
 
 def test_device_property_no_default(command_typed_values, server_green_mode):
     dtype, values, expected = command_typed_values
@@ -1567,8 +1689,9 @@ def test_device_property_no_default(command_typed_values, server_green_mode):
         def get_prop_with_db_value(self):
             return self.prop_with_db_value
 
-    with DeviceTestContext(TestDevice,
-                           properties={'prop_with_db_value': value}) as proxy:
+    with DeviceTestContext(
+        TestDevice, properties={"prop_with_db_value": value}
+    ) as proxy:
         assert proxy.is_prop_without_db_value_set_to_none()
         assert_close(proxy.get_prop_with_db_value(), expected(value))
 
@@ -1583,12 +1706,8 @@ def test_device_property_with_default_value(command_typed_values, server_green_m
     class TestDevice(Device):
         green_mode = server_green_mode
 
-        prop_without_db_value = device_property(
-            dtype=dtype, default_value=default
-        )
-        prop_with_db_value = device_property(
-            dtype=dtype, default_value=default
-        )
+        prop_without_db_value = device_property(dtype=dtype, default_value=default)
+        prop_with_db_value = device_property(dtype=dtype, default_value=default)
 
         @command(dtype_out=patched_dtype)
         def get_prop_without_db_value(self):
@@ -1598,14 +1717,14 @@ def test_device_property_with_default_value(command_typed_values, server_green_m
         def get_prop_with_db_value(self):
             return self.prop_with_db_value
 
-    with DeviceTestContext(TestDevice,
-                           properties={'prop_with_db_value': value}) as proxy:
+    with DeviceTestContext(
+        TestDevice, properties={"prop_with_db_value": value}
+    ) as proxy:
         assert_close(proxy.get_prop_without_db_value(), expected(default))
         assert_close(proxy.get_prop_with_db_value(), expected(value))
 
 
 def test_device_get_device_properties_when_init_device(server_green_mode):
-
     class TestDevice(Device):
         green_mode = server_green_mode
         _got_properties = False
@@ -1623,7 +1742,6 @@ def test_device_get_device_properties_when_init_device(server_green_mode):
 
 
 def test_device_get_attr_config(server_green_mode):
-
     class TestDevice(Device):
         green_mode = server_green_mode
 
@@ -1642,8 +1760,8 @@ def test_device_get_attr_config(server_green_mode):
 
 # Test inheritance
 
-def test_inheritance(server_green_mode):
 
+def test_inheritance(server_green_mode):
     class A(Device):
         green_mode = server_green_mode
 
@@ -1670,7 +1788,6 @@ def test_inheritance(server_green_mode):
             return ")`'-.,_"
 
     class B(A):
-
         prop2 = device_property(dtype=str, default_value="goodbye2")
 
         @attribute
@@ -1678,14 +1795,16 @@ def test_inheritance(server_green_mode):
             return 3.14
 
         if server_green_mode == GreenMode.Asyncio:
+
             async def dev_status(self):
                 coro = super(type(self), self).dev_status()
                 result = await coro
-                return 3*result
+                return 3 * result
+
         else:
+
             def dev_status(self):
                 return 3 * A.dev_status(self)
-
 
     with DeviceTestContext(B) as proxy:
         assert proxy.get_prop1() == "hello1"
@@ -1697,10 +1816,7 @@ def test_inheritance(server_green_mode):
 
 
 def test_polled_attribute(server_green_mode):
-
-    dct = {'PolledAttribute1': 100,
-           'PolledAttribute2': 100000,
-           'PolledAttribute3': 500}
+    dct = {"PolledAttribute1": 100, "PolledAttribute2": 100000, "PolledAttribute3": 500}
 
     class TestDevice(Device):
         green_mode = server_green_mode
@@ -1720,13 +1836,15 @@ def test_polled_attribute(server_green_mode):
     with DeviceTestContext(TestDevice) as proxy:
         ans = proxy.polling_status()
         for x in ans:
-            lines = x.split('\n')
-            attr = lines[0].split('= ')[1]
-            poll_period = int(lines[1].split('= ')[1])
+            lines = x.split("\n")
+            attr = lines[0].split("= ")[1]
+            poll_period = int(lines[1].split("= ")[1])
             assert dct[attr] == poll_period
 
 
-def test_mandatory_device_property_with_db_value_succeeds(command_typed_values, server_green_mode):
+def test_mandatory_device_property_with_db_value_succeeds(
+    command_typed_values, server_green_mode
+):
     dtype, values, expected = command_typed_values
     patched_dtype = dtype if dtype != (bool,) else (int,)
     default, value = values[:2]
@@ -1740,12 +1858,13 @@ def test_mandatory_device_property_with_db_value_succeeds(command_typed_values, 
         def get_prop(self):
             return self.prop
 
-    with DeviceTestContext(TestDevice,
-                           properties={'prop': value}) as proxy:
+    with DeviceTestContext(TestDevice, properties={"prop": value}) as proxy:
         assert_close(proxy.get_prop(), expected(value))
 
 
-def test_mandatory_device_property_without_db_value_fails(command_typed_values, server_green_mode):
+def test_mandatory_device_property_without_db_value_fails(
+    command_typed_values, server_green_mode
+):
     dtype, _, _ = command_typed_values
 
     class TestDevice(Device):
@@ -1755,7 +1874,7 @@ def test_mandatory_device_property_without_db_value_fails(command_typed_values, 
     with pytest.raises(DevFailed) as context:
         with DeviceTestContext(TestDevice):
             pass
-    assert 'Device property prop is mandatory' in str(context.value)
+    assert "Device property prop is mandatory" in str(context.value)
 
 
 def test_logging(server_green_mode):
@@ -1765,7 +1884,7 @@ def test_logging(server_green_mode):
         green_mode = server_green_mode
         _last_log_time = 0.0
 
-        @command(dtype_in=('str',))
+        @command(dtype_in=("str",))
         def log_fatal_message(self, msg):
             self._last_log_time = time.time()
             if len(msg) > 1:
@@ -1773,7 +1892,7 @@ def test_logging(server_green_mode):
             else:
                 self.fatal_stream(msg[0])
 
-        @command(dtype_in=('str',))
+        @command(dtype_in=("str",))
         def log_error_message(self, msg):
             self._last_log_time = time.time()
             if len(msg) > 1:
@@ -1781,7 +1900,7 @@ def test_logging(server_green_mode):
             else:
                 self.error_stream(msg[0])
 
-        @command(dtype_in=('str',))
+        @command(dtype_in=("str",))
         def log_warn_message(self, msg):
             self._last_log_time = time.time()
             if len(msg) > 1:
@@ -1789,7 +1908,7 @@ def test_logging(server_green_mode):
             else:
                 self.warn_stream(msg[0])
 
-        @command(dtype_in=('str',))
+        @command(dtype_in=("str",))
         def log_info_message(self, msg):
             self._last_log_time = time.time()
             if len(msg) > 1:
@@ -1797,7 +1916,7 @@ def test_logging(server_green_mode):
             else:
                 self.info_stream(msg[0])
 
-        @command(dtype_in=('str',))
+        @command(dtype_in=("str",))
         def log_debug_message(self, msg):
             self._last_log_time = time.time()
             if len(msg) > 1:
@@ -1813,7 +1932,7 @@ def test_logging(server_green_mode):
         green_mode = server_green_mode
         _last_log_data = []
 
-        @command(dtype_in=('str',))
+        @command(dtype_in=("str",))
         def Log(self, argin):
             self._last_log_data = argin
             log_received.set()
@@ -1869,8 +1988,7 @@ def test_logging(server_green_mode):
 
     devices_info = (
         {"class": LogSourceDevice, "devices": [{"name": "test/log/source"}]},
-        {"class": LogConsumerDevice,
-         "devices": [{"name": "test/log/consumer"}]},
+        {"class": LogConsumerDevice, "devices": [{"name": "test/log/consumer"}]},
     )
 
     with MultiDeviceTestContext(devices_info) as context:
@@ -1879,62 +1997,60 @@ def test_logging(server_green_mode):
         consumer_access = context.get_device_access("test/log/consumer")
         proxy_source.add_logging_target(f"device::{consumer_access}")
 
-        for msg in ([""],
-                    [" with literal %s"],
-                    [" with string %s as arg", "foo"]):
-
+        for msg in ([""], [" with literal %s"], [" with string %s as arg", "foo"]):
             level = "fatal"
             log_msg = msg[:]
             log_msg[0] = "test " + level + msg[0]
             proxy_source.log_fatal_message(log_msg)
             if len(msg) > 1:
-                 check_log_msg = log_msg[0] % log_msg[1]
+                check_log_msg = log_msg[0] % log_msg[1]
             else:
                 check_log_msg = log_msg[0]
             assert_log_details_correct(level, check_log_msg)
 
-            level = 'error'
+            level = "error"
             log_msg = msg[:]
             log_msg[0] = "test " + level + msg[0]
             proxy_source.log_error_message(log_msg)
             if len(msg) > 1:
-                 check_log_msg = log_msg[0] % log_msg[1]
+                check_log_msg = log_msg[0] % log_msg[1]
             else:
                 check_log_msg = log_msg[0]
             assert_log_details_correct(level, check_log_msg)
 
-            level = 'warn'
+            level = "warn"
             log_msg = msg[:]
             log_msg[0] = "test " + level + msg[0]
             proxy_source.log_warn_message(log_msg)
             if len(msg) > 1:
-                 check_log_msg = log_msg[0] % log_msg[1]
+                check_log_msg = log_msg[0] % log_msg[1]
             else:
                 check_log_msg = log_msg[0]
             assert_log_details_correct(level, check_log_msg)
 
-            level = 'info'
+            level = "info"
             log_msg = msg[:]
             log_msg[0] = "test " + level + msg[0]
             proxy_source.log_info_message(log_msg)
             if len(msg) > 1:
-                 check_log_msg = log_msg[0] % log_msg[1]
+                check_log_msg = log_msg[0] % log_msg[1]
             else:
                 check_log_msg = log_msg[0]
             assert_log_details_correct(level, check_log_msg)
 
-            level = 'debug'
+            level = "debug"
             log_msg = msg[:]
             log_msg[0] = "test " + level + msg[0]
             proxy_source.log_debug_message(log_msg)
             if len(msg) > 1:
-                 check_log_msg = log_msg[0] % log_msg[1]
+                check_log_msg = log_msg[0] % log_msg[1]
             else:
                 check_log_msg = log_msg[0]
             assert_log_details_correct(level, check_log_msg)
 
 
 # fixtures
+
 
 @pytest.fixture(params=[GoodEnum])
 def good_enum(request):
@@ -1948,8 +2064,9 @@ def bad_enum(request):
 
 # test utilities for servers
 
+
 def test_get_enum_labels_success(good_enum):
-    expected_labels = ['START', 'MIDDLE', 'END']
+    expected_labels = ["START", "MIDDLE", "END"]
     assert get_enum_labels(good_enum) == expected_labels
 
 
@@ -1960,14 +2077,13 @@ def test_get_enum_labels_fail(bad_enum):
 
 # DevEncoded
 
-def test_read_write_dev_encoded(server_green_mode):
 
+def test_read_write_dev_encoded(server_green_mode):
     class TestDevice(Device):
         green_mode = server_green_mode
         attr_value = ("uint8", b"\xd2\xd3")
 
-        @attribute(dtype=DevEncoded,
-                   access=AttrWriteType.READ_WRITE)
+        @attribute(dtype=DevEncoded, access=AttrWriteType.READ_WRITE)
         def attr(self):
             return self.attr_value
 
@@ -1997,14 +2113,14 @@ def test_read_write_dev_encoded(server_green_mode):
         proxy.cmd_in(("uint8", b"\xd4\xd5"))
         assert proxy.cmd_out() == ("uint8", b"\xd4\xd5")
 
-        proxy.cmd_in_out(('uint8', b"\xd6\xd7"))
+        proxy.cmd_in_out(("uint8", b"\xd6\xd7"))
         assert proxy.attr == ("uint8", b"\xd6\xd7")
 
 
 # Test Exception propagation
 
-def test_exception_propagation(server_green_mode):
 
+def test_exception_propagation(server_green_mode):
     class TestDevice(Device):
         green_mode = server_green_mode
 
@@ -2037,7 +2153,7 @@ def _avoid_double_colon_node_ids(val):
         return str(val).replace("::", ":_:")
 
 
-@pytest.fixture(params=['linux', 'win'])
+@pytest.fixture(params=["linux", "win"])
 def os_system(request):
     original_platform = sys.platform
     sys.platform = request.param
@@ -2048,7 +2164,7 @@ def os_system(request):
 @pytest.mark.parametrize(
     "applicable_os, test_input, expected_output",
     DEVICE_SERVER_ARGUMENTS,
-    ids=_avoid_double_colon_node_ids
+    ids=_avoid_double_colon_node_ids,
 )
 def test_arguments(applicable_os, test_input, expected_output, os_system):
     try:

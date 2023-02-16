@@ -13,12 +13,12 @@ def alias_package(package, alias, extra_modules={}):
     to import and alias all the submodules recursively.
     """
     path = package.__path__
-    alias_prefix = alias + '.'
-    prefix = package.__name__ + '.'
+    alias_prefix = alias + "."
+    prefix = package.__name__ + "."
     # Alias all importable modules recursively
     for _, name, _ in pkgutil.walk_packages(path, prefix):
         # Skip databaseds backends
-        if name.startswith('tango.databaseds.db_access.'):
+        if name.startswith("tango.databaseds.db_access."):
             continue
         try:
             if name not in sys.modules:
@@ -46,7 +46,5 @@ def alias_package(package, alias, extra_modules={}):
 alias_package(
     package=tango,
     alias=__name__,
-    extra_modules={
-        '_PyTango': '_tango',
-        'constants': 'constants'},
+    extra_modules={"_PyTango": "_tango", "constants": "constants"},
 )

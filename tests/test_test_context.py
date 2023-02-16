@@ -16,7 +16,7 @@ from tango.test_utils import (
     MultiDeviceTestContext,
     SimpleDevice,
     ClassicAPISimpleDeviceImpl,
-    ClassicAPISimpleDeviceClass
+    ClassicAPISimpleDeviceClass,
 )
 
 
@@ -24,7 +24,6 @@ WINDOWS = "nt" in os.name
 
 
 class Device1(Device):
-
     def init_device(self):
         super(Device, self).init_device()
         self.set_state(tango.DevState.ON)
@@ -36,7 +35,6 @@ class Device1(Device):
 
 
 class Device2(Device):
-
     def init_device(self):
         super(Device, self).init_device()
         self.set_state(tango.DevState.ON)
@@ -101,7 +99,9 @@ def test_single_async_init_device():
 
 
 def test_single_device_old_api():
-    with DeviceTestContext(ClassicAPISimpleDeviceImpl, ClassicAPISimpleDeviceClass) as proxy:
+    with DeviceTestContext(
+        ClassicAPISimpleDeviceImpl, ClassicAPISimpleDeviceClass
+    ) as proxy:
         assert proxy.attr1 == 100
 
 
@@ -111,22 +111,31 @@ def test_single_device_old_api():
         (SimpleDevice, SimpleDevice),
         ("tango.test_utils.SimpleDevice", SimpleDevice),
         (
-            ("tango.test_utils.ClassicAPISimpleDeviceClass", "tango.test_utils.ClassicAPISimpleDeviceImpl"),
-            ClassicAPISimpleDeviceImpl
+            (
+                "tango.test_utils.ClassicAPISimpleDeviceClass",
+                "tango.test_utils.ClassicAPISimpleDeviceImpl",
+            ),
+            ClassicAPISimpleDeviceImpl,
         ),
         (
-            ("tango.test_utils.ClassicAPISimpleDeviceClass", ClassicAPISimpleDeviceImpl),
-            ClassicAPISimpleDeviceImpl
+            (
+                "tango.test_utils.ClassicAPISimpleDeviceClass",
+                ClassicAPISimpleDeviceImpl,
+            ),
+            ClassicAPISimpleDeviceImpl,
         ),
         (
-            (ClassicAPISimpleDeviceClass, "tango.test_utils.ClassicAPISimpleDeviceImpl"),
-            ClassicAPISimpleDeviceImpl
+            (
+                ClassicAPISimpleDeviceClass,
+                "tango.test_utils.ClassicAPISimpleDeviceImpl",
+            ),
+            ClassicAPISimpleDeviceImpl,
         ),
         (
             (ClassicAPISimpleDeviceClass, ClassicAPISimpleDeviceImpl),
-            ClassicAPISimpleDeviceImpl
+            ClassicAPISimpleDeviceImpl,
         ),
-    ]
+    ],
 )
 def test_multi_devices_info(class_field, device):
     devices_info = ({"class": class_field, "devices": [{"name": "test/device1/1"}]},)
@@ -202,10 +211,9 @@ def test_multi_with_two_devices(server_green_mode):
         (Device1Gevent, Device2Synchronous, ValueError),
         (Device1Gevent, Device2Gevent, None),
         (Device1Gevent, Device2Asyncio, ValueError),
-    ]
+    ],
 )
 def test_multi_with_mixed_device_green_modes(first_type, second_type, exception_type):
-
     devices_info = (
         {"class": first_type, "devices": [{"name": "test/device1/1"}]},
         {"class": second_type, "devices": [{"name": "test/device2/1"}]},
@@ -225,33 +233,108 @@ def test_multi_with_mixed_device_green_modes(first_type, second_type, exception_
     [
         # If a device specifies its green mode explicitly, then both
         # green_mode kwarg and global green mode are ignored. The device must use its specified mode.
-        (Device1Synchronous, GreenMode.Asyncio, GreenMode.Asyncio, None, SynchronousExecutor),
-        (Device1Synchronous, GreenMode.Gevent, GreenMode.Gevent, None, SynchronousExecutor),
-        (Device1Asyncio, GreenMode.Synchronous, GreenMode.Synchronous, None, AsyncioExecutor),
+        (
+            Device1Synchronous,
+            GreenMode.Asyncio,
+            GreenMode.Asyncio,
+            None,
+            SynchronousExecutor,
+        ),
+        (
+            Device1Synchronous,
+            GreenMode.Gevent,
+            GreenMode.Gevent,
+            None,
+            SynchronousExecutor,
+        ),
+        (
+            Device1Asyncio,
+            GreenMode.Synchronous,
+            GreenMode.Synchronous,
+            None,
+            AsyncioExecutor,
+        ),
         (Device1Asyncio, GreenMode.Gevent, GreenMode.Gevent, None, AsyncioExecutor),
-        (Device1Gevent, GreenMode.Synchronous, GreenMode.Synchronous, None, GeventExecutor),
+        (
+            Device1Gevent,
+            GreenMode.Synchronous,
+            GreenMode.Synchronous,
+            None,
+            GeventExecutor,
+        ),
         (Device1Gevent, GreenMode.Asyncio, GreenMode.Asyncio, None, GeventExecutor),
-
         # If device doesn't specify its green mode, but green_mode kwarg is provided,
         # then we use green_mode kwarg
-        (Device1GreenModeUnspecified, GreenMode.Synchronous, GreenMode.Asyncio, None, SynchronousExecutor),
-        (Device1GreenModeUnspecified, GreenMode.Synchronous, GreenMode.Gevent, None, SynchronousExecutor),
-        (Device1GreenModeUnspecified, GreenMode.Asyncio, GreenMode.Synchronous, None, AsyncioExecutor),
-        (Device1GreenModeUnspecified, GreenMode.Asyncio, GreenMode.Gevent, None, AsyncioExecutor),
-        (Device1GreenModeUnspecified, GreenMode.Gevent, GreenMode.Synchronous, None, GeventExecutor),
-        (Device1GreenModeUnspecified, GreenMode.Gevent, GreenMode.Asyncio, None, GeventExecutor),
-
+        (
+            Device1GreenModeUnspecified,
+            GreenMode.Synchronous,
+            GreenMode.Asyncio,
+            None,
+            SynchronousExecutor,
+        ),
+        (
+            Device1GreenModeUnspecified,
+            GreenMode.Synchronous,
+            GreenMode.Gevent,
+            None,
+            SynchronousExecutor,
+        ),
+        (
+            Device1GreenModeUnspecified,
+            GreenMode.Asyncio,
+            GreenMode.Synchronous,
+            None,
+            AsyncioExecutor,
+        ),
+        (
+            Device1GreenModeUnspecified,
+            GreenMode.Asyncio,
+            GreenMode.Gevent,
+            None,
+            AsyncioExecutor,
+        ),
+        (
+            Device1GreenModeUnspecified,
+            GreenMode.Gevent,
+            GreenMode.Synchronous,
+            None,
+            GeventExecutor,
+        ),
+        (
+            Device1GreenModeUnspecified,
+            GreenMode.Gevent,
+            GreenMode.Asyncio,
+            None,
+            GeventExecutor,
+        ),
         # Finally, if neither device green mode nor green_mode kwarg are specified, then use global mode instead.
         # (currently only works for synchronous mode - see unsupported modes below)
-        (Device1GreenModeUnspecified, None, GreenMode.Synchronous, None, SynchronousExecutor),
-
+        (
+            Device1GreenModeUnspecified,
+            None,
+            GreenMode.Synchronous,
+            None,
+            SynchronousExecutor,
+        ),
         # Unsupported modes - device servers with the following combinations
         # fail to start up. The cause is unknown. This could be fixed in the future.
-        (Device1GreenModeUnspecified, None, GreenMode.Asyncio, RuntimeError, AsyncioExecutor),
-        (Device1GreenModeUnspecified, None, GreenMode.Gevent, RuntimeError, GeventExecutor),
-        (Device1Asyncio, None,  GreenMode.Asyncio, RuntimeError, AsyncioExecutor),
+        (
+            Device1GreenModeUnspecified,
+            None,
+            GreenMode.Asyncio,
+            RuntimeError,
+            AsyncioExecutor,
+        ),
+        (
+            Device1GreenModeUnspecified,
+            None,
+            GreenMode.Gevent,
+            RuntimeError,
+            GeventExecutor,
+        ),
+        (Device1Asyncio, None, GreenMode.Asyncio, RuntimeError, AsyncioExecutor),
         (Device1Gevent, None, GreenMode.Gevent, RuntimeError, GeventExecutor),
-    ]
+    ],
 )
 def test_green_modes_in_device_kwarg_and_global(
     device_type, green_mode, global_mode, exception_type, executor_type
@@ -278,7 +361,6 @@ def test_green_modes_in_device_kwarg_and_global(
 
 
 def test_multi_with_async_devices_initialised():
-
     class TestDevice2Async(Device2):
         green_mode = GreenMode.Asyncio
 
@@ -419,6 +501,7 @@ def memorized_attribute_test_device_factory():
     attribute that is memorized or not, according to its boolean
     argument
     """
+
     def _factory(is_attribute_memorized):
         class _Device(Device):
             def init_device(self):
@@ -427,7 +510,7 @@ def memorized_attribute_test_device_factory():
             attr = attribute(
                 access=AttrWriteType.READ_WRITE,
                 memorized=is_attribute_memorized,
-                hw_memorized=is_attribute_memorized
+                hw_memorized=is_attribute_memorized,
             )
 
             def read_attr(self):
@@ -437,6 +520,7 @@ def memorized_attribute_test_device_factory():
                 self._attr_value = value
 
         return _Device
+
     return _factory
 
 
@@ -447,13 +531,13 @@ def memorized_attribute_test_device_factory():
         (False, "1", 0),
         (True, None, 0),
         (True, "1", 1),
-    ]
+    ],
 )
 def test_multi_with_memorized_attribute_values(
     memorized_attribute_test_device_factory,
     is_attribute_memorized,
     memorized_value,
-    expected_value
+    expected_value,
 ):
     TestDevice = memorized_attribute_test_device_factory(is_attribute_memorized)
 
@@ -461,12 +545,7 @@ def test_multi_with_memorized_attribute_values(
     if memorized_value is not None:
         device_info["memorized"] = {"attr": memorized_value}
 
-    devices_info = (
-        {
-            "class": TestDevice,
-            "devices": [device_info]
-        },
-    )
+    devices_info = ({"class": TestDevice, "devices": [device_info]},)
 
     with MultiDeviceTestContext(devices_info) as context:
         proxy = context.get_device("test/device1/1")
@@ -480,19 +559,19 @@ def test_multi_with_memorized_attribute_values(
         (False, 1, 0),
         (True, None, 0),
         (True, 1, 1),
-    ]
+    ],
 )
 def test_single_with_memorized_attribute_values(
     memorized_attribute_test_device_factory,
     is_attribute_memorized,
     memorized_value,
-    expected_value
+    expected_value,
 ):
     TestDevice = memorized_attribute_test_device_factory(is_attribute_memorized)
 
-    kwargs = {
-        "memorized": {"attr": memorized_value}
-    } if memorized_value is not None else {}
+    kwargs = (
+        {"memorized": {"attr": memorized_value}} if memorized_value is not None else {}
+    )
 
     with DeviceTestContext(TestDevice, **kwargs) as proxy:
         assert proxy.attr == expected_value

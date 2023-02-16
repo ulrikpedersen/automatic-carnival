@@ -8,7 +8,6 @@ from socket import create_connection
 
 
 class PowerSupplyClient:
-
     def __init__(self, host, port):
         self.host = host
         self.port = port
@@ -41,7 +40,7 @@ class PowerSupplyClient:
         self.wait_for_calibration()
 
     def start_calibration(self):
-        self.write_readline(b'CALIB 1\n')
+        self.write_readline(b"CALIB 1\n")
 
     def wait_for_calibration(self):
         while self.is_calibration_busy():

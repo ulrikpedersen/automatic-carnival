@@ -29,7 +29,6 @@ class Motor(tango.Device_5Impl):
 
 
 class MotorClass(tango.DeviceClass):
-
     class_property_list = {}
     device_property_list = {}
     cmd_list = {}

@@ -20,8 +20,14 @@ __docformat__ = "restructuredtext"
 
 import collections.abc
 
-from ._tango import Except, DevFailed, DeviceClass, CmdArgType, \
-    DispLevel, UserDefaultAttrProp
+from ._tango import (
+    Except,
+    DevFailed,
+    DeviceClass,
+    CmdArgType,
+    DispLevel,
+    UserDefaultAttrProp,
+)
 from .pyutil import Util
 
 from .utils import is_pure_str, is_non_str_seq, seqStr_2_obj, obj_2_str, is_array
@@ -35,20 +41,38 @@ from .pipe_data import PipeData
 class PropUtil:
     """An internal Property util class"""
 
-    scalar_int_types = (CmdArgType.DevShort, CmdArgType.DevUShort,
-                        CmdArgType.DevInt, CmdArgType.DevLong, CmdArgType.DevULong,)
+    scalar_int_types = (
+        CmdArgType.DevShort,
+        CmdArgType.DevUShort,
+        CmdArgType.DevInt,
+        CmdArgType.DevLong,
+        CmdArgType.DevULong,
+    )
 
     scalar_long_types = (CmdArgType.DevLong64, CmdArgType.DevULong64)
 
-    scalar_float_types = (CmdArgType.DevFloat, CmdArgType.DevDouble,)
+    scalar_float_types = (
+        CmdArgType.DevFloat,
+        CmdArgType.DevDouble,
+    )
 
     scalar_numerical_types = scalar_int_types + scalar_long_types + scalar_float_types
 
-    scalar_str_types = (CmdArgType.DevString, CmdArgType.ConstDevString,)
+    scalar_str_types = (
+        CmdArgType.DevString,
+        CmdArgType.ConstDevString,
+    )
 
-    scalar_types = scalar_numerical_types + scalar_str_types + \
-        (CmdArgType.DevBoolean, CmdArgType.DevEncoded,
-         CmdArgType.DevUChar, CmdArgType.DevVoid)
+    scalar_types = (
+        scalar_numerical_types
+        + scalar_str_types
+        + (
+            CmdArgType.DevBoolean,
+            CmdArgType.DevEncoded,
+            CmdArgType.DevUChar,
+            CmdArgType.DevVoid,
+        )
+    )
 
     def __init__(self):
         self.db = None
@@ -57,16 +81,16 @@ class PropUtil:
 
     def set_default_property_values(self, dev_class, class_prop, dev_prop):
         """
-            set_default_property_values(self, dev_class, class_prop, dev_prop) -> None
+        set_default_property_values(self, dev_class, class_prop, dev_prop) -> None
 
-                Sets the default property values
+            Sets the default property values
 
-            Parameters :
-                - dev_class : (DeviceClass) device class object
-                - class_prop : (dict<str,>) class properties
-                - dev_prop : (dict<str,>) device properties
+        Parameters :
+            - dev_class : (DeviceClass) device class object
+            - class_prop : (dict<str,>) class properties
+            - dev_prop : (dict<str,>) device properties
 
-            Return     : None
+        Return     : None
         """
         for name in class_prop:
             type = self.get_property_type(name, class_prop)
@@ -84,22 +108,24 @@ class PropUtil:
 
     def get_class_properties(self, dev_class, class_prop):
         """
-            get_class_properties(self, dev_class, class_prop) -> None
+        get_class_properties(self, dev_class, class_prop) -> None
 
-                    Returns the class properties
+                Returns the class properties
 
-                Parameters :
-                    - dev_class : (DeviceClass) the DeviceClass object
-                    - class_prop : [in, out] (dict<str, None>) the property names. Will be filled
-                                   with property values
+            Parameters :
+                - dev_class : (DeviceClass) the DeviceClass object
+                - class_prop : [in, out] (dict<str, None>) the property names. Will be filled
+                               with property values
 
-                Return     : None"""
+            Return     : None"""
         # initialize default values
         if class_prop == {} or not Util._UseDb:
             return
 
         # call database to get properties
-        props = self.db.get_class_property(dev_class.get_name(), list(class_prop.keys()))
+        props = self.db.get_class_property(
+            dev_class.get_name(), list(class_prop.keys())
+        )
 
         # if value defined in database, store it
         for name in class_prop:
@@ -112,16 +138,16 @@ class PropUtil:
 
     def get_device_properties(self, dev, class_prop, dev_prop):
         """
-            get_device_properties(self, dev, class_prop, dev_prop) -> None
+        get_device_properties(self, dev, class_prop, dev_prop) -> None
 
-                    Returns the device properties
+                Returns the device properties
 
-                Parameters :
-                    - dev : (DeviceImpl) the device object
-                    - class_prop : (dict<str, obj>) the class properties
-                    - dev_prop : [in,out] (dict<str, None>) the device property names
+            Parameters :
+                - dev : (DeviceImpl) the device object
+                - class_prop : (dict<str, obj>) the class properties
+                - dev_prop : [in,out] (dict<str, None>) the device property names
 
-                Return     : None"""
+            Return     : None"""
         #    initialize default properties
         if dev_prop == {} or not Util._UseDb:
             return
@@ -159,40 +185,41 @@ class PropUtil:
 
     def is_seq(self, v):
         """
-            is_seq(self, v) -> bool
+        is_seq(self, v) -> bool
 
-                    Helper method. Determines if the object is a sequence
+                Helper method. Determines if the object is a sequence
 
-                Parameters :
-                    - v : (object) the object to be analysed
+            Parameters :
+                - v : (object) the object to be analysed
 
-                Return     : (bool) True if the object is a sequence or False otherwise"""
+            Return     : (bool) True if the object is a sequence or False otherwise"""
         return isinstance(v, collections.abc.Sequence)
 
     def is_empty_seq(self, v):
         """
-            is_empty_seq(self, v) -> bool
+        is_empty_seq(self, v) -> bool
 
-                    Helper method. Determines if the object is an empty sequence
+                Helper method. Determines if the object is an empty sequence
 
-                Parameters :
-                    - v : (object) the object to be analysed
+            Parameters :
+                - v : (object) the object to be analysed
 
-                Return     : (bool) True if the object is a sequence which is empty or False otherwise"""
+            Return     : (bool) True if the object is a sequence which is empty or False otherwise
+        """
         return self.is_seq(v) and not len(v)
 
     def get_property_type(self, prop_name, properties):
         """
-            get_property_type(self, prop_name, properties) -> CmdArgType
+        get_property_type(self, prop_name, properties) -> CmdArgType
 
-                    Gets the property type for the given property name using the
-                    information given in properties
+                Gets the property type for the given property name using the
+                information given in properties
 
-                Parameters :
-                    - prop_name : (str) property name
-                    - properties : (dict<str,data>) property data
+            Parameters :
+                - prop_name : (str) property name
+                - properties : (dict<str,data>) property data
 
-                Return     : (CmdArgType) the tango type for the given property"""
+            Return     : (CmdArgType) the tango type for the given property"""
         try:
             tg_type = properties[prop_name][0]
         except Exception:
@@ -201,36 +228,38 @@ class PropUtil:
 
     def set_property_values(self, prop_name, properties, values):
         """
-            set_property_values(self, prop_name, properties, values) -> None
+        set_property_values(self, prop_name, properties, values) -> None
 
-                    Sets the property value in the properties
+                Sets the property value in the properties
 
-                Parameters :
-                    - prop_name : (str) property name
-                    - properties : (dict<str,obj>) [in,out] dict which will contain the value
-                    - values : (seq) the new property value
+            Parameters :
+                - prop_name : (str) property name
+                - properties : (dict<str,obj>) [in,out] dict which will contain the value
+                - values : (seq) the new property value
 
-                Return     : None"""
+            Return     : None"""
 
         properties[prop_name][2] = values
 
     def get_property_values(self, prop_name, properties):
         """
-            get_property_values(self, prop_name, properties) -> obj
+        get_property_values(self, prop_name, properties) -> obj
 
-                    Gets the property value
+                Gets the property value
 
-                Parameters :
-                    - prop_name : (str) property name
-                    - properties : (dict<str,obj>) properties
-                Return     : (obj) the value for the given property name"""
+            Parameters :
+                - prop_name : (str) property name
+                - properties : (dict<str,obj>) properties
+            Return     : (obj) the value for the given property name"""
         try:
             tg_type = self.get_property_type(prop_name, properties)
             val = properties[prop_name][2]
         except Exception:
             val = []
 
-        if is_array(tg_type) or (isinstance(val, collections.abc.Sequence) and not len(val)):
+        if is_array(tg_type) or (
+            isinstance(val, collections.abc.Sequence) and not len(val)
+        ):
             return val
         else:
             if is_non_str_seq(val):
@@ -240,14 +269,14 @@ class PropUtil:
 
     def get_property_description(self, prop_name, properties):
         """
-            get_property_description(self, prop_name, properties) -> obj
+        get_property_description(self, prop_name, properties) -> obj
 
-                    Gets the property description
+                Gets the property description
 
-                Parameters :
-                    - prop_name : (str) property name
-                    - properties : (dict<str,obj>) properties
-                Return     : (str) the description for the given property name"""
+            Parameters :
+                - prop_name : (str) property name
+                - properties : (dict<str,obj>) properties
+            Return     : (str) the description for the given property name"""
         return properties[prop_name][1]
 
     def stringArray2values(self, argin, argout_type):
@@ -264,13 +293,17 @@ def __DeviceClass__init__(self, name):
     try:
         pu = self.prop_util = PropUtil()
         self.py_dev_list = []
-        pu.set_default_property_values(self, self.class_property_list,
-                                       self.device_property_list)
+        pu.set_default_property_values(
+            self, self.class_property_list, self.device_property_list
+        )
         pu.get_class_properties(self, self.class_property_list)
         for prop_name in self.class_property_list:
             if not hasattr(self, prop_name):
-                setattr(self, prop_name, pu.get_property_values(prop_name,
-                                                                self.class_property_list))
+                setattr(
+                    self,
+                    prop_name,
+                    pu.get_property_values(prop_name, self.class_property_list),
+                )
     except DevFailed as df:
         print(f"PyDS: {name}: A Tango error occured in the constructor:")
         Except.print_exception(df)
@@ -280,11 +313,11 @@ def __DeviceClass__init__(self, name):
 
 
 def __DeviceClass__str__(self):
-    return f'{self.__class__.__name__}({self.get_name()})'
+    return f"{self.__class__.__name__}({self.get_name()})"
 
 
 def __DeviceClass__repr__(self):
-    return f'{self.__class__.__name__}({self.get_name()})'
+    return f"{self.__class__.__name__}({self.get_name()})"
 
 
 def __throw_create_attribute_exception(msg):
@@ -292,8 +325,7 @@ def __throw_create_attribute_exception(msg):
     Helper method to throw DevFailed exception when inside
     create_attribute
     """
-    Except.throw_exception("PyDs_WrongAttributeDefinition", msg,
-                           "create_attribute()")
+    Except.throw_exception("PyDs_WrongAttributeDefinition", msg, "create_attribute()")
 
 
 def __throw_create_command_exception(msg):
@@ -301,8 +333,7 @@ def __throw_create_command_exception(msg):
     Helper method to throw DevFailed exception when inside
     create_command
     """
-    Except.throw_exception("PyDs_WrongCommandDefinition", msg,
-                           "create_command()")
+    Except.throw_exception("PyDs_WrongCommandDefinition", msg, "create_command()")
 
 
 def __DeviceClass__create_user_default_attr_prop(self, attr_name, extra_info):
@@ -314,13 +345,15 @@ def __DeviceClass__create_user_default_attr_prop(self, attr_name, extra_info):
         if hasattr(p, method_name):
             method = getattr(p, method_name)
             method(str(v))
-        elif k == 'delta_time':
+        elif k == "delta_time":
             p.set_delta_t(str(v))
-        elif k_lower not in ('display level', 'polling period', 'memorized'):
+        elif k_lower not in ("display level", "polling period", "memorized"):
             name = self.get_name()
-            msg = f"Wrong definition of attribute {attr_name} in " \
-                  f"class {name}\nThe object extra information '{k}' " \
-                  f"is not recognized!"
+            msg = (
+                f"Wrong definition of attribute {attr_name} in "
+                f"class {name}\nThe object extra information '{k}' "
+                f"is not recognized!"
+            )
             self.__throw_create_attribute_exception(msg)
     return p
 
@@ -335,19 +368,23 @@ def __DeviceClass__attribute_factory(self, attr_list):
         if attr_data.forward:
             self._create_fwd_attribute(attr_list, attr_data.name, attr_data.att_prop)
         else:
-            self._create_attribute(attr_list, attr_data.attr_name,
-                                   attr_data.attr_type,
-                                   attr_data.attr_format,
-                                   attr_data.attr_write,
-                                   attr_data.dim_x, attr_data.dim_y,
-                                   attr_data.display_level,
-                                   attr_data.polling_period,
-                                   attr_data.memorized,
-                                   attr_data.hw_memorized,
-                                   attr_data.read_method_name,
-                                   attr_data.write_method_name,
-                                   attr_data.is_allowed_name,
-                                   attr_data.att_prop)
+            self._create_attribute(
+                attr_list,
+                attr_data.attr_name,
+                attr_data.attr_type,
+                attr_data.attr_format,
+                attr_data.attr_write,
+                attr_data.dim_x,
+                attr_data.dim_y,
+                attr_data.display_level,
+                attr_data.polling_period,
+                attr_data.memorized,
+                attr_data.hw_memorized,
+                attr_data.read_method_name,
+                attr_data.write_method_name,
+                attr_data.is_allowed_name,
+                attr_data.att_prop,
+            )
 
 
 def __DeviceClass__pipe_factory(self, pipe_list):
@@ -357,13 +394,16 @@ def __DeviceClass__pipe_factory(self, pipe_list):
             pipe_data = pipe_info
         else:
             pipe_data = PipeData(pipe_name, self.get_name(), pipe_info)
-        self._create_pipe(pipe_list, pipe_data.pipe_name,
-                          pipe_data.pipe_write,
-                          pipe_data.display_level,
-                          pipe_data.read_method_name,
-                          pipe_data.write_method_name,
-                          pipe_data.is_allowed_name,
-                          pipe_data.pipe_prop)
+        self._create_pipe(
+            pipe_list,
+            pipe_data.pipe_name,
+            pipe_data.pipe_write,
+            pipe_data.display_level,
+            pipe_data.read_method_name,
+            pipe_data.write_method_name,
+            pipe_data.is_allowed_name,
+            pipe_data.pipe_prop,
+        )
 
 
 def __DeviceClass__command_factory(self):
@@ -373,8 +413,10 @@ def __DeviceClass__command_factory(self):
     deviceimpl_class = class_info[1]
 
     if not hasattr(deviceimpl_class, "init_device"):
-        msg = f"Wrong definition of class {name}\n" \
-              f"The init_device() method does not exist!"
+        msg = (
+            f"Wrong definition of class {name}\n"
+            f"The init_device() method does not exist!"
+        )
         Except.throw_exception("PyDs_WrongCommandDefinition", msg, "command_factory()")
 
     for cmd_name, cmd_info in self.cmd_list.items():
@@ -389,91 +431,120 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
 
     # check parameter
     if not isinstance(cmd_info, collections.abc.Sequence):
-        msg = f"Wrong data type for value for describing command {cmd_name} in " \
-              f"class {name}\nMust be a sequence with 2 or 3 elements"
+        msg = (
+            f"Wrong data type for value for describing command {cmd_name} in "
+            f"class {name}\nMust be a sequence with 2 or 3 elements"
+        )
         __throw_create_command_exception(msg)
 
     if len(cmd_info) < 2 or len(cmd_info) > 3:
-        msg = f"Wrong number of argument for describing command {cmd_name} in " \
-              f"class {name}\nMust be a sequence with 2 or 3 elements"
+        msg = (
+            f"Wrong number of argument for describing command {cmd_name} in "
+            f"class {name}\nMust be a sequence with 2 or 3 elements"
+        )
         __throw_create_command_exception(msg)
 
     param_info, result_info = cmd_info[0], cmd_info[1]
 
     if not isinstance(param_info, collections.abc.Sequence):
-        msg = f"Wrong data type in command argument for command {cmd_name} in " \
-              f"class {name}\nCommand parameter (first element) must be a sequence"
+        msg = (
+            f"Wrong data type in command argument for command {cmd_name} in "
+            f"class {name}\nCommand parameter (first element) must be a sequence"
+        )
         __throw_create_command_exception(msg)
 
     if len(param_info) < 1 or len(param_info) > 2:
-        msg = f"Wrong data type in command argument for command {cmd_name} in " \
-              f"class {name}\nSequence describing command parameters must contain " \
-              f"1 or 2 elements"
+        msg = (
+            f"Wrong data type in command argument for command {cmd_name} in "
+            f"class {name}\nSequence describing command parameters must contain "
+            f"1 or 2 elements"
+        )
         __throw_create_command_exception(msg)
 
     param_type = CmdArgType.DevVoid
     try:
         param_type = CmdArgType(param_info[0])
     except Exception:
-        msg = f"Wrong data type in command argument for command {cmd_name} in " \
-              f"class {name}\nCommand parameter type (first element in first " \
-              f"sequence) must be a tango.CmdArgType"
+        msg = (
+            f"Wrong data type in command argument for command {cmd_name} in "
+            f"class {name}\nCommand parameter type (first element in first "
+            f"sequence) must be a tango.CmdArgType"
+        )
         __throw_create_command_exception(msg)
 
     param_desc = ""
     if len(param_info) > 1:
         param_desc = param_info[1]
         if not is_pure_str(param_desc):
-            msg = f"Wrong data type in command parameter for command {cmd_name} in " \
-                  f"class {name}\nCommand parameter description (second element " \
-                  f"in first sequence), when given, must be a string"
+            msg = (
+                f"Wrong data type in command parameter for command {cmd_name} in "
+                f"class {name}\nCommand parameter description (second element "
+                f"in first sequence), when given, must be a string"
+            )
             __throw_create_command_exception(msg)
 
     # Check result
     if not isinstance(result_info, collections.abc.Sequence):
-        msg = f"Wrong data type in command result for command {cmd_name} in " \
-              f"class {name}\nCommand result (second element) must be a sequence"
+        msg = (
+            f"Wrong data type in command result for command {cmd_name} in "
+            f"class {name}\nCommand result (second element) must be a sequence"
+        )
         __throw_create_command_exception(msg)
 
     if len(result_info) < 1 or len(result_info) > 2:
-        msg = f"Wrong data type in command result for command {cmd_name} in " \
-              f"class {name}\nSequence describing command result must contain " \
-              f"1 or 2 elements"
+        msg = (
+            f"Wrong data type in command result for command {cmd_name} in "
+            f"class {name}\nSequence describing command result must contain "
+            f"1 or 2 elements"
+        )
         __throw_create_command_exception(msg)
 
     result_type = CmdArgType.DevVoid
     try:
         result_type = CmdArgType(result_info[0])
     except Exception:
-        msg = f"Wrong data type in command result for command {cmd_name} in " \
-              f"class {name}\nCommand result type (first element in second " \
-              f"sequence) must be a tango.CmdArgType"
+        msg = (
+            f"Wrong data type in command result for command {cmd_name} in "
+            f"class {name}\nCommand result type (first element in second "
+            f"sequence) must be a tango.CmdArgType"
+        )
         __throw_create_command_exception(msg)
 
     result_desc = ""
     if len(result_info) > 1:
         result_desc = result_info[1]
         if not is_pure_str(result_desc):
-            msg = f"Wrong data type in command result for command {cmd_name} in " \
-                  f"class {name}\nCommand parameter description (second element " \
-                  f"in second sequence), when given, must be a string"
+            msg = (
+                f"Wrong data type in command result for command {cmd_name} in "
+                f"class {name}\nCommand parameter description (second element "
+                f"in second sequence), when given, must be a string"
+            )
             __throw_create_command_exception(msg)
 
     # If it is defined, get addictional dictionnary used for optional parameters
-    display_level, default_command, polling_period, is_allowed = DispLevel.OPERATOR, False, -1, None
+    display_level, default_command, polling_period, is_allowed = (
+        DispLevel.OPERATOR,
+        False,
+        -1,
+        None,
+    )
 
     if len(cmd_info) == 3:
         extra_info = cmd_info[2]
         if not isinstance(extra_info, collections.abc.Mapping):
-            msg = f"Wrong data type in command information for command {cmd_name} in " \
-                  f"class {name}\nCommand information (third element in sequence), " \
-                  f"when given, must be a dictionary"
+            msg = (
+                f"Wrong data type in command information for command {cmd_name} in "
+                f"class {name}\nCommand information (third element in sequence), "
+                f"when given, must be a dictionary"
+            )
             __throw_create_command_exception(msg)
 
         if len(extra_info) > 4:
-            msg = f"Wrong data type in command information for command {cmd_name} in " \
-                  f"class {name}\nThe optional dictionary can not have more than " \
-                  f"four elements"
+            msg = (
+                f"Wrong data type in command information for command {cmd_name} in "
+                f"class {name}\nThe optional dictionary can not have more than "
+                f"four elements"
+            )
             __throw_create_command_exception(msg)
 
         for info_name, info_value in extra_info.items():
@@ -482,50 +553,64 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
                 try:
                     display_level = DispLevel(info_value)
                 except Exception:
-                    msg = f"Wrong data type in command information for command {cmd_name} in " \
-                          f"class {name}\nCommand information for display level is not a " \
-                          f"tango.DispLevel"
+                    msg = (
+                        f"Wrong data type in command information for command {cmd_name} in "
+                        f"class {name}\nCommand information for display level is not a "
+                        f"tango.DispLevel"
+                    )
                     __throw_create_command_exception(msg)
             elif info_name_lower == "default command":
                 if not is_pure_str(info_value):
-                    msg = f"Wrong data type in command information for command {cmd_name} in " \
-                          f"class {name}\nCommand information for default command is not a " \
-                          f"string"
+                    msg = (
+                        f"Wrong data type in command information for command {cmd_name} in "
+                        f"class {name}\nCommand information for default command is not a "
+                        f"string"
+                    )
                     __throw_create_command_exception(msg)
                 v = info_value.lower()
-                default_command = v == 'true'
+                default_command = v == "true"
             elif info_name_lower == "polling period":
                 try:
                     polling_period = int(info_value)
                 except Exception:
-                    msg = f"Wrong data type in command information for command {cmd_name} in " \
-                          f"class {name}\nCommand information for polling period is not an " \
-                          f"integer"
+                    msg = (
+                        f"Wrong data type in command information for command {cmd_name} in "
+                        f"class {name}\nCommand information for polling period is not an "
+                        f"integer"
+                    )
                     __throw_create_command_exception(msg)
             elif info_name_lower == "is allowed":
                 is_allowed = info_value
                 if not is_pure_str(is_allowed):
-                    msg = "Wrong data type in command information for command %s in " \
-                          "class %s\nCommand information for is allowed function name" \
-                          "is not an string" % (cmd_name, name)
+                    msg = (
+                        "Wrong data type in command information for command %s in "
+                        "class %s\nCommand information for is allowed function name"
+                        "is not an string" % (cmd_name, name)
+                    )
                     __throw_create_command_exception(msg)
             else:
-                msg = f"Wrong data type in command information for command {cmd_name} in " \
-                      f"class {name}\nCommand information has unknown key " \
-                      f"{info_name}"
+                msg = (
+                    f"Wrong data type in command information for command {cmd_name} in "
+                    f"class {name}\nCommand information has unknown key "
+                    f"{info_name}"
+                )
                 __throw_create_command_exception(msg)
 
     # check that the method to be executed exists
     try:
         cmd = getattr(deviceimpl_class, cmd_name)
         if not isinstance(cmd, collections.abc.Callable):
-            msg = f"Wrong definition of command {cmd_name} in " \
-                  f"class {name}\nThe object exists in class but is not " \
-                  f"a method!"
+            msg = (
+                f"Wrong definition of command {cmd_name} in "
+                f"class {name}\nThe object exists in class but is not "
+                f"a method!"
+            )
             __throw_create_command_exception(msg)
     except AttributeError:
-        msg = f"Wrong definition of command {cmd_name} in " \
-              f"class {name}\nThe command method does not exist!"
+        msg = (
+            f"Wrong definition of command {cmd_name} in "
+            f"class {name}\nThe command method does not exist!"
+        )
         __throw_create_command_exception(msg)
 
     if is_allowed is None:
@@ -536,17 +621,26 @@ def __create_command(self, deviceimpl_class, cmd_name, cmd_info):
     try:
         is_allowed_function = getattr(deviceimpl_class, is_allowed_name)
         if not isinstance(is_allowed_function, collections.abc.Callable):
-            msg = f"Wrong definition of command {cmd_name} in " \
-                  f"class {name}\nThe object '{is_allowed_name}' exists in class but is " \
-                  f"not a method!"
+            msg = (
+                f"Wrong definition of command {cmd_name} in "
+                f"class {name}\nThe object '{is_allowed_name}' exists in class but is "
+                f"not a method!"
+            )
             __throw_create_command_exception(msg)
     except Exception:
         is_allowed_name = ""
 
-    self._create_command(cmd_name, param_type, result_type,
-                         param_desc, result_desc,
-                         display_level, default_command,
-                         polling_period, is_allowed_name)
+    self._create_command(
+        cmd_name,
+        param_type,
+        result_type,
+        param_desc,
+        result_desc,
+        display_level,
+        default_command,
+        polling_period,
+        is_allowed_name,
+    )
 
 
 def __DeviceClass__new_device(self, klass, dev_class, dev_name):
@@ -587,70 +681,70 @@ def __DeviceClass__device_factory(self, device_list):
 
 def __DeviceClass__create_device(self, device_name, alias=None, cb=None):
     """
-        create_device(self, device_name, alias=None, cb=None) -> None
+    create_device(self, device_name, alias=None, cb=None) -> None
 
-            Creates a new device of the given class in the database, creates a new
-            DeviceImpl for it and calls init_device (just like it is done for
-            existing devices when the DS starts up)
+        Creates a new device of the given class in the database, creates a new
+        DeviceImpl for it and calls init_device (just like it is done for
+        existing devices when the DS starts up)
 
-            An optional parameter callback is called AFTER the device is
-            registered in the database and BEFORE the init_device for the
-            newly created device is called
+        An optional parameter callback is called AFTER the device is
+        registered in the database and BEFORE the init_device for the
+        newly created device is called
 
-        Throws tango.DevFailed:
-            - the device name exists already or
-            - the given class is not registered for this DS.
-            - the cb is not a callable
+    Throws tango.DevFailed:
+        - the device name exists already or
+        - the given class is not registered for this DS.
+        - the cb is not a callable
 
-        New in PyTango 7.1.2
+    New in PyTango 7.1.2
 
-        Parameters :
-            - device_name : (str) the device name
-            - alias : (str) optional alias. Default value is None meaning do not create device alias
-            - cb : (callable) a callback that is called AFTER the device is registered
-                   in the database and BEFORE the init_device for the newly created
-                   device is called. Typically you may want to put device and/or attribute
-                   properties in the database here. The callback must receive a parameter:
-                   device name (str). Default value is None meaning no callback
+    Parameters :
+        - device_name : (str) the device name
+        - alias : (str) optional alias. Default value is None meaning do not create device alias
+        - cb : (callable) a callback that is called AFTER the device is registered
+               in the database and BEFORE the init_device for the newly created
+               device is called. Typically you may want to put device and/or attribute
+               properties in the database here. The callback must receive a parameter:
+               device name (str). Default value is None meaning no callback
 
-        Return     : None"""
+    Return     : None"""
     util = Util.instance()
     util.create_device(self.get_name(), device_name, alias=alias, cb=cb)
 
 
 def __DeviceClass__delete_device(self, device_name):
     """
-        delete_device(self, klass_name, device_name) -> None
+    delete_device(self, klass_name, device_name) -> None
 
-            Deletes an existing device from the database and from this running
-            server
+        Deletes an existing device from the database and from this running
+        server
 
-            Throws tango.DevFailed:
-                - the device name doesn't exist in the database
-                - the device name doesn't exist in this DS.
+        Throws tango.DevFailed:
+            - the device name doesn't exist in the database
+            - the device name doesn't exist in this DS.
 
-        New in PyTango 7.1.2
+    New in PyTango 7.1.2
 
-        Parameters :
-            - klass_name : (str) the device class name
-            - device_name : (str) the device name
+    Parameters :
+        - klass_name : (str) the device class name
+        - device_name : (str) the device name
 
-        Return     : None"""
+    Return     : None"""
     util = Util.instance()
     util.delete_device(self.get_name(), device_name)
 
 
 def __DeviceClass__dyn_attr(self, device_list):
     """
-        dyn_attr(self,device_list) -> None
+    dyn_attr(self,device_list) -> None
 
-            Default implementation does not do anything
-            Overwrite in order to provide dynamic attributes
+        Default implementation does not do anything
+        Overwrite in order to provide dynamic attributes
 
-        Parameters :
-            - device_list : (seq<DeviceImpl>) sequence of devices of this class
+    Parameters :
+        - device_list : (seq<DeviceImpl>) sequence of devices of this class
 
-        Return     : None"""
+    Return     : None"""
     pass
 
 
@@ -668,22 +762,24 @@ def __DeviceClass__device_destroyer(self, name):
             self.py_dev_list.remove(d)
             return
     err_mess = "Device " + name + " not in Tango class device list!"
-    Except.throw_exception("PyAPI_CantDestroyDevice", err_mess, "DeviceClass.device_destroyer")
+    Except.throw_exception(
+        "PyAPI_CantDestroyDevice", err_mess, "DeviceClass.device_destroyer"
+    )
 
 
 def __DeviceClass__device_name_factory(self, dev_name_list):
     """
-        device_name_factory(self, dev_name_list) ->  None
+    device_name_factory(self, dev_name_list) ->  None
 
-            Create device(s) name list (for no database device server).
-            This method can be re-defined in DeviceClass sub-class for
-            device server started without database. Its rule is to
-            initialise class device name. The default method does nothing.
+        Create device(s) name list (for no database device server).
+        This method can be re-defined in DeviceClass sub-class for
+        device server started without database. Its rule is to
+        initialise class device name. The default method does nothing.
 
-        Parameters :
-            - dev_name_list : (seq<str>) sequence of devices to be filled
+    Parameters :
+        - dev_name_list : (seq<str>) sequence of devices to be filled
 
-        Return     : None"""
+    Return     : None"""
     pass
 
 
@@ -697,7 +793,9 @@ def __init_DeviceClass():
     DeviceClass.__init__ = __DeviceClass__init__
     DeviceClass.__str__ = __DeviceClass__str__
     DeviceClass.__repr__ = __DeviceClass__repr__
-    DeviceClass._create_user_default_attr_prop = __DeviceClass__create_user_default_attr_prop
+    DeviceClass._create_user_default_attr_prop = (
+        __DeviceClass__create_user_default_attr_prop
+    )
     DeviceClass._attribute_factory = __DeviceClass__attribute_factory
     DeviceClass._pipe_factory = __DeviceClass__pipe_factory
     DeviceClass._command_factory = __DeviceClass__command_factory
@@ -721,7 +819,9 @@ def __doc_DeviceClass():
     def document_method(method_name, desc, append=True):
         return __document_method(DeviceClass, method_name, desc, append)
 
-    document_method("export_device", """
+    document_method(
+        "export_device",
+        """
     export_device(self, dev, corba_dev_name = 'Unused') -> None
 
             For internal usage only
@@ -731,9 +831,12 @@ def __doc_DeviceClass():
             - corba_dev_name : (str) CORBA device name. Default value is 'Unused'
 
         Return     : None
-    """)
+    """,
+    )
 
-    document_method("register_signal", """
+    document_method(
+        "register_signal",
+        """
     register_signal(self, signo) -> None
     register_signal(self, signo, own_handler=false) -> None
 
@@ -755,9 +858,12 @@ def __doc_DeviceClass():
                             handler is written. A default false value is provided
 
         Return     : None
-    """)
+    """,
+    )
 
-    document_method("unregister_signal", """
+    document_method(
+        "unregister_signal",
+        """
     unregister_signal(self, signo) -> None
 
             Unregister a signal.
@@ -767,9 +873,12 @@ def __doc_DeviceClass():
         Parameters :
             - signo : (int) signal identifier
         Return     : None
-    """)
+    """,
+    )
 
-    document_method("signal_handler", """
+    document_method(
+        "signal_handler",
+        """
     signal_handler(self, signo) -> None
 
             Signal handler.
@@ -781,36 +890,48 @@ def __doc_DeviceClass():
         Parameters :
             - signo : (int) signal identifier
         Return     : None
-    """)
+    """,
+    )
 
-    document_method("get_name", """
+    document_method(
+        "get_name",
+        """
     get_name(self) -> str
 
             Get the TANGO device class name.
 
         Parameters : None
         Return     : (str) the TANGO device class name.
-    """)
+    """,
+    )
 
-    document_method("get_type", """
+    document_method(
+        "get_type",
+        """
     get_type(self) -> str
 
             Gets the TANGO device type name.
 
         Parameters : None
         Return     : (str) the TANGO device type name
-    """)
+    """,
+    )
 
-    document_method("get_doc_url", """
+    document_method(
+        "get_doc_url",
+        """
     get_doc_url(self) -> str
 
             Get the TANGO device class documentation URL.
 
         Parameters : None
         Return     : (str) the TANGO device type name
-    """)
+    """,
+    )
 
-    document_method("set_type", """
+    document_method(
+        "set_type",
+        """
     set_type(self, dev_type) -> None
 
             Set the TANGO device type name.
@@ -818,36 +939,48 @@ def __doc_DeviceClass():
         Parameters :
             - dev_type : (str) the new TANGO device type name
         Return     : None
-    """)
+    """,
+    )
 
-    document_method("get_cvs_tag", """
+    document_method(
+        "get_cvs_tag",
+        """
     get_cvs_tag(self) -> str
 
             Gets the cvs tag
 
         Parameters : None
         Return     : (str) cvs tag
-    """)
+    """,
+    )
 
-    document_method("get_cvs_location", """
+    document_method(
+        "get_cvs_location",
+        """
     get_cvs_location(self) -> None
 
             Gets the cvs localtion
 
         Parameters : None
         Return     : (str) cvs location
-    """)
+    """,
+    )
 
-    document_method("get_device_list", """
+    document_method(
+        "get_device_list",
+        """
     get_device_list(self) -> sequence<tango.DeviceImpl>
 
             Gets the list of tango.DeviceImpl objects for this class
 
         Parameters : None
         Return     : (sequence<tango.DeviceImpl>) list of tango.DeviceImpl objects for this class
-    """)
+    """,
+    )
 
-    document_method("get_command_list", """
+    document_method(
+        "get_command_list",
+        """
     get_command_list(self) -> sequence<tango.Command>
 
             Gets the list of tango.Command objects for this class
@@ -856,9 +989,12 @@ def __doc_DeviceClass():
         Return     : (sequence<tango.Command>) list of tango.Command objects for this class
 
         New in PyTango 8.0.0
-    """)
+    """,
+    )
 
-    document_method("get_cmd_by_name", """
+    document_method(
+        "get_cmd_by_name",
+        """
     get_cmd_by_name(self, (str)cmd_name) -> tango.Command
 
             Get a reference to a command object.
@@ -868,9 +1004,12 @@ def __doc_DeviceClass():
         Return     : (tango.Command) tango.Command object
 
         New in PyTango 8.0.0
-    """)
+    """,
+    )
 
-    document_method("add_wiz_dev_prop", """
+    document_method(
+        "add_wiz_dev_prop",
+        """
     add_wiz_dev_prop(self, str, str) -> None
     add_wiz_dev_prop(self, str, str, str) -> None
 
@@ -878,9 +1017,12 @@ def __doc_DeviceClass():
 
         Parameters : None
         Return     : None
-    """)
+    """,
+    )
 
-    document_method("add_wiz_class_prop", """
+    document_method(
+        "add_wiz_class_prop",
+        """
     add_wiz_class_prop(self, str, str) -> None
     add_wiz_class_prop(self, str, str, str) -> None
 
@@ -888,9 +1030,12 @@ def __doc_DeviceClass():
 
         Parameters : None
         Return     : None
-    """)
+    """,
+    )
 
-    document_method("get_class_attr", """
+    document_method(
+        "get_class_attr",
+        """
     get_class_attr(self) -> None
 
         Returns the instance of the :class:`tango.MultiClassAttribute` for the class 
@@ -899,9 +1044,12 @@ def __doc_DeviceClass():
         
         :returns: the instance of the :class:`tango.MultiClassAttribute` for the class
         :rtype: :class:`tango.MultiClassAttribute`
-    """)
+    """,
+    )
 
-    document_method("get_pipe_list", """
+    document_method(
+        "get_pipe_list",
+        """
     get_pipe_list(self, dev_name) -> None
 
         Returns the list of pipes for the specified device 
@@ -910,9 +1058,12 @@ def __doc_DeviceClass():
 
         :returns: list of :class:`tango.server.pipe` objects for device
         :rtype: :class:`tango.server.pipe`
-    """)
+    """,
+    )
 
-    document_method("get_pipe_by_name", """
+    document_method(
+        "get_pipe_by_name",
+        """
     get_pipe_by_name(self, pipe_name, dev_name) -> None
 
         Returns the :class:`Pipe` instance with name <pipe_name> for the specified device 
@@ -923,7 +1074,8 @@ def __doc_DeviceClass():
 
         :returns: :class:`tango.server.pipe` object
         :rtype: :class:`tango.server.pipe`
-    """)
+    """,
+    )
 
 
 def device_class_init(doc=True):

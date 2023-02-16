@@ -28,18 +28,36 @@ from .pipe_data import PipeData
 from .device_class import DeviceClass
 from .device_server import LatestDeviceImpl, get_worker, set_worker, run_in_executor
 from .utils import get_enum_labels
-from .utils import is_seq, is_non_str_seq, is_pure_str, is_enum_seq, is_enum, set_complex_value
+from .utils import (
+    is_seq,
+    is_non_str_seq,
+    is_pure_str,
+    is_enum_seq,
+    is_enum,
+    set_complex_value,
+)
 from .utils import is_devstate, is_devstate_seq, scalar_to_array_type, TO_TANGO_TYPE
 from .green import get_green_mode, get_executor
 from .pyutil import Util
 
-__all__ = ("DeviceMeta", "Device", "LatestDeviceImpl", "attribute",
-           "command", "pipe", "device_property", "class_property",
-           "run", "server_run", "Server")
+__all__ = (
+    "DeviceMeta",
+    "Device",
+    "LatestDeviceImpl",
+    "attribute",
+    "command",
+    "pipe",
+    "device_property",
+    "class_property",
+    "run",
+    "server_run",
+    "Server",
+)
 
 API_VERSION = 2
 
 # Helpers
+
 
 def _get_tango_type_format(dtype=None, dformat=None, caller=None):
     if dformat is None:
@@ -52,10 +70,14 @@ def _get_tango_type_format(dtype=None, dformat=None, caller=None):
                     if len(dtype):
                         dtype = dtype[0]
                         dformat = AttrDataFormat.IMAGE
-                    elif caller == 'attribute':
-                        raise TypeError('Image attribute type must be specified as ((<dtype>,),)')
-            elif caller == 'attribute':
-                raise TypeError('Spectrum attribute type must be specified as (<dtype>,)')
+                    elif caller == "attribute":
+                        raise TypeError(
+                            "Image attribute type must be specified as ((<dtype>,),)"
+                        )
+            elif caller == "attribute":
+                raise TypeError(
+                    "Spectrum attribute type must be specified as (<dtype>,)"
+                )
     return TO_TANGO_TYPE[dtype], dformat
 
 
@@ -88,6 +110,7 @@ def _get_wrapped_read_method(attribute, read_method):
 
     if nb_args < 1:  # plain methods do not have "self" argument
         if green_mode:
+
             @functools.wraps(read_method)
             def read_attr(self, attr):
                 worker = get_worker()
@@ -95,15 +118,19 @@ def _get_wrapped_read_method(attribute, read_method):
                 if not attr.get_value_flag() and ret is not None:
                     set_complex_value(attr, ret)
                 return ret
+
         else:
+
             @functools.wraps(read_method)
             def read_attr(self, attr):
                 ret = read_method()
                 if not attr.get_value_flag() and ret is not None:
                     set_complex_value(attr, ret)
                 return ret
+
     else:
         if green_mode:
+
             @functools.wraps(read_method)
             def read_attr(self, attr):
                 worker = get_worker()
@@ -111,7 +138,9 @@ def _get_wrapped_read_method(attribute, read_method):
                 if not attr.get_value_flag() and ret is not None:
                     set_complex_value(attr, ret)
                 return ret
+
         else:
+
             @functools.wraps(read_method)
             def read_attr(self, attr):
                 ret = read_method(self)
@@ -157,11 +186,14 @@ def _get_wrapped_write_method(attribute, write_method):
 
     if nb_args < 2:  # plain methods do not have "self" argument
         if green_mode:
+
             @functools.wraps(write_method)
             def write_attr(self, attr):
                 value = attr.get_write_value()
                 return get_worker().execute(write_method, value)
+
         else:
+
             @functools.wraps(write_method)
             def write_attr(self, attr):
                 value = attr.get_write_value()
@@ -169,11 +201,14 @@ def _get_wrapped_write_method(attribute, write_method):
 
     else:
         if green_mode:
+
             @functools.wraps(write_method)
             def write_attr(self, attr):
                 value = attr.get_write_value()
                 return get_worker().execute(write_method, self, value)
+
         else:
+
             @functools.wraps(write_method)
             def write_attr(self, attr):
                 value = attr.get_write_value()
@@ -223,20 +258,26 @@ def _get_wrapped_isallowed_method(attribute, isallowed_method):
     green_mode = attribute.isallowed_green_mode
     if nb_args < 2:  # plain methods do not have "self" argument
         if green_mode:
+
             @functools.wraps(isallowed_method)
             def isallowed_attr(self, request):
                 worker = get_worker()
                 return worker.execute(isallowed_method, request)
+
         else:
+
             @functools.wraps(isallowed_method)
             def isallowed_attr(self, request):
                 return isallowed_method(request)
+
     else:
         if green_mode:
+
             @functools.wraps(isallowed_method)
             def isallowed_attr(self, request):
                 worker = get_worker()
                 return worker.execute(isallowed_method, self, request)
+
         else:
             isallowed_attr = isallowed_method
 
@@ -282,11 +323,9 @@ def __patch_attr_methods(tango_device_klass, attribute):
     :param attribute: the attribute data information
     :type attribute: AttrData
     """
-    if attribute.attr_write in (AttrWriteType.READ,
-                                AttrWriteType.READ_WRITE):
+    if attribute.attr_write in (AttrWriteType.READ, AttrWriteType.READ_WRITE):
         __patch_read_method(tango_device_klass, attribute)
-    if attribute.attr_write in (AttrWriteType.WRITE,
-                                AttrWriteType.READ_WRITE):
+    if attribute.attr_write in (AttrWriteType.WRITE, AttrWriteType.READ_WRITE):
         __patch_write_method(tango_device_klass, attribute)
 
     __patch_isallowed_method(tango_device_klass, attribute)
@@ -300,13 +339,16 @@ def _get_wrapped_pipe_read_method(pipe, read_method):
 
     if nb_args < 2:
         if green_mode == GreenMode.Synchronous:
+
             @functools.wraps(read_method)
             def read_pipe(self, pipe):
                 ret = read_method(self)
                 if not pipe.get_value_flag() and ret is not None:
                     pipe.set_value(pipe, ret)
                 return ret
+
         else:
+
             @functools.wraps(read_method)
             def read_pipe(self, pipe):
                 worker = get_worker()
@@ -314,10 +356,12 @@ def _get_wrapped_pipe_read_method(pipe, read_method):
                 if ret is not None:
                     pipe.set_value(ret)
                 return ret
+
     else:
         if green_mode == GreenMode.Synchronous:
             read_pipe = read_method
         else:
+
             @functools.wraps(read_method)
             def read_pipe(self, pipe):
                 return get_worker().execute(read_method, self, pipe)
@@ -357,15 +401,19 @@ def _get_wrapped_pipe_write_method(pipe, write_method):
     green_mode = pipe.write_green_mode
 
     if green_mode == GreenMode.Synchronous:
+
         @functools.wraps(write_method)
         def write_pipe(self, pipe):
             value = pipe.get_value()
             return write_method(self, value)
+
     else:
+
         @functools.wraps(write_method)
         def write_pipe(self, pipe):
             value = pipe.get_value()
             return get_worker().execute(write_method, self, value)
+
     return write_pipe
 
 
@@ -421,15 +469,17 @@ def __patch_is_command_allowed_method(tango_device_klass, is_allowed_method, cmd
     :type cmd_name: str
     """
 
-    method_name = getattr(is_allowed_method, '__name__', f'is_{cmd_name}_allowed')
+    method_name = getattr(is_allowed_method, "__name__", f"is_{cmd_name}_allowed")
 
     method_args = getfullargspec(is_allowed_method)
     nb_args = len(method_args.args)
 
     if not nb_args:
+
         @functools.wraps(is_allowed_method)
         def method(self):
             return is_allowed_method()
+
     else:
         method = is_allowed_method
 
@@ -506,9 +556,7 @@ class _DeviceClass(DeviceClass):
         :type dev_list: :class:`tango.DeviceImpl`"""
 
         for dev in dev_list:
-            init_dyn_attrs = getattr(dev,
-                                     "initialize_dynamic_attributes",
-                                     None)
+            init_dyn_attrs = getattr(dev, "initialize_dynamic_attributes", None)
             if init_dyn_attrs and callable(init_dyn_attrs):
                 try:
                     init_dyn_attrs()
@@ -553,15 +601,19 @@ def __create_tango_deviceclass_klass(tango_device_klass, attrs=None):
             attr_obj.name = attr_name
             # if you modify the attr_obj order then you should
             # take care of the code in get_device_properties()
-            device_property_list[attr_name] = [attr_obj.dtype,
-                                               attr_obj.doc,
-                                               attr_obj.default_value,
-                                               attr_obj.mandatory]
+            device_property_list[attr_name] = [
+                attr_obj.dtype,
+                attr_obj.doc,
+                attr_obj.default_value,
+                attr_obj.mandatory,
+            ]
         elif isinstance(attr_obj, class_property):
             attr_obj.name = attr_name
-            class_property_list[attr_name] = [attr_obj.dtype,
-                                              attr_obj.doc,
-                                              attr_obj.default_value]
+            class_property_list[attr_name] = [
+                attr_obj.dtype,
+                attr_obj.doc,
+                attr_obj.default_value,
+            ]
         elif inspect.isroutine(attr_obj):
             if hasattr(attr_obj, "__tango_command__"):
                 cmd_name, cmd_info = attr_obj.__tango_command__
@@ -572,28 +624,34 @@ def __create_tango_deviceclass_klass(tango_device_klass, attrs=None):
                     is_allowed_method = f"is_{cmd_name}_allowed"
 
                 if is_pure_str(is_allowed_method):
-                    is_allowed_method = getattr(tango_device_klass, is_allowed_method, None)
+                    is_allowed_method = getattr(
+                        tango_device_klass, is_allowed_method, None
+                    )
 
                 if is_allowed_method is not None:
-                    cmd_info[2]["Is allowed"] = __patch_is_command_allowed_method(tango_device_klass,
-                                                                                  is_allowed_method, cmd_name)
+                    cmd_info[2]["Is allowed"] = __patch_is_command_allowed_method(
+                        tango_device_klass, is_allowed_method, cmd_name
+                    )
 
     __patch_standard_device_methods(tango_device_klass)
 
     devclass_name = klass_name + "Class"
 
-    devclass_attrs = dict(class_property_list=class_property_list,
-                          device_property_list=device_property_list,
-                          cmd_list=cmd_list, attr_list=attr_list,
-                          pipe_list=pipe_list)
+    devclass_attrs = dict(
+        class_property_list=class_property_list,
+        device_property_list=device_property_list,
+        cmd_list=cmd_list,
+        attr_list=attr_list,
+        pipe_list=pipe_list,
+    )
     return type(_DeviceClass)(devclass_name, (_DeviceClass,), devclass_attrs)
 
 
-def _init_tango_device_klass(tango_device_klass, attrs=None,
-                             tango_class_name=None):
+def _init_tango_device_klass(tango_device_klass, attrs=None, tango_class_name=None):
     klass_name = tango_device_klass.__name__
     tango_deviceclass_klass = __create_tango_deviceclass_klass(
-        tango_device_klass, attrs=attrs)
+        tango_device_klass, attrs=attrs
+    )
     if tango_class_name is None:
         if hasattr(tango_device_klass, "TangoClassName"):
             tango_class_name = tango_device_klass.TangoClassName
@@ -622,8 +680,8 @@ def inheritance_patch(attrs):
     """Patch tango objects before they are processed by the metaclass."""
     for key, obj in attrs.items():
         if isinstance(obj, attribute):
-            if getattr(obj, 'attr_write', None) == AttrWriteType.READ_WRITE:
-                if not getattr(obj, 'fset', None):
+            if getattr(obj, "attr_write", None) == AttrWriteType.READ_WRITE:
+                if not getattr(obj, "fset", None):
                     method_name = obj.write_method_name or "write_" + key
                     obj.fset = attrs.get(method_name)
 
@@ -701,17 +759,16 @@ class BaseDevice(LatestDeviceImpl):
                 return
         try:
             pu = self.prop_util = ds_class.prop_util
-            self.device_property_list = copy.deepcopy(
-                ds_class.device_property_list)
+            self.device_property_list = copy.deepcopy(ds_class.device_property_list)
             class_prop = ds_class.class_property_list
-            pu.get_device_properties(
-                self, class_prop, self.device_property_list)
+            pu.get_device_properties(self, class_prop, self.device_property_list)
             for prop_name in class_prop:
                 value = pu.get_property_values(prop_name, class_prop)
                 self._tango_properties[prop_name] = value
             for prop_name in self.device_property_list:
                 value = self.prop_util.get_property_values(
-                    prop_name, self.device_property_list)
+                    prop_name, self.device_property_list
+                )
                 self._tango_properties[prop_name] = value
                 properties = self.device_property_list[prop_name]
                 mandatory = properties[3]
@@ -756,7 +813,7 @@ class BaseDevice(LatestDeviceImpl):
         if args is None:
             args = sys.argv[1:]
         args = [cls.__name__] + list(args)
-        green_mode = getattr(cls, 'green_mode', None)
+        green_mode = getattr(cls, "green_mode", None)
         kwargs.setdefault("green_mode", green_mode)
         return run((cls,), args, **kwargs)
 
@@ -885,8 +942,7 @@ class attribute(AttrData):
         if forward:
             expected = 2 if "label" in kwargs else 1
             if len(kwargs) > expected:
-                raise TypeError(
-                    "Forwarded attributes only support label argument")
+                raise TypeError("Forwarded attributes only support label argument")
         else:
             green_mode = kwargs.pop("green_mode", True)
             self.read_green_mode = kwargs.pop("read_green_mode", green_mode)
@@ -899,34 +955,35 @@ class attribute(AttrData):
             if fget:
                 if inspect.isroutine(fget):
                     self.fget = fget
-                    if 'doc' not in kwargs and 'description' not in kwargs:
+                    if "doc" not in kwargs and "description" not in kwargs:
                         if fget.__doc__ is not None:
-                            kwargs['doc'] = fget.__doc__
-                kwargs['fget'] = fget
+                            kwargs["doc"] = fget.__doc__
+                kwargs["fget"] = fget
 
             fset = kwargs.pop("fwrite", kwargs.pop("fset", None))
             if fset:
                 if inspect.isroutine(fset):
                     self.fset = fset
-                kwargs['fset'] = fset
+                kwargs["fset"] = fset
 
             fisallowed = kwargs.pop("fisallowed", None)
             if fisallowed:
                 if inspect.isroutine(fisallowed):
                     self.fisallowed = fisallowed
-                kwargs['fisallowed'] = fisallowed
+                kwargs["fisallowed"] = fisallowed
 
         super().__init__(self.name, class_name)
-        self.__doc__ = kwargs.get('doc', kwargs.get('description',
-                                                    'TANGO attribute'))
-        if 'dtype' in kwargs:
-            dtype = kwargs['dtype']
-            dformat = kwargs.get('dformat')
+        self.__doc__ = kwargs.get("doc", kwargs.get("description", "TANGO attribute"))
+        if "dtype" in kwargs:
+            dtype = kwargs["dtype"]
+            dformat = kwargs.get("dformat")
             if is_enum(dtype) or is_enum_seq(dtype):
-                enum_labels = kwargs.get('enum_labels')
+                enum_labels = kwargs.get("enum_labels")
                 if enum_labels:
-                    raise TypeError("For dtype of enum.Enum, (enum.Enum,) or ((enum.Enum,),) the enum_labels must not "
-                                    f"be specified - dtype: {dtype}, enum_labels: {enum_labels}.")
+                    raise TypeError(
+                        "For dtype of enum.Enum, (enum.Enum,) or ((enum.Enum,),) the enum_labels must not "
+                        f"be specified - dtype: {dtype}, enum_labels: {enum_labels}."
+                    )
                 _dtype = dtype
                 dtype = CmdArgType.DevEnum
 
@@ -934,7 +991,7 @@ class attribute(AttrData):
                     _dtype = _dtype[0]
                     dtype = (dtype,)
 
-                kwargs['enum_labels'] = get_enum_labels(_dtype)
+                kwargs["enum_labels"] = get_enum_labels(_dtype)
 
             elif is_devstate(dtype) or is_devstate_seq(dtype):
                 _dtype = dtype
@@ -944,7 +1001,9 @@ class attribute(AttrData):
                     _dtype = _dtype[0]
                     dtype = (dtype,)
 
-            kwargs['dtype'], kwargs['dformat'] = _get_tango_type_format(dtype, dformat, caller='attribute')
+            kwargs["dtype"], kwargs["dformat"] = _get_tango_type_format(
+                dtype, dformat, caller="attribute"
+            )
         self.build_from_dict(kwargs)
 
     def get_attribute(self, obj):
@@ -974,7 +1033,7 @@ class attribute(AttrData):
         """
         self.fset = fset
         if self.attr_write == AttrWriteType.READ:
-            if getattr(self, 'fget', None):
+            if getattr(self, "fget", None):
                 self.attr_write = AttrWriteType.READ_WRITE
             else:
                 self.attr_write = AttrWriteType.WRITE
@@ -996,7 +1055,7 @@ class attribute(AttrData):
         """
         self.fget = fget
         if self.attr_write == AttrWriteType.WRITE:
-            if getattr(self, 'fset', None):
+            if getattr(self, "fset", None):
                 self.attr_write = AttrWriteType.READ_WRITE
             else:
                 self.attr_write = AttrWriteType.READ
@@ -1125,14 +1184,13 @@ class pipe(PipeData):
         if fget:
             if inspect.isroutine(fget):
                 self.fget = fget
-                if 'doc' not in kwargs and 'description' not in kwargs:
+                if "doc" not in kwargs and "description" not in kwargs:
                     if fget.__doc__ is not None:
-                        kwargs['doc'] = fget.__doc__
-            kwargs['fget'] = fget
+                        kwargs["doc"] = fget.__doc__
+            kwargs["fget"] = fget
 
         super().__init__(name, class_name)
-        self.__doc__ = kwargs.get('doc', kwargs.get('description',
-                                                    'TANGO pipe'))
+        self.__doc__ = kwargs.get("doc", kwargs.get("description", "TANGO pipe"))
         self.build_from_dict(kwargs)
 
     def get_pipe(self, obj):
@@ -1180,15 +1238,15 @@ def __build_command_doc(f, name, dtype_in, doc_in, dtype_out, doc_out):
             # arg[0] should be self and arg[1] the command argument
             param_name = arg_spec.args[1]
         else:
-            param_name = 'arg'
+            param_name = "arg"
         dtype_in_str = str(dtype_in)
         if not isinstance(dtype_in, str):
             try:
                 dtype_in_str = dtype_in.__name__
             except Exception:
                 pass
-        msg = doc_in or '(not documented)'
-        doc += f'\n\n:param {param_name}: {msg}\n:type {param_name}: {dtype_in_str}'
+        msg = doc_in or "(not documented)"
+        doc += f"\n\n:param {param_name}: {msg}\n:type {param_name}: {dtype_in_str}"
     if dtype_out is not None:
         dtype_out_str = str(dtype_out)
         if not isinstance(dtype_out, str):
@@ -1196,15 +1254,24 @@ def __build_command_doc(f, name, dtype_in, doc_in, dtype_out, doc_out):
                 dtype_out_str = dtype_out.__name__
             except Exception:
                 pass
-        msg = doc_out or '(not documented)'
-        doc += f'\n\n:return: {msg}\n:rtype: {dtype_out_str}'
+        msg = doc_out or "(not documented)"
+        doc += f"\n\n:return: {msg}\n:rtype: {dtype_out_str}"
     return doc
 
 
-def command(f=None, dtype_in=None, dformat_in=None, doc_in="",
-            dtype_out=None, dformat_out=None, doc_out="",
-            display_level=None, polling_period=None,
-            green_mode=None, fisallowed=None):
+def command(
+    f=None,
+    dtype_in=None,
+    dformat_in=None,
+    doc_in="",
+    dtype_out=None,
+    dformat_out=None,
+    doc_out="",
+    display_level=None,
+    polling_period=None,
+    green_mode=None,
+    fisallowed=None,
+):
     """
     Declares a new tango command in a :class:`Device`.
     To be used like a decorator in the methods you want to declare as
@@ -1274,10 +1341,17 @@ def command(f=None, dtype_in=None, dformat_in=None, doc_in="",
     if f is None:
         return functools.partial(
             command,
-            dtype_in=dtype_in, dformat_in=dformat_in, doc_in=doc_in,
-            dtype_out=dtype_out, dformat_out=dformat_out, doc_out=doc_out,
-            display_level=display_level, polling_period=polling_period,
-            green_mode=green_mode, fisallowed=fisallowed)
+            dtype_in=dtype_in,
+            dformat_in=dformat_in,
+            doc_in=doc_in,
+            dtype_out=dtype_out,
+            dformat_out=dformat_out,
+            doc_out=doc_out,
+            display_level=display_level,
+            polling_period=polling_period,
+            green_mode=green_mode,
+            fisallowed=fisallowed,
+        )
     name = f.__name__
 
     dtype_format_in = _get_tango_type_format(dtype_in, dformat_in)
@@ -1288,15 +1362,16 @@ def command(f=None, dtype_in=None, dformat_in=None, doc_in="",
 
     config_dict = {}
     if display_level is not None:
-        config_dict['Display level'] = display_level
+        config_dict["Display level"] = display_level
     if polling_period is not None:
-        config_dict['Polling period'] = polling_period
+        config_dict["Polling period"] = polling_period
     if fisallowed is not None:
-        config_dict['Is allowed'] = fisallowed
+        config_dict["Is allowed"] = fisallowed
 
     if green_mode == GreenMode.Synchronous:
         cmd = f
     else:
+
         @functools.wraps(f)
         def cmd(self, *args, **kwargs):
             return get_worker().execute(f, self, *args, **kwargs)
@@ -1307,7 +1382,8 @@ def command(f=None, dtype_in=None, dformat_in=None, doc_in="",
     if cmd.__doc__ is None:
         try:
             cmd.__doc__ = __build_command_doc(
-                f, name, dtype_in, doc_in, dtype_out, doc_out)
+                f, name, dtype_in, doc_in, dtype_out, doc_out
+            )
         except Exception:
             cmd.__doc__ = "TANGO command"
 
@@ -1315,14 +1391,14 @@ def command(f=None, dtype_in=None, dformat_in=None, doc_in="",
 
 
 class _BaseProperty:
-    def __init__(self, dtype, doc='', default_value=None, update_db=False):
+    def __init__(self, dtype, doc="", default_value=None, update_db=False):
         self.name = None
         dtype = from_typeformat_to_type(*_get_tango_type_format(dtype))
         self.dtype = dtype
         self.doc = doc
         self.default_value = default_value
         self.update_db = update_db
-        self.__doc__ = doc or 'TANGO property'
+        self.__doc__ = doc or "TANGO property"
 
     def __get__(self, obj, objtype):
         if obj is None:
@@ -1333,6 +1409,7 @@ class _BaseProperty:
         obj._tango_properties[self.name] = value
         if self.update_db:
             import tango
+
             db = tango.Util.instance().get_database()
             db.put_device_property(obj.get_name(), {self.name: value})
 
@@ -1366,14 +1443,18 @@ class device_property(_BaseProperty):
     .. versionadded:: 8.1.7
         added update_db option
     """
-    def __init__(self, dtype, doc='', mandatory=False,
-                 default_value=None, update_db=False):
+
+    def __init__(
+        self, dtype, doc="", mandatory=False, default_value=None, update_db=False
+    ):
         super().__init__(dtype, doc, default_value, update_db)
         self.mandatory = mandatory
         if mandatory and default_value is not None:
-            msg = ("Invalid arguments: 'mandatory' is True, so 'default_value' must be None. "
-                   "A mandatory device property value must be defined in the Tango Database "
-                   "so it cannot have a default.")
+            msg = (
+                "Invalid arguments: 'mandatory' is True, so 'default_value' must be None. "
+                "A mandatory device property value must be defined in the Tango Database "
+                "so it cannot have a default."
+            )
             raise ValueError(msg)
 
 
@@ -1401,6 +1482,7 @@ class class_property(_BaseProperty):
     .. versionadded:: 8.1.7
         added update_db option
     """
+
     pass
 
 
@@ -1408,8 +1490,10 @@ def __to_cb(post_init_callback):
     if post_init_callback is None:
         return lambda: None
 
-    err_msg = "post_init_callback must be a callable or " \
-              "sequence <callable [, args, [, kwargs]]>"
+    err_msg = (
+        "post_init_callback must be a callable or "
+        "sequence <callable [, args, [, kwargs]]>"
+    )
     if callable(post_init_callback):
         f = post_init_callback
     elif is_non_str_seq(post_init_callback):
@@ -1442,10 +1526,11 @@ def _to_classes(classes):
                 else:
                     klass_klass, klass, klass_name = klass_info
             else:
-                if not hasattr(klass_info, '_api') or klass_info._api < 2:
+                if not hasattr(klass_info, "_api") or klass_info._api < 2:
                     raise Exception(
                         "When giving a single class, it must "
-                        "implement HLAPI (see tango.server)")
+                        "implement HLAPI (see tango.server)"
+                    )
                 klass_klass = klass_info.TangoClassClass
                 klass_name = klass_info.TangoClassName
                 klass = klass_info
@@ -1458,10 +1543,11 @@ def _to_classes(classes):
                 else:
                     klass_klass, klass, klass_name = klass_info
             else:
-                if not hasattr(klass_info, '_api') or klass_info._api < 2:
+                if not hasattr(klass_info, "_api") or klass_info._api < 2:
                     raise Exception(
                         "When giving a single class, it must "
-                        "implement HLAPI (see tango.server)")
+                        "implement HLAPI (see tango.server)"
+                    )
                 klass_klass = klass_info.TangoClassClass
                 klass_name = klass_info.TangoClassName
                 klass = klass_info
@@ -1475,7 +1561,6 @@ def _add_classes(util, classes):
 
 
 def _get_class_green_mode(classes, green_mode):
-
     if green_mode is not None:
         default_green_mode = green_mode
     else:
@@ -1483,7 +1568,7 @@ def _get_class_green_mode(classes, green_mode):
 
     green_modes = set()
     for _, klass, _ in _to_classes(classes):
-        device_green_mode = getattr(klass, 'green_mode', None)
+        device_green_mode = getattr(klass, "green_mode", None)
         if device_green_mode is None:
             device_green_mode = default_green_mode
         green_modes.add(device_green_mode)
@@ -1493,16 +1578,23 @@ def _get_class_green_mode(classes, green_mode):
             f"server process. Modes: {green_modes}. Classes: {classes}."
         )
     elif len(green_modes) == 0:
-        raise ValueError("No device classes specified - cannot run device server " 
-                         "process with no classes.")
+        raise ValueError(
+            "No device classes specified - cannot run device server "
+            "process with no classes."
+        )
     unanimous_green_mode = green_modes.pop()
     return unanimous_green_mode
 
 
-def __server_run(classes, args=None, msg_stream=sys.stdout, util=None,
-                 event_loop=None, post_init_callback=None,
-                 green_mode=None):
-
+def __server_run(
+    classes,
+    args=None,
+    msg_stream=sys.stdout,
+    util=None,
+    event_loop=None,
+    post_init_callback=None,
+    green_mode=None,
+):
     green_mode = _get_class_green_mode(classes, green_mode)
 
     write = msg_stream.write if msg_stream else lambda msg: None
@@ -1540,10 +1632,17 @@ def __server_run(classes, args=None, msg_stream=sys.stdout, util=None,
     return util
 
 
-def run(classes, args=None, msg_stream=sys.stdout,
-        verbose=False, util=None, event_loop=None,
-        post_init_callback=None, green_mode=None,
-        raises=False):
+def run(
+    classes,
+    args=None,
+    msg_stream=sys.stdout,
+    verbose=False,
+    util=None,
+    event_loop=None,
+    post_init_callback=None,
+    green_mode=None,
+    raises=False,
+):
     """
     Provides a simple way to run a tango server. It handles exceptions
     by writting a message to the msg_stream.
@@ -1669,11 +1768,15 @@ def run(classes, args=None, msg_stream=sys.stdout,
         `raises` argument has been added
     """
     server_run = functools.partial(
-        __server_run, classes,
-        args=args, msg_stream=msg_stream,
-        util=util, event_loop=event_loop,
+        __server_run,
+        classes,
+        args=args,
+        msg_stream=msg_stream,
+        util=util,
+        event_loop=event_loop,
         post_init_callback=post_init_callback,
-        green_mode=green_mode)
+        green_mode=green_mode,
+    )
     # Run the server without error handling
     if raises:
         return server_run()
@@ -1684,21 +1787,26 @@ def run(classes, args=None, msg_stream=sys.stdout,
     except KeyboardInterrupt:
         write("Exiting: Keyboard interrupt\n")
     except DevFailed as df:
-        write("Exiting: Server exited with tango.DevFailed:\n" +
-              str(df) + "\n")
+        write("Exiting: Server exited with tango.DevFailed:\n" + str(df) + "\n")
         if verbose:
             write(traceback.format_exc())
     except Exception as e:
-        write("Exiting: Server exited with unforseen exception:\n" +
-              str(e) + "\n")
+        write("Exiting: Server exited with unforseen exception:\n" + str(e) + "\n")
         if verbose:
             write(traceback.format_exc())
     write("\nExited\n")
 
 
-def server_run(classes, args=None, msg_stream=sys.stdout,
-               verbose=False, util=None, event_loop=None,
-               post_init_callback=None, green_mode=None):
+def server_run(
+    classes,
+    args=None,
+    msg_stream=sys.stdout,
+    verbose=False,
+    util=None,
+    event_loop=None,
+    post_init_callback=None,
+    green_mode=None,
+):
     """
     Since PyTango 8.1.2 it is just an alias to
     :func:`~tango.server.run`. Use :func:`~tango.server.run`
@@ -1722,10 +1830,16 @@ def server_run(classes, args=None, msg_stream=sys.stdout,
         Use :func:`~tango.server.run` instead.
 
     """
-    return run(classes, args=args, msg_stream=msg_stream,
-               verbose=verbose, util=util, event_loop=event_loop,
-               post_init_callback=post_init_callback,
-               green_mode=green_mode)
+    return run(
+        classes,
+        args=args,
+        msg_stream=msg_stream,
+        verbose=verbose,
+        util=util,
+        event_loop=event_loop,
+        post_init_callback=post_init_callback,
+        green_mode=green_mode,
+    )
 
 
 class Device(BaseDevice, metaclass=DeviceMeta):
@@ -1734,6 +1848,7 @@ class Device(BaseDevice, metaclass=DeviceMeta):
 
     All device-specific classes should inherit from this class.
     """
+
 
 # Avoid circular imports
 from .tango_object import Server  # noqa: E402

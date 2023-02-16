@@ -20,8 +20,15 @@ __docformat__ = "restructuredtext"
 
 import collections.abc
 
-from ._tango import Connection, DeviceData, __CallBackAutoDie, CmdArgType, \
-    DeviceProxy, Database, ExtractAs
+from ._tango import (
+    Connection,
+    DeviceData,
+    __CallBackAutoDie,
+    CmdArgType,
+    DeviceProxy,
+    Database,
+    ExtractAs,
+)
 from .utils import document_method as __document_method
 from .utils import document_static_method as __document_static_method
 from .green import green
@@ -31,7 +38,8 @@ def __CallBackAutoDie__cmd_ended_aux(self, fn):
     def __new_fn(cmd_done_event):
         try:
             cmd_done_event.argout = cmd_done_event.argout_raw.extract(
-                self.defaultCommandExtractAs)
+                self.defaultCommandExtractAs
+            )
         except Exception:
             pass
         return fn(cmd_done_event)
@@ -60,12 +68,15 @@ def __get_command_inout_param(self, cmd_name, cmd_param=None):
         if isinstance(cmd_param, str):
             param.insert(CmdArgType.DevString, cmd_param)
             return param
-        elif isinstance(cmd_param, collections.abc.Sequence) and all([isinstance(x, str) for x in cmd_param]):
+        elif isinstance(cmd_param, collections.abc.Sequence) and all(
+            [isinstance(x, str) for x in cmd_param]
+        ):
             param.insert(CmdArgType.DevVarStringArray, cmd_param)
             return param
         else:
             raise TypeError(
-                "command_inout() parameter must be a DeviceData object or a string or a sequence of strings")
+                "command_inout() parameter must be a DeviceData object or a string or a sequence of strings"
+            )
     else:
         raise TypeError("command_inout() parameter must be a DeviceData object.")
 
@@ -188,12 +199,14 @@ def __Connection__command_inout_asynch(self, cmd_name, *args):
         forget = False
         return self.__command_inout_asynch_id(cmd_name, argin, forget)
     elif len(args) == 1:
-        if isinstance(args[0], collections.abc.Callable):  # command_inout_asynch(lambda)
+        if isinstance(
+            args[0], collections.abc.Callable
+        ):  # command_inout_asynch(lambda)
             cb = __CallBackAutoDie()
             cb.cmd_ended = __CallBackAutoDie__cmd_ended_aux(self, args[0])
             argin = __get_command_inout_param(self, cmd_name)
             return self.__command_inout_asynch_cb(cmd_name, argin, cb)
-        elif hasattr(args[0], 'cmd_ended'):  # command_inout_asynch(Cbclass)
+        elif hasattr(args[0], "cmd_ended"):  # command_inout_asynch(Cbclass)
             cb = __CallBackAutoDie()
             cb.cmd_ended = __CallBackAutoDie__cmd_ended_aux(self, args[0].cmd_ended)
             argin = __get_command_inout_param(self, cmd_name)
@@ -203,12 +216,14 @@ def __Connection__command_inout_asynch(self, cmd_name, *args):
             forget = False
             return self.__command_inout_asynch_id(cmd_name, argin, forget)
     elif len(args) == 2:
-        if isinstance(args[1], collections.abc.Callable):  # command_inout_asynch( value, lambda)
+        if isinstance(
+            args[1], collections.abc.Callable
+        ):  # command_inout_asynch( value, lambda)
             cb = __CallBackAutoDie()
             cb.cmd_ended = __CallBackAutoDie__cmd_ended_aux(self, args[1])
             argin = __get_command_inout_param(self, cmd_name, args[0])
             return self.__command_inout_asynch_cb(cmd_name, argin, cb)
-        elif hasattr(args[1], 'cmd_ended'):  # command_inout_asynch(value, cbClass)
+        elif hasattr(args[1], "cmd_ended"):  # command_inout_asynch(value, cbClass)
             cb = __CallBackAutoDie()
             cb.cmd_ended = __CallBackAutoDie__cmd_ended_aux(self, args[1].cmd_ended)
             argin = __get_command_inout_param(self, cmd_name, args[0])
@@ -293,16 +308,21 @@ def __doc_Connection():
         The abstract Connection class for DeviceProxy. Not to be initialized directly.
     """
 
-    document_method("dev_name", """
+    document_method(
+        "dev_name",
+        """
     dev_name(self) -> str
 
             Return the device name as it is stored locally
 
         Parameters : None
         Return     : (str)
-    """)
+    """,
+    )
 
-    document_method("get_db_host", """
+    document_method(
+        "get_db_host",
+        """
     get_db_host(self) -> str
 
             Returns a string with the database host.
@@ -311,9 +331,12 @@ def __doc_Connection():
         Return     : (str)
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("get_db_port", """
+    document_method(
+        "get_db_port",
+        """
     get_db_port(self) -> str
 
             Returns a string with the database port.
@@ -322,9 +345,12 @@ def __doc_Connection():
         Return     : (str)
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("get_db_port_num", """
+    document_method(
+        "get_db_port_num",
+        """
     get_db_port_num(self) -> int
 
             Returns an integer with the database port.
@@ -333,9 +359,12 @@ def __doc_Connection():
         Return     : (int)
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("get_from_env_var", """
+    document_method(
+        "get_from_env_var",
+        """
     get_from_env_var(self) -> bool
 
             Returns True if determined by environment variable or
@@ -345,9 +374,12 @@ def __doc_Connection():
         Return     : (bool)
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("connect", """
+    document_method(
+        "connect",
+        """
     connect(self, corba_name) -> None
 
             Creates a connection to a TANGO device using it's stringified
@@ -358,9 +390,12 @@ def __doc_Connection():
         Return     : None
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("reconnect", """
+    document_method(
+        "reconnect",
+        """
     reconnect(self, db_used) -> None
 
             Reconnecto to a CORBA object.
@@ -370,9 +405,12 @@ def __doc_Connection():
         Return     : None
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("get_idl_version", """
+    document_method(
+        "get_idl_version",
+        """
     get_idl_version(self) -> int
 
             Get the version of the Tango Device interface implemented
@@ -380,9 +418,12 @@ def __doc_Connection():
 
         Parameters : None
         Return     : (int)
-    """)
+    """,
+    )
 
-    document_method("set_timeout_millis", """
+    document_method(
+        "set_timeout_millis",
+        """
     set_timeout_millis(self, timeout) -> None
 
             Set client side timeout for device in milliseconds. Any method
@@ -394,18 +435,24 @@ def __doc_Connection():
         Return     : None
         Example    :
                     dev.set_timeout_millis(1000)
-    """)
+    """,
+    )
 
-    document_method("get_timeout_millis", """
+    document_method(
+        "get_timeout_millis",
+        """
     get_timeout_millis(self) -> int
 
             Get the client side timeout in milliseconds
 
         Parameters : None
         Return     : (int)
-    """)
+    """,
+    )
 
-    document_method("get_source", """
+    document_method(
+        "get_source",
+        """
     get_source(self) -> DevSource
 
             Get the data source(device, polling buffer, polling buffer
@@ -416,9 +463,12 @@ def __doc_Connection():
         Example    :
                     source = dev.get_source()
                     if source == DevSource.CACHE_DEV : ...
-    """)
+    """,
+    )
 
-    document_method("set_source", """
+    document_method(
+        "set_source",
+        """
     set_source(self, source) -> None
 
             Set the data source(device, polling buffer, polling buffer
@@ -429,9 +479,12 @@ def __doc_Connection():
         Return     : None
         Example    :
                     dev.set_source(DevSource.CACHE_DEV)
-    """)
+    """,
+    )
 
-    document_method("get_transparency_reconnection", """
+    document_method(
+        "get_transparency_reconnection",
+        """
     get_transparency_reconnection(self) -> bool
 
             Returns the device transparency reconnection flag.
@@ -439,9 +492,12 @@ def __doc_Connection():
         Parameters : None
         Return     : (bool) True if transparency reconnection is set
                             or False otherwise
-    """)
+    """,
+    )
 
-    document_method("set_transparency_reconnection", """
+    document_method(
+        "set_transparency_reconnection",
+        """
     set_transparency_reconnection(self, yesno) -> None
 
             Set the device transparency reconnection flag
@@ -450,9 +506,12 @@ def __doc_Connection():
             "    - val : (bool) True to set transparency reconnection
             "                   or False otherwise
         Return     : None
-    """)
+    """,
+    )
 
-    document_method("command_inout_reply_raw", """
+    document_method(
+        "command_inout_reply_raw",
+        """
     command_inout_reply_raw(self, id) -> DeviceData
 
             Check if the answer of an asynchronous command_inout is arrived
@@ -465,9 +524,12 @@ def __doc_Connection():
             - id      : (int) Asynchronous call identifier.
         Return     : (DeviceData)
         Throws     : AsynCall, AsynReplyNotArrived, CommunicationFailed, DevFailed from device
-    """)
+    """,
+    )
 
-    document_method("command_inout_reply_raw", """
+    document_method(
+        "command_inout_reply_raw",
+        """
     command_inout_reply_raw(self, id, timeout) -> DeviceData
 
             Check if the answer of an asynchronous command_inout is arrived
@@ -485,13 +547,16 @@ def __doc_Connection():
             - timeout : (int)
         Return     : (DeviceData)
         Throws     : AsynCall, AsynReplyNotArrived, CommunicationFailed, DevFailed from device
-    """)
+    """,
+    )
 
     # //
     # // Asynchronous methods
     # //
 
-    document_method("get_asynch_replies", """
+    document_method(
+        "get_asynch_replies",
+        """
     get_asynch_replies(self) -> None
 
             Try to obtain data returned by a command asynchronously
@@ -502,9 +567,12 @@ def __doc_Connection():
         Return     : None
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("get_asynch_replies", """
+    document_method(
+        "get_asynch_replies",
+        """
     get_asynch_replies(self, call_timeout) -> None
 
             Try to obtain data returned by a command asynchronously
@@ -518,9 +586,12 @@ def __doc_Connection():
         Return     : None
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("cancel_asynch_request", """
+    document_method(
+        "cancel_asynch_request",
+        """
     cancel_asynch_request(self, id ) -> None
 
             Cancel a running asynchronous request
@@ -533,9 +604,12 @@ def __doc_Connection():
         Return     : None
 
             New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("cancel_all_polling_asynch_request", """
+    document_method(
+        "cancel_all_polling_asynch_request",
+        """
     cancel_all_polling_asynch_request(self) -> None
 
             Cancel all running asynchronous request
@@ -547,13 +621,16 @@ def __doc_Connection():
         Return     : None
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
     # //
     # // Control access related methods
     # //
 
-    document_method("get_access_control", """
+    document_method(
+        "get_access_control",
+        """
     get_access_control(self) -> AccessControlType
 
             Returns the current access control type
@@ -562,9 +639,12 @@ def __doc_Connection():
         Return     : (AccessControlType) The current access control type
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("set_access_control", """
+    document_method(
+        "set_access_control",
+        """
     set_access_control(self, acc) -> None
 
             Sets the current access control type
@@ -575,9 +655,12 @@ def __doc_Connection():
         Return     : None
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("get_access_right", """
+    document_method(
+        "get_access_right",
+        """
     get_access_right(self) -> AccessControlType
 
             Returns the current access control type
@@ -586,9 +669,12 @@ def __doc_Connection():
         Return     : (AccessControlType) The current access control type
 
         New in PyTango 8.0.0
-    """)
+    """,
+    )
 
-    document_static_method("get_fqdn", """
+    document_static_method(
+        "get_fqdn",
+        """
     get_fqdn(self) -> str
 
             Returns the fully qualified domain name
@@ -597,9 +683,12 @@ def __doc_Connection():
         Return     : (str) the fully qualified domain name
 
         New in PyTango 7.2.0
-    """)
+    """,
+    )
 
-    document_method("is_dbase_used", """
+    document_method(
+        "is_dbase_used",
+        """
     is_dbase_used(self) -> bool
 
             Returns if the database is being used
@@ -608,9 +697,12 @@ def __doc_Connection():
         Return     : (bool) True if the database is being used
 
         New in PyTango 7.2.0
-    """)
+    """,
+    )
 
-    document_method("get_dev_host", """
+    document_method(
+        "get_dev_host",
+        """
     get_dev_host(self) -> str
 
             Returns the current host
@@ -619,9 +711,12 @@ def __doc_Connection():
         Return     : (str) the current host
 
         New in PyTango 7.2.0
-    """)
+    """,
+    )
 
-    document_method("get_dev_port", """
+    document_method(
+        "get_dev_port",
+        """
     get_dev_port(self) -> str
 
             Returns the current port
@@ -630,7 +725,8 @@ def __doc_Connection():
         Return     : (str) the current port
 
         New in PyTango 7.2.0
-    """)
+    """,
+    )
 
 
 def connection_init(doc=True):

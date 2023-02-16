@@ -1,7 +1,7 @@
 from PyTango.server import Server
 
-class MyClass:
 
+class MyClass:
     def __init__(self):
         self.bla = 55.6
         self.ble = 11
@@ -11,7 +11,7 @@ class MyClass:
         return "executed func1"
 
     def func2(self, v):
-        return 2*v
+        return 2 * v
 
     def func3(self, a, b, c=1, d=3):
         """Just some documentation"""
@@ -19,8 +19,10 @@ class MyClass:
 
     def func(self, nap_time):
         import time
+
         time.sleep(nap_time)
         return f"Finished sleep for {nap_time}s"
+
 
 server = Server("many", server_type="Server")
 

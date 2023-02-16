@@ -84,7 +84,9 @@ def __doc_DeviceAttribute():
             - get_err_stack
     """
 
-    document_method("get_date", """
+    document_method(
+        "get_date",
+        """
     get_date(self) -> TimeVal
 
             Get the time at which the attribute was read by the server.
@@ -93,9 +95,12 @@ def __doc_DeviceAttribute():
 
         Parameters : None
         Return     : (TimeVal) The attribute read timestamp.
-    """)
+    """,
+    )
 
-    document_method("get_err_stack", """
+    document_method(
+        "get_err_stack",
+        """
     get_err_stack(self) -> sequence<DevError>
 
             Returns the error stack reported by the server when the
@@ -103,9 +108,12 @@ def __doc_DeviceAttribute():
 
         Parameters : None
         Return     : (sequence<DevError>)
-    """)
+    """,
+    )
 
-    document_method("set_w_dim_x", """
+    document_method(
+        "set_w_dim_x",
+        """
     set_w_dim_x(self, val) -> None
 
             Sets the write value dim x.
@@ -116,9 +124,12 @@ def __doc_DeviceAttribute():
         Return     : None
 
         New in PyTango 8.0.0
-    """)
+    """,
+    )
 
-    document_method("set_w_dim_y", """
+    document_method(
+        "set_w_dim_y",
+        """
     set_w_dim_y(self, val) -> None
 
             Sets the write value dim y.
@@ -129,7 +140,8 @@ def __doc_DeviceAttribute():
         Return     : None
 
         New in PyTango 8.0.0
-    """)
+    """,
+    )
 
 
 def __init_DeviceAttribute():
