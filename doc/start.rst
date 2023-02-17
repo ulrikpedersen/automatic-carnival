@@ -22,7 +22,14 @@ PyPI (Linux, Windows)
 
 You can install the latest version from `PyPI`_.
 
-Install PyTango with pip (common platforms have binary wheels, so no compilation or dependencies required):
+PyTango has binary wheels for common platforms, so no compilation or dependencies required.  However,
+pip needs to be at least version 19.3 in order for it to find the binary wheels:
+
+.. sourcecode:: console
+
+    $ python -m pip install --upgrade "pip>=19.3"
+
+Install PyTango with pip:
 
 .. sourcecode:: console
 
