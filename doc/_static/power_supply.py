@@ -85,7 +85,7 @@ class PowerSupply(Device):
         dtype_in=float,
         doc_in="Ramp target current",
         dtype_out=bool,
-        doc_out="True if ramping went well, " "False otherwise",
+        doc_out="True if ramping went well, False otherwise",
     )
     def Ramp(self, target_current):
         # should do the ramping
