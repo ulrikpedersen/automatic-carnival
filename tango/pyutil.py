@@ -37,7 +37,7 @@ def __simplify_device_name(dev_name):
     if dev_name.startswith("tango://"):
         dev_name = dev_name[8:]
     if dev_name.count("/") > 2:
-        dev_name = dev_name[dev_name.index("/") + 1:]
+        dev_name = dev_name[dev_name.index("/") + 1 :]
     return dev_name.lower()
 
 
@@ -45,52 +45,56 @@ def __simplify_device_name(dev_name):
 # Methods on Util
 #
 
+
 def __Util__get_class_list(self):
     """
-        get_class_list(self) -> seq<DeviceClass>
+    get_class_list(self) -> seq<DeviceClass>
 
-                Returns a list of objects of inheriting from DeviceClass
+            Returns a list of objects of inheriting from DeviceClass
 
-            Parameters : None
+        Parameters : None
 
-            Return     : (seq<DeviceClass>) a list of objects of inheriting from DeviceClass"""
+        Return     : (seq<DeviceClass>) a list of objects of inheriting from DeviceClass
+    """
     return get_constructed_classes()
 
 
 def __Util__create_device(self, klass_name, device_name, alias=None, cb=None):
     """
-        create_device(self, klass_name, device_name, alias=None, cb=None) -> None
+    create_device(self, klass_name, device_name, alias=None, cb=None) -> None
 
-            Creates a new device of the given class in the database, creates a new
-            DeviceImpl for it and calls init_device (just like it is done for
-            existing devices when the DS starts up)
+        Creates a new device of the given class in the database, creates a new
+        DeviceImpl for it and calls init_device (just like it is done for
+        existing devices when the DS starts up)
 
-            An optional parameter callback is called AFTER the device is
-            registered in the database and BEFORE the init_device for the
-            newly created device is called
+        An optional parameter callback is called AFTER the device is
+        registered in the database and BEFORE the init_device for the
+        newly created device is called
 
-            Throws tango.DevFailed:
-                - the device name exists already or
-                - the given class is not registered for this DS.
-                - the cb is not a callable
+        Throws tango.DevFailed:
+            - the device name exists already or
+            - the given class is not registered for this DS.
+            - the cb is not a callable
 
-        New in PyTango 7.1.2
+    New in PyTango 7.1.2
 
-        Parameters :
-            - klass_name : (str) the device class name
-            - device_name : (str) the device name
-            - alias : (str) optional alias. Default value is None meaning do not create device alias
-            - cb : (callable) a callback that is called AFTER the device is registered
-                   in the database and BEFORE the init_device for the newly created
-                   device is called. Typically you may want to put device and/or attribute
-                   properties in the database here. The callback must receive a parameter:
-                   device name (str). Default value is None meaning no callback
+    Parameters :
+        - klass_name : (str) the device class name
+        - device_name : (str) the device name
+        - alias : (str) optional alias. Default value is None meaning do not create device alias
+        - cb : (callable) a callback that is called AFTER the device is registered
+               in the database and BEFORE the init_device for the newly created
+               device is called. Typically you may want to put device and/or attribute
+               properties in the database here. The callback must receive a parameter:
+               device name (str). Default value is None meaning no callback
 
-        Return     : None"""
+    Return     : None"""
     if cb is not None and not isinstance(cb, collections.abc.Callable):
-        Except.throw_exception("PyAPI_InvalidParameter",
-                               "The optional cb parameter must be a python callable",
-                               "Util.create_device")
+        Except.throw_exception(
+            "PyAPI_InvalidParameter",
+            "The optional cb parameter must be a python callable",
+            "Util.create_device",
+        )
 
     db = self.get_database()
 
@@ -104,9 +108,11 @@ def __Util__create_device(self, klass_name, device_name, alias=None, cb=None):
 
     # 1 - Make sure device name doesn't exist already in the database
     if device_exists:
-        Except.throw_exception("PyAPI_DeviceAlreadyDefined",
-                               f"The device {device_name} is already defined in the database",
-                               "Util.create_device")
+        Except.throw_exception(
+            "PyAPI_DeviceAlreadyDefined",
+            f"The device {device_name} is already defined in the database",
+            "Util.create_device",
+        )
 
     # 2 - Make sure the device class is known
     klass_list = self.get_class_list()
@@ -117,9 +123,11 @@ def __Util__create_device(self, klass_name, device_name, alias=None, cb=None):
             klass = k
             break
     if klass is None:
-        Except.throw_exception("PyAPI_UnknownDeviceClass",
-                               f"The device class {klass_name} could not be found",
-                               "Util.create_device")
+        Except.throw_exception(
+            "PyAPI_UnknownDeviceClass",
+            f"The device class {klass_name} could not be found",
+            "Util.create_device",
+        )
 
     # 3 - Create entry in the database (with alias if necessary)
     dev_info = DbDevInfo()
@@ -152,22 +160,22 @@ def __Util__create_device(self, klass_name, device_name, alias=None, cb=None):
 
 def __Util__delete_device(self, klass_name, device_name):
     """
-        delete_device(self, klass_name, device_name) -> None
+    delete_device(self, klass_name, device_name) -> None
 
-            Deletes an existing device from the database and from this running
-            server
+        Deletes an existing device from the database and from this running
+        server
 
-            Throws tango.DevFailed:
-                - the device name doesn't exist in the database
-                - the device name doesn't exist in this DS.
+        Throws tango.DevFailed:
+            - the device name doesn't exist in the database
+            - the device name doesn't exist in this DS.
 
-        New in PyTango 7.1.2
+    New in PyTango 7.1.2
 
-        Parameters :
-            - klass_name : (str) the device class name
-            - device_name : (str) the device name
+    Parameters :
+        - klass_name : (str) the device class name
+        - device_name : (str) the device name
 
-        Return     : None"""
+    Return     : None"""
 
     db = self.get_database()
     device_name = __simplify_device_name(device_name)
@@ -179,9 +187,11 @@ def __Util__delete_device(self, klass_name, device_name):
 
     # 1 - Make sure device name exists in the database
     if not device_exists:
-        Except.throw_exception("PyAPI_DeviceNotDefined",
-                               f"The device {device_name} is not defined in the database",
-                               "Util.delete_device")
+        Except.throw_exception(
+            "PyAPI_DeviceNotDefined",
+            f"The device {device_name} is not defined in the database",
+            "Util.delete_device",
+        )
 
     # 2 - Make sure device name is defined in this server
     class_device_name = f"{klass_name}::{device_name}"
@@ -195,9 +205,11 @@ def __Util__delete_device(self, klass_name, device_name):
             device_exists = True
             break
     if not device_exists:
-        Except.throw_exception("PyAPI_DeviceNotDefinedInServer",
-                               f"The device {class_device_name} is not defined in this server",
-                               "Util.delete_device")
+        Except.throw_exception(
+            "PyAPI_DeviceNotDefinedInServer",
+            f"The device {class_device_name} is not defined in this server",
+            "Util.delete_device",
+        )
 
     db.delete_device(device_name)
 
@@ -208,51 +220,131 @@ def __Util__delete_device(self, klass_name, device_name):
 
 
 def parse_args(args):
-    parser = ArgumentParser(prog=os.path.splitext(args[0])[0], usage="%(prog)s instance_name [-v[trace level]] " +
-                                   "[-host] [-port] [-file=<file_name> | -nodb [-dlist]]", add_help=False,
-                            formatter_class=PyTangoHelpFormatter)
+    parser = ArgumentParser(
+        prog=os.path.splitext(args[0])[0],
+        usage="%(prog)s instance_name [-v[trace level]] "
+        + "[-host] [-port] [-file=<file_name> | -nodb [-dlist]]",
+        add_help=False,
+        formatter_class=PyTangoHelpFormatter,
+    )
 
-    parser.add_argument('instance_name', nargs='+', help='Device server instance name')
-    parser.add_argument("-h", "-?", "--help", action="help", help="show this help message and exit")
+    parser.add_argument("instance_name", nargs="+", help="Device server instance name")
+    parser.add_argument(
+        "-h", "-?", "--help", action="help", help="show this help message and exit"
+    )
 
-    parser.add_argument("-v", "--verbose", dest="verbose", action='count',
-                        help="set the trace level. " +
-                             "Can be used in count way: -vv or --verbose --verbose")
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        dest="verbose",
+        action="count",
+        help="set the trace level. "
+        + "Can be used in count way: -vv or --verbose --verbose",
+    )
     # this option won't be used, since we manually pop all -vN and -v N arguments, but we have to display help about it
-    parser.add_argument("-vLEVEL", dest="vn", action='store', metavar=" ",
-                        help="directly set the trace level to LEVEL")
+    parser.add_argument(
+        "-vLEVEL",
+        dest="vn",
+        action="store",
+        metavar=" ",
+        help="directly set the trace level to LEVEL",
+    )
 
-    parser.add_argument("-file", "--file", dest="file", metavar="FILE_PATH",
-                        help="start device server using an ASCII file instead of the Tango database")
+    parser.add_argument(
+        "-file",
+        "--file",
+        dest="file",
+        metavar="FILE_PATH",
+        help="start device server using an ASCII file instead of the Tango database",
+    )
 
-    parser.add_argument("-host", "--host", dest="host", default='0.0.0.0', action="store",
-                       help="Force the host from which server accepts requests (alternatively use ORBendPoint option)")
-    parser.add_argument("-port", "--port", dest="port", default='', action="store",
-                       help="Force the port on which the device server listens (alternatively use ORBendPoint option)")
+    parser.add_argument(
+        "-host",
+        "--host",
+        dest="host",
+        default="0.0.0.0",
+        action="store",
+        help="Force the host from which server accepts requests (alternatively use ORBendPoint option)",
+    )
+    parser.add_argument(
+        "-port",
+        "--port",
+        dest="port",
+        default="",
+        action="store",
+        help="Force the port on which the device server listens (alternatively use ORBendPoint option)",
+    )
 
     if sys.platform.startswith("win"):
-        parser.add_argument("-dbg", "--dbg", dest="dbg", action='store_true', default=False, help="Enable debug")
-        parser.add_argument("-i", dest="i", action='store_true', default=False, help="Install the service")
-        parser.add_argument("-s", dest="s", action='store_true', default=False,
-                            help="Install the service and choose the automatic startup mode")
-        parser.add_argument("-u", dest="u", action='store_true', default=False, help="Uninstall the service")
+        parser.add_argument(
+            "-dbg",
+            "--dbg",
+            dest="dbg",
+            action="store_true",
+            default=False,
+            help="Enable debug",
+        )
+        parser.add_argument(
+            "-i",
+            dest="i",
+            action="store_true",
+            default=False,
+            help="Install the service",
+        )
+        parser.add_argument(
+            "-s",
+            dest="s",
+            action="store_true",
+            default=False,
+            help="Install the service and choose the automatic startup mode",
+        )
+        parser.add_argument(
+            "-u",
+            dest="u",
+            action="store_true",
+            default=False,
+            help="Uninstall the service",
+        )
 
     group = parser.add_argument_group("Run device server without database")
-    group.add_argument("-nodb", "--nodb", dest="nodb", action="store_true", help="run server without DB")
-    group.add_argument("-dlist", "--dlist", dest="dlist", metavar="DEV1,DEV2,etc",
-                       help="The device name list. This option is supported only with the -nodb option.")
+    group.add_argument(
+        "-nodb",
+        "--nodb",
+        dest="nodb",
+        action="store_true",
+        help="run server without DB",
+    )
+    group.add_argument(
+        "-dlist",
+        "--dlist",
+        dest="dlist",
+        metavar="DEV1,DEV2,etc",
+        help="The device name list. This option is supported only with the -nodb option.",
+    )
 
-    group = parser.add_argument_group("ORB options (started with -ORBxxx):" +
-                                      "options directly passed to the underlying ORB. Should be rarely used")
+    group = parser.add_argument_group(
+        "ORB options (started with -ORBxxx):"
+        + "options directly passed to the underlying ORB. Should be rarely used"
+    )
 
-    group.add_argument("-ORBendPoint", "--ORBendPoint", dest="ORBendPoint", action="store",
-                       metavar="giop:tcp:<host>:<port>",
-                       help="Specifying the host from which server accept "
-                            "requests and port on which the device server listens.")
+    group.add_argument(
+        "-ORBendPoint",
+        "--ORBendPoint",
+        dest="ORBendPoint",
+        action="store",
+        metavar="giop:tcp:<host>:<port>",
+        help="Specifying the host from which server accept "
+        "requests and port on which the device server listens.",
+    )
 
-    group.add_argument("-ORB<other_option>", "--ORB<other_option>", dest="ORB_not_used", action="store",
-                       metavar="other_value",
-                       help="Any other ORB option, e.g., -ORBtraceLevel 5")
+    group.add_argument(
+        "-ORB<other_option>",
+        "--ORB<other_option>",
+        dest="ORB_not_used",
+        action="store",
+        metavar="other_value",
+        help="Any other ORB option, e.g., -ORBtraceLevel 5",
+    )
 
     # workaround to add arbitrary ORB options
     for arg in args:
@@ -260,18 +352,18 @@ def parse_args(args):
         if match:
             suffix = match.group("suffix")
             if suffix != "endPoint":
-                arg = arg.lstrip('-')
+                arg = arg.lstrip("-")
                 group.add_argument("-" + arg, "--" + arg, action="store", dest=arg)
 
     # since -vvvv and -v4 options are incompatible, we have to pop all -vN options
     verbose = None
     for ind, arg in enumerate(args):
-        if re.match(r'-[vV][=]?\d+', arg) is not None:
-            verbose = int(re.findall(r'\d+', arg)[0])
+        if re.match(r"-[vV][=]?\d+", arg) is not None:
+            verbose = int(re.findall(r"\d+", arg)[0])
             args.remove(arg)
             break
-        if len(arg) == 2 and re.match(r'-[vV]', arg) is not None:
-            if ind + 1 < len(args) and re.match(r'\d+', args[ind + 1]) is not None:
+        if len(arg) == 2 and re.match(r"-[vV]", arg) is not None:
+            if ind + 1 < len(args) and re.match(r"\d+", args[ind + 1]) is not None:
                 verbose = int(args[ind + 1])
                 args.pop(ind + 1)
                 args.remove(arg)
@@ -280,13 +372,15 @@ def parse_args(args):
     parsed_args = parser.parse_args(args[1:])
 
     if parsed_args.port and parsed_args.ORBendPoint is None:
-        parsed_args.ORBendPoint = f'giop:tcp:{parsed_args.host:s}:{parsed_args.port:s}'
+        parsed_args.ORBendPoint = f"giop:tcp:{parsed_args.host:s}:{parsed_args.port:s}"
 
     if parsed_args.nodb and parsed_args.ORBendPoint is None:
-        raise SystemExit('-nodb option should used with [-host] -port or -ORBendPoint options')
+        raise SystemExit(
+            "-nodb option should used with [-host] -port or -ORBendPoint options"
+        )
 
     if parsed_args.dlist is not None and not parsed_args.nodb:
-        raise SystemExit('-dlist should be used only with -nodb option')
+        raise SystemExit("-dlist should be used only with -nodb option")
 
     args = [os.path.splitext(args[0])[0]]
 
@@ -294,9 +388,9 @@ def parse_args(args):
 
     # -v4 has priority on -vvvv
     if verbose is not None:
-        args += [f'-v{verbose}']
+        args += [f"-v{verbose}"]
     elif parsed_args.verbose is not None:
-        args += [f'-v{parsed_args.verbose}']
+        args += [f"-v{parsed_args.verbose}"]
 
     # we add back only exist options
     for key, value in parsed_args.__dict__.items():
@@ -304,13 +398,18 @@ def parse_args(args):
             if value:
                 args += [f"-{key:s}"]
         elif value is not None:
-            if key == 'file':
+            if key == "file":
                 args += [f"-{key:s}={value:s}"]
-            elif key not in ['host', 'port', 'verbose', 'instance_name', 'ORB_not_used']:
+            elif key not in [
+                "host",
+                "port",
+                "verbose",
+                "instance_name",
+                "ORB_not_used",
+            ]:
                 args += [f"-{key:s}", f"{value:s}"]
 
     return args
-
 
 
 def __Util__init__(self, args):
@@ -323,15 +422,14 @@ def __Util__init(args):
     return Util.__init_orig(args)
 
 
-def __Util__add_TgClass(self, klass_device_class, klass_device,
-                        device_class_name=None):
+def __Util__add_TgClass(self, klass_device_class, klass_device, device_class_name=None):
     """Register a new python tango class. Example::
 
-           util.add_TgClass(MotorClass, Motor)
-           util.add_TgClass(MotorClass, Motor, 'Motor') # equivalent to previous line
+        util.add_TgClass(MotorClass, Motor)
+        util.add_TgClass(MotorClass, Motor, 'Motor') # equivalent to previous line
 
-       .. deprecated:: 7.1.2
-           Use :meth:`tango.Util.add_class` instead."""
+    .. deprecated:: 7.1.2
+        Use :meth:`tango.Util.add_class` instead."""
     if device_class_name is None:
         device_class_name = klass_device.__name__
     class_list.append((klass_device_class, klass_device, device_class_name))
@@ -340,33 +438,33 @@ def __Util__add_TgClass(self, klass_device_class, klass_device,
 def __Util__add_Cpp_TgClass(self, device_class_name, tango_device_class_name):
     """Register a new C++ tango class.
 
-       If there is a shared library file called MotorClass.so which
-       contains a MotorClass class and a _create_MotorClass_class method. Example::
+    If there is a shared library file called MotorClass.so which
+    contains a MotorClass class and a _create_MotorClass_class method. Example::
 
-           util.add_Cpp_TgClass('MotorClass', 'Motor')
+        util.add_Cpp_TgClass('MotorClass', 'Motor')
 
-       .. note:: the parameter 'device_class_name' must match the shared
-                 library name.
+    .. note:: the parameter 'device_class_name' must match the shared
+              library name.
 
-       .. deprecated:: 7.1.2
-           Use :meth:`tango.Util.add_class` instead."""
+    .. deprecated:: 7.1.2
+        Use :meth:`tango.Util.add_class` instead."""
     cpp_class_list.append((device_class_name, tango_device_class_name))
 
 
 def __Util__add_class(self, *args, **kwargs):
     """
-        add_class(self, class<DeviceClass>, class<DeviceImpl>, language="python") -> None
+    add_class(self, class<DeviceClass>, class<DeviceImpl>, language="python") -> None
 
-            Register a new tango class ('python' or 'c++').
+        Register a new tango class ('python' or 'c++').
 
-            If language is 'python' then args must be the same as
-            :meth:`tango.Util.add_TgClass`. Otherwise, args should be the ones
-            in :meth:`tango.Util.add_Cpp_TgClass`. Example::
+        If language is 'python' then args must be the same as
+        :meth:`tango.Util.add_TgClass`. Otherwise, args should be the ones
+        in :meth:`tango.Util.add_Cpp_TgClass`. Example::
 
-                util.add_class(MotorClass, Motor)
-                util.add_class('CounterClass', 'Counter', language='c++')
+            util.add_class(MotorClass, Motor)
+            util.add_class('CounterClass', 'Counter', language='c++')
 
-        New in PyTango 7.1.2"""
+    New in PyTango 7.1.2"""
     language = kwargs.get("language", "python")
     f = self.add_TgClass
     if language != "python":
@@ -406,7 +504,9 @@ def __doc_Util():
     def document_static_method(method_name, desc, append=True):
         return __document_static_method(Util, method_name, desc, append)
 
-    document_static_method("instance", """
+    document_static_method(
+        "instance",
+        """
     instance(exit = True) -> Util
 
            Static method that gets the singleton object reference.
@@ -419,9 +519,12 @@ def __doc_Util():
        :rtype: :class:`Util`
        
        :raises: :class:`DevFailed` instead of aborting if exit is set to False
-    """)
+    """,
+    )
 
-    document_static_method("init", """
+    document_static_method(
+        "init",
+        """
     init(*args) -> Util
 
        Static method that creates and gets the singleton object reference.
@@ -432,9 +535,12 @@ def __doc_Util():
        
        :return: :class:`Util` the tango Util object
        :rtype: :class:`Util`
-    """)
+    """,
+    )
 
-    document_method("get_device_ior", """
+    document_method(
+        "get_device_ior",
+        """
     get_device_ior(self, device) -> str
 
         Get the CORBA Interoperable Object Reference (IOR) associated with the device
@@ -444,9 +550,12 @@ def __doc_Util():
         
         :return: the associated CORBA object reference
         :rtype: str
-    """)
+    """,
+    )
 
-    document_method("get_dserver_ior", """
+    document_method(
+        "get_dserver_ior",
+        """
     get_dserver_ior(self, device_server) -> str
 
         Get the CORBA Interoperable Object Reference (IOR) associated with the device server
@@ -456,9 +565,12 @@ def __doc_Util():
 
         :return: the associated CORBA object reference
         :rtype: str
-    """)
+    """,
+    )
 
-    document_method("set_trace_level", """
+    document_method(
+        "set_trace_level",
+        """
     set_trace_level(self, level) -> None
 
             Set the process trace level.
@@ -466,18 +578,24 @@ def __doc_Util():
         Parameters :
             - level : (int) the new process level
         Return     : None
-    """)
+    """,
+    )
 
-    document_method("get_trace_level", """
+    document_method(
+        "get_trace_level",
+        """
     get_trace_level(self) -> int
 
             Get the process trace level.
 
         Parameters : None
         Return     : (int) the process trace level.
-    """)
+    """,
+    )
 
-    document_method("get_ds_inst_name", """
+    document_method(
+        "get_ds_inst_name",
+        """
     get_ds_inst_name(self) -> str
 
             Get a COPY of the device server instance name.
@@ -486,9 +604,12 @@ def __doc_Util():
         Return     : (str) a COPY of the device server instance name.
 
         New in PyTango 3.0.4
-    """)
+    """,
+    )
 
-    document_method("get_ds_exec_name", """
+    document_method(
+        "get_ds_exec_name",
+        """
     get_ds_exec_name(self) -> str
 
             Get a COPY of the device server executable name.
@@ -497,9 +618,12 @@ def __doc_Util():
         Return     : (str) a COPY of the device server executable name.
 
         New in PyTango 3.0.4
-    """)
+    """,
+    )
 
-    document_method("get_ds_name", """
+    document_method(
+        "get_ds_name",
+        """
     get_ds_name(self) -> str
 
             Get the device server name.
@@ -509,9 +633,12 @@ def __doc_Util():
         Return     : (str) device server name
 
         New in PyTango 3.0.4
-    """)
+    """,
+    )
 
-    document_method("get_host_name", """
+    document_method(
+        "get_host_name",
+        """
     get_host_name(self) -> str
 
             Get the host name where the device server process is running.
@@ -520,9 +647,12 @@ def __doc_Util():
         Return     : (str) the host name where the device server process is running
 
         New in PyTango 3.0.4
-    """)
+    """,
+    )
 
-    document_method("get_pid_str", """
+    document_method(
+        "get_pid_str",
+        """
     get_pid_str(self) -> str
 
             Get the device server process identifier as a string.
@@ -531,18 +661,24 @@ def __doc_Util():
         Return     : (str) the device server process identifier as a string
 
         New in PyTango 3.0.4
-    """)
+    """,
+    )
 
-    document_method("get_pid", """
+    document_method(
+        "get_pid",
+        """
     get_pid(self) -> TangoSys_Pid
 
             Get the device server process identifier.
 
         Parameters : None
         Return     : (int) the device server process identifier
-    """)
+    """,
+    )
 
-    document_method("get_tango_lib_release", """
+    document_method(
+        "get_tango_lib_release",
+        """
     get_tango_lib_release(self) -> int
 
             Get the TANGO library version number.
@@ -550,9 +686,12 @@ def __doc_Util():
         Parameters : None
         Return     : (int) The Tango library release number coded in
                      3 digits (for instance 550,551,552,600,....)
-    """)
+    """,
+    )
 
-    document_method("get_version_str", """
+    document_method(
+        "get_version_str",
+        """
     get_version_str(self) -> str
 
             Get the IDL TANGO version.
@@ -561,18 +700,24 @@ def __doc_Util():
         Return     : (str) the IDL TANGO version.
 
         New in PyTango 3.0.4
-    """)
+    """,
+    )
 
-    document_method("get_server_version", """
+    document_method(
+        "get_server_version",
+        """
     get_server_version(self) -> str
 
             Get the device server version.
 
         Parameters : None
         Return     : (str) the device server version.
-    """)
+    """,
+    )
 
-    document_method("set_server_version", """
+    document_method(
+        "set_server_version",
+        """
     set_server_version(self, vers) -> None
 
             Set the device server version.
@@ -580,9 +725,12 @@ def __doc_Util():
         Parameters :
             - vers : (str) the device server version
         Return     : None
-    """)
+    """,
+    )
 
-    document_method("set_serial_model", """
+    document_method(
+        "set_serial_model",
+        """
     set_serial_model(self, ser) -> None
 
             Set the serialization model.
@@ -591,18 +739,24 @@ def __doc_Util():
             - ser : (SerialModel) the new serialization model. The serialization model must
                     be one of BY_DEVICE, BY_CLASS, BY_PROCESS or NO_SYNC
         Return     : None
-    """)
+    """,
+    )
 
-    document_method("get_serial_model", """
+    document_method(
+        "get_serial_model",
+        """
     get_serial_model(self) ->SerialModel
 
             Get the serialization model.
 
         Parameters : None
         Return     : (SerialModel) the serialization model
-    """)
+    """,
+    )
 
-    document_method("connect_db", """
+    document_method(
+        "connect_db",
+        """
     connect_db(self) -> None
 
             Connect the process to the TANGO database.
@@ -611,27 +765,36 @@ def __doc_Util():
 
         Parameters : None
         Return     : None
-    """)
+    """,
+    )
 
-    document_method("reset_filedatabase", """
+    document_method(
+        "reset_filedatabase",
+        """
     reset_filedatabase(self) -> None
 
             Reread the file database.
 
         Parameters : None
         Return     : None
-    """)
+    """,
+    )
 
-    document_method("unregister_server", """
+    document_method(
+        "unregister_server",
+        """
     unregister_server(self) -> None
 
             Unregister a device server process from the TANGO database.
 
         Parameters : None
         Return     : None
-    """)
+    """,
+    )
 
-    document_method("get_dserver_device", """
+    document_method(
+        "get_dserver_device",
+        """
     get_dserver_device(self) -> DServer
 
             Get a reference to the dserver device attached to the device server process.
@@ -640,9 +803,12 @@ def __doc_Util():
         Return     : (DServer) the dserver device attached to the device server process
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("server_init", """
+    document_method(
+        "server_init",
+        """
     server_init(self, with_window = False) -> None
 
             Initialize all the device server pattern(s) embedded in a device server process.
@@ -652,9 +818,12 @@ def __doc_Util():
         Return     : None
 
         Throws     : DevFailed If the device pattern initialistaion failed
-    """)
+    """,
+    )
 
-    document_method("server_run", """
+    document_method(
+        "server_run",
+        """
     server_run(self) -> None
 
             Run the CORBA event loop.
@@ -664,10 +833,13 @@ def __doc_Util():
 
         Parameters : None
         Return     : None
-    """)
+    """,
+    )
 
     # TODO finish documentation
-    document_method("orb_run", """
+    document_method(
+        "orb_run",
+        """
     orb_run(self) -> None
 
             Run the CORBA event loop directly (EXPERT FEATURE!)
@@ -678,9 +850,12 @@ def __doc_Util():
 
         Parameters : None
         Return     : None
-    """)
+    """,
+    )
 
-    document_method("trigger_cmd_polling", """
+    document_method(
+        "trigger_cmd_polling",
+        """
     trigger_cmd_polling(self, dev, name) -> None
 
             Trigger polling for polled command.
@@ -693,9 +868,12 @@ def __doc_Util():
         Return     : None
 
         Throws     : DevFailed If the call failed
-    """)
+    """,
+    )
 
-    document_method("trigger_attr_polling", """
+    document_method(
+        "trigger_attr_polling",
+        """
     trigger_attr_polling(self, dev, name) -> None
 
             Trigger polling for polled attribute.
@@ -706,9 +884,12 @@ def __doc_Util():
             - dev : (DeviceImpl) the TANGO device
             - name : (str) the attribute name which must be polled
         Return     : None
-    """)
+    """,
+    )
 
-    document_method("set_polling_threads_pool_size", """
+    document_method(
+        "set_polling_threads_pool_size",
+        """
     set_polling_threads_pool_size(self, thread_nb) -> None
 
             Set the polling threads pool size.
@@ -718,18 +899,24 @@ def __doc_Util():
         Return     : None
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("get_polling_threads_pool_size", """
+    document_method(
+        "get_polling_threads_pool_size",
+        """
     get_polling_threads_pool_size(self) -> int
 
             Get the polling threads pool size.
 
         Parameters : None
         Return     : (int) the maximun number of threads in the polling threads pool
-    """)
+    """,
+    )
 
-    document_method("is_svr_starting", """
+    document_method(
+        "is_svr_starting",
+        """
     is_svr_starting(self) -> bool
 
             Check if the device server process is in its starting phase
@@ -738,9 +925,12 @@ def __doc_Util():
         Return     : (bool) True if the server is in its starting phase
 
         New in PyTango 8.0.0
-    """)
+    """,
+    )
 
-    document_method("is_svr_shutting_down", """
+    document_method(
+        "is_svr_shutting_down",
+        """
     is_svr_shutting_down(self) -> bool
 
             Check if the device server process is in its shutting down sequence
@@ -749,9 +939,12 @@ def __doc_Util():
         Return     : (bool) True if the server is in its shutting down phase.
 
         New in PyTango 8.0.0
-    """)
+    """,
+    )
 
-    document_method("is_device_restarting", """
+    document_method(
+        "is_device_restarting",
+        """
     is_device_restarting(self, (str)dev_name) -> bool
 
             Check if the device is actually restarted by the device server
@@ -762,9 +955,12 @@ def __doc_Util():
         Return     : (bool) True if the device is restarting.
 
         New in PyTango 8.0.0
-    """)
+    """,
+    )
 
-    document_method("get_sub_dev_diag", """
+    document_method(
+        "get_sub_dev_diag",
+        """
     get_sub_dev_diag(self) -> SubDevDiag
 
             Get the internal sub device manager
@@ -773,9 +969,12 @@ def __doc_Util():
         Return     : (SubDevDiag) the sub device manager
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("reset_filedatabase", """
+    document_method(
+        "reset_filedatabase",
+        """
     reset_filedatabase(self) -> None
 
             Reread the file database
@@ -784,9 +983,12 @@ def __doc_Util():
         Return     : None
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("get_database", """
+    document_method(
+        "get_database",
+        """
     get_database(self) -> Database
 
             Get a reference to the TANGO database object
@@ -795,9 +997,12 @@ def __doc_Util():
         Return     : (Database) the database
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("unregister_server", """
+    document_method(
+        "unregister_server",
+        """
     unregister_server(self) -> None
 
             Unregister a device server process from the TANGO database.
@@ -808,9 +1013,12 @@ def __doc_Util():
         Return     : None
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("get_device_list_by_class", """
+    document_method(
+        "get_device_list_by_class",
+        """
     get_device_list_by_class(self, class_name) -> sequence<DeviceImpl>
 
             Get the list of device references for a given TANGO class.
@@ -823,9 +1031,12 @@ def __doc_Util():
         Return     : (sequence<DeviceImpl>) The device reference list
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("get_device_by_name", """
+    document_method(
+        "get_device_by_name",
+        """
     get_device_by_name(self, dev_name) -> DeviceImpl
 
             Get a device reference from its name
@@ -835,9 +1046,12 @@ def __doc_Util():
         Return     : (DeviceImpl) The device reference
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("get_dserver_device", """
+    document_method(
+        "get_dserver_device",
+        """
     get_dserver_device(self) -> DServer
 
             Get a reference to the dserver device attached to the device server process
@@ -846,9 +1060,12 @@ def __doc_Util():
         Return     : (DServer) A reference to the dserver device
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("get_device_list", """
+    document_method(
+        "get_device_list",
+        """
     get_device_list(self) -> sequence<DeviceImpl>
 
             Get device list from name.
@@ -859,9 +1076,12 @@ def __doc_Util():
         Return     : (sequence<DeviceImpl>) the list of device objects
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("server_set_event_loop", """
+    document_method(
+        "server_set_event_loop",
+        """
     server_set_event_loop(self, event_loop) -> None
 
         This method registers an event loop function in a Tango server.
@@ -893,7 +1113,8 @@ def __doc_Util():
         Return     : None
 
         New in PyTango 8.1.0
-    """)
+    """,
+    )
 
     # TODO finish documentation
     # document_method("set_interceptors", """
@@ -911,7 +1132,9 @@ def __doc_Util():
     #
     # """)
 
-    document_method("server_cleanup", """
+    document_method(
+        "server_cleanup",
+        """
     server_cleanup(self) -> None
 
         Release device server resources (EXPERT FEATURE!)
@@ -920,12 +1143,14 @@ def __doc_Util():
         all computer resources before the process exits.  It is
         unnecessary to call this, unless Util.server_run has been bypassed. 
 
-    """)
+    """,
+    )
 
 
 #
 # EnsureOmniThread context handler
 #
+
 
 def __EnsureOmniThread__enter__(self):
     self._acquire()

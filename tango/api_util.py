@@ -39,7 +39,10 @@ def __doc_api_util():
     New in PyTango 7.1.3
     """
 
-    document_static_method(ApiUtil, "instance", """
+    document_static_method(
+        ApiUtil,
+        "instance",
+        """
     instance() -> ApiUtil
 
             Returns the ApiUtil singleton instance.
@@ -48,9 +51,13 @@ def __doc_api_util():
         Return     : (ApiUtil) a reference to the ApiUtil singleton object.
 
         New in PyTango 7.1.3
-    """)
+    """,
+    )
 
-    document_method(ApiUtil, "pending_asynch_call", """
+    document_method(
+        ApiUtil,
+        "pending_asynch_call",
+        """
     pending_asynch_call(self, req) -> int
 
             Return number of asynchronous pending requests (any device).
@@ -66,9 +73,13 @@ def __doc_api_util():
         Return     : (int) the number of pending requests for the given type
 
         New in PyTango 7.1.3
-    """)
+    """,
+    )
 
-    document_method(ApiUtil, "get_asynch_replies", """
+    document_method(
+        ApiUtil,
+        "get_asynch_replies",
+        """
     get_asynch_replies(self) -> None
 
             Fire callback methods for all (any device) asynchronous requests
@@ -103,9 +114,13 @@ def __doc_api_util():
                      callback methods.
 
         New in PyTango 7.1.3
-    """)
+    """,
+    )
 
-    document_method(ApiUtil, "set_asynch_cb_sub_model", """
+    document_method(
+        ApiUtil,
+        "set_asynch_cb_sub_model",
+        """
     set_asynch_cb_sub_model(self, model) -> None
 
             Set the asynchronous callback sub-model between the pull and push sub-model.
@@ -119,9 +134,13 @@ def __doc_api_util():
         Return     : None
 
         New in PyTango 7.1.3
-    """)
+    """,
+    )
 
-    document_method(ApiUtil, "get_asynch_cb_sub_model", """
+    document_method(
+        ApiUtil,
+        "get_asynch_cb_sub_model",
+        """
     get_asynch_cb_sub_model(self) -> cb_sub_model
 
             Get the asynchronous callback sub-model.
@@ -130,10 +149,13 @@ def __doc_api_util():
         Return     : (cb_sub_model) the active asynchronous callback sub-model.
 
         New in PyTango 7.1.3
-    """)
+    """,
+    )
 
-
-    document_static_method(ApiUtil, "cleanup", """
+    document_static_method(
+        ApiUtil,
+        "cleanup",
+        """
     cleanup() -> None
 
             Destroy the ApiUtil singleton instance.
@@ -146,7 +168,8 @@ def __doc_api_util():
         Return     : None
 
         New in PyTango 9.3.0
-    """)
+    """,
+    )
 
 
 def api_util_init(doc=True):

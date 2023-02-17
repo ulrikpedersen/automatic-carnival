@@ -9,13 +9,20 @@ import sys
 import os
 import json
 
-__all__ = ("state", "command_typed_values", "attribute_typed_values",
-           "server_green_mode", "attr_data_format", "extract_as", "base_type")
+__all__ = (
+    "state",
+    "command_typed_values",
+    "attribute_typed_values",
+    "server_green_mode",
+    "attr_data_format",
+    "extract_as",
+    "base_type",
+)
 
 
 @pytest.hookimpl()
 def pytest_sessionfinish(session):
-    """ Collects all tests to be run and outputs to bat script """
+    """Collects all tests to be run and outputs to bat script"""
     if "--collect-only" in sys.argv and "-q" in sys.argv and "nt" in os.name:
         print("Generating windows test script...")
         script_path = os.path.join(os.path.dirname(__file__), "run_tests_win.bat")
@@ -34,12 +41,14 @@ def pytest_sessionfinish(session):
                 #   Exit code 3: Internal error happened while executing tests
                 #   Exit code 4: pytest command line usage error
                 #   Exit code 5: No tests were collected
-                f.write("if %ERRORLEVEL% geq 2 if %ERRORLEVEL% leq 5 exit /b %ERRORLEVEL%\n")
+                f.write(
+                    "if %ERRORLEVEL% geq 2 if %ERRORLEVEL% leq 5 exit /b %ERRORLEVEL%\n"
+                )
 
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport():
-    """ Produces summary.json file for quick windows test summary """
+    """Produces summary.json file for quick windows test summary"""
     summary_path = "summary.json"
 
     outcome = yield  # Run all other pytest_runtest_makereport non wrapped hooks

@@ -27,7 +27,8 @@ def test_events():
 
     with DeviceTestContext(PowerSupply, process=True) as proxy:
         eid = proxy.subscribe_event(
-            "voltage", EventType.CHANGE_EVENT, callback, wait=True)
+            "voltage", EventType.CHANGE_EVENT, callback, wait=True
+        )
         # wait for events to happen
         time.sleep(4)  # not ideal in tests!
         assert len(results) > 1

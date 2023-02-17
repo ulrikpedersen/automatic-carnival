@@ -15,8 +15,7 @@ from libps import PowerSupplyClient
 
 
 class PowerSupply(Device):
-
-    host = device_property(str, default_value='localhost')
+    host = device_property(str, default_value="localhost")
     port = device_property(int, default_value=45000)
 
     @DebugIt()
@@ -40,5 +39,5 @@ class PowerSupply(Device):
         self.ps_client.do_calibration()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     PowerSupply.run_server()

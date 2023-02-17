@@ -46,86 +46,88 @@ except ImportError:
 
 
 ATTRIBUTES = [
-              'State',
-              'Status',
-              'ampli',
-              'boolean_image',
-              'boolean_image_ro',
-              'boolean_scalar',
-              'boolean_spectrum',
-              'boolean_spectrum_ro',
-              'double_image',
-              'double_image_ro',
-              'double_scalar',
-              'double_scalar_rww',
-              'double_scalar_w',
-              'double_spectrum',
-              'double_spectrum_ro',
-              'enum_image',
-              'enum_image_ro',
-              'enum_scalar',
-              'enum_scalar_ro',
-              'enum_spectrum',
-              'enum_spectrum_ro',
-              'float_image',
-              'float_image_ro',
-              'float_scalar',
-              'float_spectrum',
-              'float_spectrum_ro',
-              'freq',
-              'long64_image_ro',
-              'long64_scalar',
-              'long64_spectrum_ro',
-              'long_image',
-              'long_image_ro',
-              'long_scalar',
-              'long_scalar_rww',
-              'long_scalar_w',
-              'long_spectrum',
-              'long_spectrum_ro',
-              'no_value',
-              'short_image',
-              'short_image_ro',
-              'short_scalar',
-              'short_scalar_ro',
-              'short_scalar_rww',
-              'short_scalar_w',
-              'short_spectrum',
-              'short_spectrum_ro',
-              'string_image',
-              'string_image_ro',
-              'string_scalar',
-              'string_spectrum',
-              'string_spectrum_ro',
-              'throw_exception',
-              'uchar_image',
-              'uchar_image_ro',
-              'uchar_scalar',
-              'uchar_spectrum',
-              'uchar_spectrum_ro',
-              'ulong64_image_ro',
-              'ulong64_scalar',
-              'ulong64_spectrum_ro',
-              'ulong_image_ro',
-              'ulong_scalar',
-              'ulong_spectrum_ro',
-              'ushort_image',
-              'ushort_image_ro',
-              'ushort_scalar',
-              'ushort_spectrum',
-              'ushort_spectrum_ro',
-              'wave'
-             ]
+    "State",
+    "Status",
+    "ampli",
+    "boolean_image",
+    "boolean_image_ro",
+    "boolean_scalar",
+    "boolean_spectrum",
+    "boolean_spectrum_ro",
+    "double_image",
+    "double_image_ro",
+    "double_scalar",
+    "double_scalar_rww",
+    "double_scalar_w",
+    "double_spectrum",
+    "double_spectrum_ro",
+    "enum_image",
+    "enum_image_ro",
+    "enum_scalar",
+    "enum_scalar_ro",
+    "enum_spectrum",
+    "enum_spectrum_ro",
+    "float_image",
+    "float_image_ro",
+    "float_scalar",
+    "float_spectrum",
+    "float_spectrum_ro",
+    "freq",
+    "long64_image_ro",
+    "long64_scalar",
+    "long64_spectrum_ro",
+    "long_image",
+    "long_image_ro",
+    "long_scalar",
+    "long_scalar_rww",
+    "long_scalar_w",
+    "long_spectrum",
+    "long_spectrum_ro",
+    "no_value",
+    "short_image",
+    "short_image_ro",
+    "short_scalar",
+    "short_scalar_ro",
+    "short_scalar_rww",
+    "short_scalar_w",
+    "short_spectrum",
+    "short_spectrum_ro",
+    "string_image",
+    "string_image_ro",
+    "string_scalar",
+    "string_spectrum",
+    "string_spectrum_ro",
+    "throw_exception",
+    "uchar_image",
+    "uchar_image_ro",
+    "uchar_scalar",
+    "uchar_spectrum",
+    "uchar_spectrum_ro",
+    "ulong64_image_ro",
+    "ulong64_scalar",
+    "ulong64_spectrum_ro",
+    "ulong_image_ro",
+    "ulong_scalar",
+    "ulong_spectrum_ro",
+    "ushort_image",
+    "ushort_image_ro",
+    "ushort_scalar",
+    "ushort_spectrum",
+    "ushort_spectrum_ro",
+    "wave",
+]
 
 
 device_proxy_map = {
     GreenMode.Synchronous: DeviceProxy,
     GreenMode.Futures: futures_DeviceProxy,
     GreenMode.Asyncio: partial(asyncio_DeviceProxy, wait=True),
-    GreenMode.Gevent: gevent_DeviceProxy}
+    GreenMode.Gevent: gevent_DeviceProxy,
+}
 
 
 # Helpers
+
 
 def start_server(host, server, inst, device):
     exe = find_executable(server)
@@ -179,11 +181,16 @@ def ping_device(proxy):
 
 # Fixtures
 
-@pytest.fixture(params=[GreenMode.Synchronous,
-                        GreenMode.Asyncio,
-                        GreenMode.Gevent,
-                        GreenMode.Futures],
-                scope="module")
+
+@pytest.fixture(
+    params=[
+        GreenMode.Synchronous,
+        GreenMode.Asyncio,
+        GreenMode.Gevent,
+        GreenMode.Futures,
+    ],
+    scope="module",
+)
 def tango_test_with_green_modes(request):
     green_mode = request.param
     server = "TangoTest"
@@ -219,35 +226,46 @@ def attribute(request):
     return request.param
 
 
-@pytest.fixture(params=[a for a in ATTRIBUTES
-                        if a not in ("no_value", "throw_exception")])
+@pytest.fixture(
+    params=[a for a in ATTRIBUTES if a not in ("no_value", "throw_exception")]
+)
 def readable_attribute(request):
     return request.param
 
 
-@pytest.fixture(params=[a for a in ATTRIBUTES
-                        if "scalar" in a and
-                        a.split("_")[-1] not in ("ro", "rww")])
+@pytest.fixture(
+    params=[
+        a for a in ATTRIBUTES if "scalar" in a and a.split("_")[-1] not in ("ro", "rww")
+    ]
+)
 def writable_scalar_attribute(request):
     return request.param
 
 
-@pytest.fixture(params=[a for a in ATTRIBUTES
-                        if "spectrum" in a and
-                        a.split("_")[-1] not in ("ro", "rww")])
+@pytest.fixture(
+    params=[
+        a
+        for a in ATTRIBUTES
+        if "spectrum" in a and a.split("_")[-1] not in ("ro", "rww")
+    ]
+)
 def writable_spectrum_attribute(request):
     return request.param
 
 
-@pytest.fixture(params=['double_scalar_w', 'double_spectrum', 'double_image'])
+@pytest.fixture(params=["double_scalar_w", "double_spectrum", "double_image"])
 def all_double_writable_attributes(request):
     return request.param
 
 
-@pytest.fixture(params=[GreenMode.Synchronous,
-                        GreenMode.Asyncio,
-                        GreenMode.Gevent,
-                        GreenMode.Futures])
+@pytest.fixture(
+    params=[
+        GreenMode.Synchronous,
+        GreenMode.Asyncio,
+        GreenMode.Gevent,
+        GreenMode.Futures,
+    ]
+)
 def green_mode_device_proxy(request):
     green_mode = request.param
     return device_proxy_map[green_mode]
@@ -265,6 +283,7 @@ def simple_device_fqdn():
 
 
 # Tests
+
 
 def test_ping(tango_test):
     duration = tango_test.ping(wait=True)
@@ -290,14 +309,16 @@ def test_read_attribute(tango_test, readable_attribute):
     tango_test.read_attribute(readable_attribute, wait=True)
 
 
-def test_read_write_attribute_with_green_modes(tango_test_with_green_modes, all_double_writable_attributes):
+def test_read_write_attribute_with_green_modes(
+    tango_test_with_green_modes, all_double_writable_attributes
+):
     """
     Check that attributes can be read/write with all green modes
     """
     attr_name = all_double_writable_attributes
-    if attr_name == 'double_scalar_w':
+    if attr_name == "double_scalar_w":
         write_values = -28.2
-    elif attr_name == 'double_spectrum':
+    elif attr_name == "double_spectrum":
         write_values = [-28.2, 23.4]
     else:
         write_values = [[-28.2, 23.4], [-4.9, 6.5]]
@@ -324,7 +345,9 @@ def test_write_scalar_attribute(tango_test, writable_scalar_attribute):
         pytest.xfail("Not currently testing this type")
 
 
-def test_write_read_spectrum_attribute(tango_test, writable_spectrum_attribute, extract_as):
+def test_write_read_spectrum_attribute(
+    tango_test, writable_spectrum_attribute, extract_as
+):
     "Check that writable spectrum attributes can be written and read"
     requested_type, expected_type = extract_as
     attr_name = writable_spectrum_attribute
@@ -344,7 +367,9 @@ def test_write_read_spectrum_attribute(tango_test, writable_spectrum_attribute, 
         if requested_type == ExtractAs.Numpy:
             expected_type = tuple
         if requested_type in [ExtractAs.ByteArray, ExtractAs.Bytes, ExtractAs.String]:
-            pytest.xfail('Conversion from (str,) to ByteArray, Bytes and String not supported. May be fixed in future')
+            pytest.xfail(
+                "Conversion from (str,) to ByteArray, Bytes and String not supported. May be fixed in future"
+            )
         write_values = ["hello", "hola"]
     else:
         pytest.xfail("Not currently testing this type")
@@ -353,10 +378,15 @@ def test_write_read_spectrum_attribute(tango_test, writable_spectrum_attribute, 
     read_attr = tango_test.read_attribute(attr_name, extract_as=requested_type)
 
     assert isinstance(read_attr.value, expected_type)
-    assert_close(read_attr.value, convert_to_type(write_values, config.data_type, expected_type))
+    assert_close(
+        read_attr.value, convert_to_type(write_values, config.data_type, expected_type)
+    )
 
     assert isinstance(read_attr.w_value, expected_type)
-    assert_close(read_attr.w_value, convert_to_type(write_values, config.data_type, expected_type))
+    assert_close(
+        read_attr.w_value,
+        convert_to_type(write_values, config.data_type, expected_type),
+    )
 
 
 def test_write_read_empty_spectrum_attribute(tango_test, writable_spectrum_attribute):
@@ -364,7 +394,9 @@ def test_write_read_empty_spectrum_attribute(tango_test, writable_spectrum_attri
     attr_name = writable_spectrum_attribute
     config = tango_test.get_attribute_config(attr_name, wait=True)
     if is_str_type(config.data_type):
-        pytest.xfail('Conversion from (str,) to numpy not supported. Probably, may be fixed in future')
+        pytest.xfail(
+            "Conversion from (str,) to numpy not supported. Probably, may be fixed in future"
+        )
 
     tango_test.write_attribute(attr_name, [], wait=True)
     read_attr = tango_test.read_attribute(attr_name, wait=True)
@@ -372,29 +404,44 @@ def test_write_read_empty_spectrum_attribute(tango_test, writable_spectrum_attri
 
 
 def test_write_read_string_attribute(tango_test):
-    attr_name = 'string_scalar'
-    bytes_big = 100000 * b'big data '
-    str_big = bytes_big.decode('latin-1')
+    attr_name = "string_scalar"
+    bytes_big = 100000 * b"big data "
+    str_big = bytes_big.decode("latin-1")
 
-    values = [b'', '', 'Hello, World!', b'Hello, World!',
-              bytes_devstring, str_devstring, bytes_big, str_big]
+    values = [
+        b"",
+        "",
+        "Hello, World!",
+        b"Hello, World!",
+        bytes_devstring,
+        str_devstring,
+        bytes_big,
+        str_big,
+    ]
 
-    expected_values = ['', '', 'Hello, World!', 'Hello, World!',
-                       str_devstring, str_devstring,
-                       str_big, str_big]
+    expected_values = [
+        "",
+        "",
+        "Hello, World!",
+        "Hello, World!",
+        str_devstring,
+        str_devstring,
+        str_big,
+        str_big,
+    ]
 
     for value, expected_value in zip(values, expected_values):
         tango_test.write_attribute(attr_name, value, wait=True)
         result = tango_test.read_attribute(attr_name, wait=True)
         assert result.value == expected_value
 
-    attr_name = 'string_spectrum'
+    attr_name = "string_spectrum"
     for value, expected_value in zip(values, expected_values):
-        tango_test.write_attribute(attr_name, ['', value, ''], wait=True)
+        tango_test.write_attribute(attr_name, ["", value, ""], wait=True)
         result = tango_test.read_attribute(attr_name, wait=True)
         assert result.value[1] == expected_value
 
-    attr_name = 'string_image'
+    attr_name = "string_image"
     for value, expected_value in zip(values, expected_values):
         tango_test.write_attribute(attr_name, [[value], [value]], wait=True)
         result = tango_test.read_attribute(attr_name, wait=True)
@@ -445,7 +492,9 @@ def test_read_attribute_config(tango_test, attribute):
     tango_test.get_attribute_config(attribute)
 
 
-def test_read_attribute_config_with_green_modes(tango_test_with_green_modes, all_double_writable_attributes):
+def test_read_attribute_config_with_green_modes(
+    tango_test_with_green_modes, all_double_writable_attributes
+):
     tango_test_with_green_modes.get_attribute_config(all_double_writable_attributes)
 
 
@@ -484,7 +533,6 @@ def test_device_proxy_dir_method(tango_test):
 
 
 def test_device_polling_command(tango_test):
-
     dct = {"SwitchStates": 1000, "DevVoid": 10000, "DumpExecutionState": 5000}
 
     for command, period in dct.items():
@@ -492,14 +540,13 @@ def test_device_polling_command(tango_test):
 
     ans = tango_test.polling_status()
     for info in ans:
-        lines = info.split('\n')
-        command = lines[0].split('= ')[1]
-        period = int(lines[1].split('= ')[1])
+        lines = info.split("\n")
+        command = lines[0].split("= ")[1]
+        period = int(lines[1].split("= ")[1])
         assert dct[command] == period
 
 
 def test_device_polling_attribute(tango_test):
-
     dct = {"boolean_scalar": 1000, "double_scalar": 10000, "long_scalar": 5000}
 
     for attr, poll_period in dct.items():
@@ -507,38 +554,53 @@ def test_device_polling_attribute(tango_test):
 
     ans = tango_test.polling_status()
     for x in ans:
-        lines = x.split('\n')
-        attr = lines[0].split('= ')[1]
-        poll_period = int(lines[1].split('= ')[1])
+        lines = x.split("\n")
+        attr = lines[0].split("= ")[1]
+        poll_period = int(lines[1].split("= ")[1])
         assert dct[attr] == poll_period
 
 
 def test_command_string(tango_test):
-    cmd_name = 'DevString'
-    bytes_big = 100000 * b'big data '
-    str_big = bytes_big.decode('latin-1')
+    cmd_name = "DevString"
+    bytes_big = 100000 * b"big data "
+    str_big = bytes_big.decode("latin-1")
 
-    values = [b'', '', 'Hello, World!', b'Hello, World!',
-              bytes_devstring, str_devstring, bytes_big, str_big]
+    values = [
+        b"",
+        "",
+        "Hello, World!",
+        b"Hello, World!",
+        bytes_devstring,
+        str_devstring,
+        bytes_big,
+        str_big,
+    ]
 
-    expected_values = ['', '', 'Hello, World!', 'Hello, World!',
-                       str_devstring, str_devstring,
-                       str_big, str_big]
+    expected_values = [
+        "",
+        "",
+        "Hello, World!",
+        "Hello, World!",
+        str_devstring,
+        str_devstring,
+        str_big,
+        str_big,
+    ]
 
     for value, expected_value in zip(values, expected_values):
         result = tango_test.command_inout(cmd_name, value, wait=True)
         assert result == expected_value
 
-    cmd_name = 'DevVarStringArray'
+    cmd_name = "DevVarStringArray"
     for value, expected_value in zip(values, expected_values):
         result = tango_test.command_inout(cmd_name, [value, value], wait=True)
         assert result == [expected_value, expected_value]
 
-    cmd_name = 'DevVarLongStringArray'
+    cmd_name = "DevVarLongStringArray"
     for value, expected_value in zip(values, expected_values):
-        result = tango_test.command_inout(cmd_name,
-                                          [[-10, 200], [value, value]],
-                                          wait=True)
+        result = tango_test.command_inout(
+            cmd_name, [[-10, 200], [value, value]], wait=True
+        )
         assert len(result) == 2
         assert_close(result[0], [-10, 200])
         assert_close(result[1], [expected_value, expected_value])
@@ -546,24 +608,23 @@ def test_command_string(tango_test):
 
 def test_repr_uses_info(green_mode_device_proxy, simple_device_fqdn):
     proxy = green_mode_device_proxy(simple_device_fqdn)
-    assert repr(proxy) == 'TestDevice(test/nodb/testdevice)'
+    assert repr(proxy) == "TestDevice(test/nodb/testdevice)"
 
 
 def test_repr_default_if_info_unavailable(green_mode_device_proxy):
-    proxy = green_mode_device_proxy(
-        "tango://localhost:0/invalid/test/dev#dbase=no"
-    )
+    proxy = green_mode_device_proxy("tango://localhost:0/invalid/test/dev#dbase=no")
 
     def bad_info(self):
         raise RuntimeError("Break info for test")
 
     proxy.__class__.info = bad_info
 
-    assert repr(proxy) == 'Device(invalid/test/dev)'
+    assert repr(proxy) == "Device(invalid/test/dev)"
 
 
 def test_multiple_repr_calls_only_call_info_once(
-        green_mode_device_proxy, simple_device_fqdn):
+    green_mode_device_proxy, simple_device_fqdn
+):
     proxy = green_mode_device_proxy(simple_device_fqdn)
 
     def mock_info(self):
@@ -624,6 +685,6 @@ def assert_object_released_without_gc(weak_ref):
         assert weak_ref() is None
     except AssertionError:
         if weak_ref().get_green_mode() == GreenMode.Asyncio:
-            pytest.xfail('Sometimes fails with a concurrent.Future ref cycle')
+            pytest.xfail("Sometimes fails with a concurrent.Future ref cycle")
         else:
             raise

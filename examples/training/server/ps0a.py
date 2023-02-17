@@ -10,7 +10,6 @@ from tango.server import Device, attribute, command
 
 
 class PowerSupply(Device):
-
     @attribute(dtype=float)
     def voltage(self):
         return 1.5
@@ -20,5 +19,5 @@ class PowerSupply(Device):
         sleep(0.1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     PowerSupply.run_server()

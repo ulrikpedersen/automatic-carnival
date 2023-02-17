@@ -4,15 +4,12 @@ import tango
 from tango import EventType
 
 
-class EventManager():
-
+class EventManager:
     def __init__(self, dp):
         self._deviceProxy = dp
         if dp is not None:
             print("Subscribed to TestPipe")
-            self._event_id = dp.subscribe_event("TestPipe",
-                                                EventType.PIPE_EVENT,
-                                                self)
+            self._event_id = dp.subscribe_event("TestPipe", EventType.PIPE_EVENT, self)
 
     def unsubscribe(self):
         self._deviceProxy.unsubscribe_event(self._event_id)
@@ -42,11 +39,11 @@ class EventManager():
 
 
 def main():
-    dev = tango.DeviceProxy('pipeServer/tango/1')
+    dev = tango.DeviceProxy("pipeServer/tango/1")
     print(dev)
     EventManager(dev)
     time.sleep(3000.0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -43,28 +43,17 @@ devices_info = [
             {
                 "name": "device/master/1",
                 "properties": {
-                    "WorkerFQDNs": [
-                        "device/worker/1",
-                        "device/worker/2"
-                    ],
-                }
+                    "WorkerFQDNs": ["device/worker/1", "device/worker/2"],
+                },
             },
-        )
+        ),
     },
     {
         "class": Worker,
         "devices": [
-            {
-                "name": "device/worker/1",
-                "properties": {
-                }
-            },
-            {
-                "name": "device/worker/2",
-                "properties": {
-                }
-            },
-        ]
+            {"name": "device/worker/1", "properties": {}},
+            {"name": "device/worker/2", "properties": {}},
+        ],
     },
 ]
 

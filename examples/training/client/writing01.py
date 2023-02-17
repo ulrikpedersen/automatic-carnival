@@ -28,7 +28,7 @@ except DevFailed as ex:
 # use simplified syntax
 try:
     dev.attr_name = 0.618  # WRONG! you are defining new attribute attr_name
-                           # in object dev with value 0.618
+    # in object dev with value 0.618
     dev.double_scalar = 0.619
     print(f"write_attribute SIMPLIFIED {attr_name!r} OK")
 except DevFailed as ex:

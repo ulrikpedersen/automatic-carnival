@@ -14,7 +14,7 @@ from tango.test_context import MultiDeviceTestContext, get_host_ip
 def devices_info(request):
     yield getattr(request.module, "devices_info")
 
-    
+
 @pytest.fixture(scope="function")
 def tango_context(mocker, devices_info):
     """
@@ -24,10 +24,10 @@ def tango_context(mocker, devices_info):
     context_manager = MultiDeviceTestContext(devices_info, process=True)
     _DeviceProxy = tango.DeviceProxy
     mocker.patch(
-        'tango.DeviceProxy',
+        "tango.DeviceProxy",
         wraps=lambda fqdn, *args, **kwargs: _DeviceProxy(
             context_manager.get_device_access(fqdn), *args, **kwargs
-        )
+        ),
     )
     with context_manager as context:
         yield context

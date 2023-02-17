@@ -3,14 +3,14 @@ import time
 import tango
 
 
-class EventManager():
-
+class EventManager:
     def __init__(self, dp):
         self._deviceProxy = dp
         if dp is not None:
             print("Subscribed to Interface Change Events")
             self._event_id = dp.subscribe_event(
-                tango.EventType.INTERFACE_CHANGE_EVENT, self)
+                tango.EventType.INTERFACE_CHANGE_EVENT, self
+            )
 
     def unsubscribe(self):
         self._deviceProxy.unsubscribe_event(self._event_id)
@@ -49,10 +49,10 @@ class EventManager():
 
 
 def main():
-    dev = tango.DeviceProxy('ifchangeServer/tango/1')
+    dev = tango.DeviceProxy("ifchangeServer/tango/1")
     EventManager(dev)
     time.sleep(3000.0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

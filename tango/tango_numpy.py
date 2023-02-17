@@ -28,7 +28,7 @@ def _numpy_invalid(*args, **kwds):
     Except.throw_exception(
         "PyTango_InvalidConversion",
         "There's no registered conversor to numpy.",
-        "NumpyType.tango_to_numpy"
+        "NumpyType.tango_to_numpy",
     )
 
 
@@ -40,7 +40,6 @@ def _define_numpy():
         import numpy
 
         class NumpyType:
-
             DevShort = numpy.int16
             DevLong = numpy.int32
             DevDouble = numpy.float64
@@ -131,11 +130,20 @@ def _define_numpy():
                 if dim_y is None:
                     return numpy.array(dim_x, dtype=np_type)
                 else:
-                    return numpy.ndarray(shape=(dim_y, dim_x,), dtype=np_type)
+                    return numpy.ndarray(
+                        shape=(
+                            dim_y,
+                            dim_x,
+                        ),
+                        dtype=np_type,
+                    )
 
         return (
-            NumpyType, NumpyType.spectrum,
-            NumpyType.image, NumpyType.tango_to_numpy)
+            NumpyType,
+            NumpyType.spectrum,
+            NumpyType.image,
+            NumpyType.tango_to_numpy,
+        )
     except Exception:
         return None, _numpy_invalid, _numpy_invalid, _numpy_invalid
 

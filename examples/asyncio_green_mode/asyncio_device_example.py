@@ -34,5 +34,5 @@ class AsyncioDevice(Device):
         return 42
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     AsyncioDevice.run_server()
