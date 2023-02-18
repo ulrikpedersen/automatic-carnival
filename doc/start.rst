@@ -27,7 +27,7 @@ pip needs to be at least version 19.3 in order for it to find the binary wheels:
 
 .. sourcecode:: console
 
-    $ python -m pip install --upgrade "pip>=19.3"
+    $ python -m pip install --upgrade pip
 
 Install PyTango with pip:
 
