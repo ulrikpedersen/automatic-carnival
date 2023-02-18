@@ -110,6 +110,7 @@ The basic steps are shown below (specify your Python version).
    $ git clone https://gitlab.com/tango-controls/pytango.git
    $ cd pytango
    $ export BOOST_ROOT=$CONDA_PREFIX TANGO_ROOT=$CONDA_PREFIX ZMQ_ROOT=$CONDA_PREFIX OMNI_ROOT=$CONDA_PREFIX
+   $ export BOOST_PYTHON_LIB=boost_python$(python -c "import sys; print(f'{sys.version_info.major}{sys.version_info.minor}')")
    $ python setup.py build
    $ python setup.py install
 
