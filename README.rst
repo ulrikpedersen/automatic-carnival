@@ -57,8 +57,10 @@ Optional dependencies:
 Install
 -------
 
-PyTango_ is available on PyPI_ as ``pytango``, with pre-built binaries for some platforms::
+PyTango_ is available on PyPI_ as ``pytango``, with pre-built binaries for some platforms
+(you need pip>=19.3, so upgrade first if necessary)::
 
+    $ python -m pip install --upgrade pip
     $ python -m pip install pytango
 
 Alternatively, pre-built PyTango_ binaries can be installed from `Conda Forge_`::
