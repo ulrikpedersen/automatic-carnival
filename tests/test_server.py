@@ -1761,7 +1761,7 @@ def test_device_get_attr_config(server_green_mode):
 # Test inheritance
 
 
-def test_inheritance(server_green_mode):
+def test_inheritance_override_a_property(server_green_mode):
     class A(Device):
         green_mode = server_green_mode
 
@@ -1776,24 +1776,22 @@ def test_inheritance(server_green_mode):
         def get_prop2(self):
             return self.prop2
 
-        @attribute(access=AttrWriteType.READ_WRITE)
-        def attr(self):
-            return self.attr_value
+    class B(A):
+        prop2 = device_property(dtype=str, default_value="goodbye2")
 
-        @attr.write
-        def attr(self, value):
-            self.attr_value = value
+    with DeviceTestContext(B) as proxy:
+        assert proxy.get_prop1() == "hello1"
+        assert proxy.get_prop2() == "goodbye2"
+
+
+def test_inheritance_override_dev_status(server_green_mode):
+    class A(Device):
+        green_mode = server_green_mode
 
         def dev_status(self):
             return ")`'-.,_"
 
     class B(A):
-        prop2 = device_property(dtype=str, default_value="goodbye2")
-
-        @attribute
-        def attr2(self):
-            return 3.14
-
         if server_green_mode == GreenMode.Asyncio:
 
             async def dev_status(self):
@@ -1807,12 +1805,346 @@ def test_inheritance(server_green_mode):
                 return 3 * A.dev_status(self)
 
     with DeviceTestContext(B) as proxy:
-        assert proxy.get_prop1() == "hello1"
-        assert proxy.get_prop2() == "goodbye2"
-        proxy.attr = 1.23
-        assert proxy.attr == 1.23
-        assert proxy.attr2 == 3.14
         assert proxy.status() == ")`'-.,_)`'-.,_)`'-.,_"
+
+
+def test_inheritance_init_device(server_green_mode):
+    class A(Device):
+        green_mode = server_green_mode
+        initialised_count_a = 0
+
+        if server_green_mode == GreenMode.Asyncio:
+
+            async def init_device(self):
+                await super().init_device()
+                self.initialised_count_a += 1
+
+        else:
+
+            def init_device(self):
+                super().init_device()
+                self.initialised_count_a += 1
+
+        @command(dtype_out=int)
+        def get_is_initialised_a(self):
+            return self.initialised_count_a
+
+    class B(A):
+        initialised_count_b = 0
+
+        if server_green_mode == GreenMode.Asyncio:
+
+            async def init_device(self):
+                await super().init_device()
+                self.initialised_count_b += 1
+
+        else:
+
+            def init_device(self):
+                super().init_device()
+                self.initialised_count_b += 1
+
+        @command(dtype_out=int)
+        def get_is_initialised_b(self):
+            return self.initialised_count_b
+
+    with DeviceTestContext(B) as proxy:
+        assert proxy.get_is_initialised_a() == 1
+        assert proxy.get_is_initialised_b() == 1
+
+
+def test_inheritance_with_decorated_attributes(server_green_mode):
+    is_allowed = True
+
+    class A(Device):
+        green_mode = server_green_mode
+
+        @attribute(access=AttrWriteType.READ_WRITE)
+        def decorated_a(self):
+            return self.decorated_a_value
+
+        @decorated_a.setter
+        def decorated_a(self, value):
+            self.decorated_a_value = value
+
+        @decorated_a.is_allowed
+        def decorated_a(self, req_type):
+            assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+            return is_allowed
+
+    class B(A):
+        @attribute(access=AttrWriteType.READ_WRITE)
+        def decorated_b(self):
+            return self.decorated_b_value
+
+        @decorated_b.setter
+        def decorated_b(self, value):
+            self.decorated_b_value = value
+
+        @decorated_b.is_allowed
+        def decorated_b(self, req_type):
+            assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+            return is_allowed
+
+    with DeviceTestContext(B) as proxy:
+        is_allowed = True
+
+        proxy.decorated_a = 1.23
+        assert proxy.decorated_a == 1.23
+        proxy.decorated_b = 4.5
+        assert proxy.decorated_b == 4.5
+
+        is_allowed = False
+        with pytest.raises(DevFailed):
+            proxy.decorated_a = 1.0
+        with pytest.raises(DevFailed):
+            _ = proxy.decorated_a
+        with pytest.raises(DevFailed):
+            proxy.decorated_b = 1.0
+        with pytest.raises(DevFailed):
+            _ = proxy.decorated_b
+
+
+def test_inheritance_with_undecorated_attributes(server_green_mode):
+    is_allowed = True
+
+    class A(Device):
+        green_mode = server_green_mode
+
+        attr_a = attribute(access=AttrWriteType.READ_WRITE)
+
+        def read_attr_a(self):
+            return self.attr_a_value
+
+        def write_attr_a(self, value):
+            self.attr_a_value = value
+
+        def is_attr_a_allowed(self, req_type):
+            assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+            return is_allowed
+
+    class B(A):
+        attr_b = attribute(access=AttrWriteType.READ_WRITE)
+
+        def read_attr_b(self):
+            return self.attr_b_value
+
+        def write_attr_b(self, value):
+            self.attr_b_value = value
+
+        def is_attr_b_allowed(self, req_type):
+            assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+            return is_allowed
+
+    with DeviceTestContext(B) as proxy:
+        is_allowed = True
+
+        proxy.attr_a = 2.5
+        assert proxy.attr_a == 2.5
+        proxy.attr_b = 5.75
+        assert proxy.attr_b == 5.75
+
+        is_allowed = False
+        with pytest.raises(DevFailed):
+            proxy.attr_a = 1.0
+        with pytest.raises(DevFailed):
+            _ = proxy.attr_a
+        with pytest.raises(DevFailed):
+            proxy.attr_b = 1.0
+        with pytest.raises(DevFailed):
+            _ = proxy.attr_b
+
+
+def test_inheritance_with_undecorated_attribute_and_bound_methods(server_green_mode):
+    is_allowed = True
+
+    class A(Device):
+        attr_a = attribute(
+            access=AttrWriteType.READ_WRITE,
+            fget="get_attr_a",
+            fset="set_attr_a",
+            fisallowed="isallowed_attr_a",
+        )
+
+        def get_attr_a(self):
+            return self.attr_value
+
+        def set_attr_a(self, value):
+            self.attr_value = value
+
+        def isallowed_attr_a(self, req_type):
+            assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+            return is_allowed
+
+    class B(A):
+        attr_b = attribute(
+            access=AttrWriteType.READ_WRITE,
+            fget="get_attr_b",
+            fset="set_attr_b",
+            fisallowed="isallowed_attr_b",
+        )
+
+        def get_attr_b(self):
+            return self.attr_value
+
+        def set_attr_b(self, value):
+            self.attr_value = value
+
+        def isallowed_attr_b(self, req_type):
+            assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+            return is_allowed
+
+    with DeviceTestContext(B) as proxy:
+        is_allowed = True
+        proxy.attr_a = 3.75
+        assert proxy.attr_a == 3.75
+        proxy.attr_b = 6.0
+        assert proxy.attr_b == 6.0
+
+        is_allowed = False
+        with pytest.raises(DevFailed):
+            proxy.attr_a = 1.0
+        with pytest.raises(DevFailed):
+            _ = proxy.attr_a
+        with pytest.raises(DevFailed):
+            proxy.attr_b = 1.0
+        with pytest.raises(DevFailed):
+            _ = proxy.attr_b
+
+
+def test_inheritance_with_undecorated_attributes_and_unbound_functions(
+    server_green_mode,
+):
+    is_allowed = True
+    values = {"a": 0.0, "b": 0.0}
+
+    def read_attr_a():
+        return values["a"]
+
+    def write_attr_a(value):
+        values["a"] = value
+
+    def is_attr_a_allowed(req_type):
+        assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+        return is_allowed
+
+    class A(Device):
+        green_mode = server_green_mode
+
+        attr_a = attribute(
+            access=AttrWriteType.READ_WRITE,
+            fget=read_attr_a,
+            fset=write_attr_a,
+            fisallowed=is_attr_a_allowed,
+        )
+
+    def read_attr_b():
+        return values["b"]
+
+    def write_attr_b(value):
+        values["b"] = value
+
+    def is_attr_b_allowed(req_type):
+        assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+        return is_allowed
+
+    class B(A):
+        attr_b = attribute(
+            access=AttrWriteType.READ_WRITE,
+            fget=read_attr_b,
+            fset=write_attr_b,
+            fisallowed=is_attr_b_allowed,
+        )
+
+    with DeviceTestContext(B) as proxy:
+        is_allowed = True
+
+        proxy.attr_a = 2.5
+        assert proxy.attr_a == 2.5
+        proxy.attr_b = 5.75
+        assert proxy.attr_b == 5.75
+
+        is_allowed = False
+        with pytest.raises(DevFailed):
+            proxy.attr_a = 1.0
+        with pytest.raises(DevFailed):
+            _ = proxy.attr_a
+        with pytest.raises(DevFailed):
+            proxy.attr_b = 1.0
+        with pytest.raises(DevFailed):
+            _ = proxy.attr_b
+
+
+def test_inheritance_command_is_allowed_by_naming_convention(server_green_mode):
+    is_allowed = True
+
+    class A(Device):
+        green_mode = server_green_mode
+
+        @command(dtype_out=str)
+        def cmd(self):
+            return "ok"
+
+        def is_cmd_allowed(self):
+            return is_allowed
+
+    class B(A):
+        pass
+
+    with DeviceTestContext(B) as proxy:
+        is_allowed = True
+        assert proxy.cmd() == "ok"
+        is_allowed = False
+        with pytest.raises(DevFailed):
+            proxy.cmd()
+
+
+def test_inheritance_command_is_allowed_by_kwarg_method(server_green_mode):
+    is_allowed = True
+
+    class A(Device):
+        green_mode = server_green_mode
+
+        @command(dtype_out=str, fisallowed="fisallowed_kwarg_method")
+        def cmd(self):
+            return "ok 1"
+
+        def fisallowed_kwarg_method(self):
+            return is_allowed
+
+    class B(A):
+        pass
+
+    with DeviceTestContext(B) as proxy:
+        is_allowed = True
+        assert proxy.cmd() == "ok 1"
+        is_allowed = False
+        with pytest.raises(DevFailed):
+            proxy.cmd()
+
+
+def test_inheritance_command_is_allowed_by_kwarg_unbound_function(server_green_mode):
+    is_allowed = True
+
+    def fisallowed_function():
+        return is_allowed
+
+    class A(Device):
+        green_mode = server_green_mode
+
+        @command(dtype_out=str, fisallowed=fisallowed_function)
+        def cmd(self):
+            return "ok"
+
+    class B(A):
+        pass
+
+    with DeviceTestContext(B) as proxy:
+        is_allowed = True
+        assert proxy.cmd() == "ok"
+        is_allowed = False
+        with pytest.raises(DevFailed):
+            proxy.cmd()
 
 
 def test_polled_attribute(server_green_mode):

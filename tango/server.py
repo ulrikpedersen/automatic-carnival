@@ -103,6 +103,10 @@ def _get_wrapped_read_method(attribute, read_method):
     :type read_method: callable
     """
 
+    already_wrapped = hasattr(read_method, "__access_wrapped__")
+    if already_wrapped:
+        return read_method
+
     read_args = getfullargspec(read_method)
     nb_args = len(read_args.args)
 
@@ -148,6 +152,7 @@ def _get_wrapped_read_method(attribute, read_method):
                     set_complex_value(attr, ret)
                 return ret
 
+    read_attr.__access_wrapped__ = True
     return read_attr
 
 
@@ -161,10 +166,7 @@ def __patch_read_method(tango_device_klass, attribute):
     :type attribute: AttrData
     """
     read_method = getattr(attribute, "fget", None)
-    if read_method:
-        method_name = f"__read_{attribute.attr_name}__"
-        attribute.read_method_name = method_name
-    else:
+    if not read_method:
         method_name = attribute.read_method_name
         read_method = getattr(tango_device_klass, method_name)
 
@@ -179,6 +181,10 @@ def _get_wrapped_write_method(attribute, write_method):
     """
     Wraps write method with executor, if needed.
     """
+    already_wrapped = hasattr(write_method, "__access_wrapped__")
+    if already_wrapped:
+        return write_method
+
     read_args = getfullargspec(write_method)
     nb_args = len(read_args.args)
 
@@ -214,6 +220,7 @@ def _get_wrapped_write_method(attribute, write_method):
                 value = attr.get_write_value()
                 return write_method(self, value)
 
+    write_attr.__access_wrapped__ = True
     return write_attr
 
 
@@ -227,21 +234,21 @@ def __patch_write_method(tango_device_klass, attribute):
     :type attribute: AttrData
     """
     write_method = getattr(attribute, "fset", None)
-    if write_method:
-        method_name = f"__write_{attribute.attr_name}__"
-        attribute.write_method_name = method_name
-    else:
+    if not write_method:
         method_name = attribute.write_method_name
         write_method = getattr(tango_device_klass, method_name)
 
     write_attr = _get_wrapped_write_method(attribute, write_method)
+    method_name = f"__write_{attribute.attr_name}_wrapper__"
+    attribute.write_method_name = method_name
+
     setattr(tango_device_klass, method_name, write_attr)
 
 
 def _get_wrapped_isallowed_method(attribute, isallowed_method):
     """
     Checks which signature has method.
-    If the isallosed method has 1 argument, the method is wrapped into another method
+    If the isallowed method has 1 argument, the method is wrapped into another method
     which has correct parameter definition to make it work.
 
     Additionally, we wrap it with executor, if needed.
@@ -251,6 +258,9 @@ def _get_wrapped_isallowed_method(attribute, isallowed_method):
     :param isallowed_method: is allowed method
     :type isallowed_method: callable
     """
+    already_wrapped = hasattr(isallowed_method, "__access_wrapped__")
+    if already_wrapped:
+        return isallowed_method
 
     isallowed_args = getfullargspec(isallowed_method)
     nb_args = len(isallowed_args.args)
@@ -281,6 +291,8 @@ def _get_wrapped_isallowed_method(attribute, isallowed_method):
         else:
             isallowed_attr = isallowed_method
 
+    if isallowed_attr is not isallowed_method:
+        isallowed_attr.__access_wrapped__ = True
     return isallowed_attr
 
 
@@ -294,10 +306,7 @@ def __patch_isallowed_method(tango_device_klass, attribute):
     :type attribute: AttrData
     """
     isallowed_method = getattr(attribute, "fisallowed", None)
-    if isallowed_method:
-        method_name = f"__is_{attribute.attr_name}_allowed__"
-        attribute.is_allowed_name = method_name
-    else:
+    if not isallowed_method:
         method_name = attribute.is_allowed_name
         isallowed_method = getattr(tango_device_klass, method_name, None)
 
@@ -332,6 +341,10 @@ def __patch_attr_methods(tango_device_klass, attribute):
 
 
 def _get_wrapped_pipe_read_method(pipe, read_method):
+    already_wrapped = hasattr(read_method, "__access_wrapped__")
+    if already_wrapped:
+        return read_method
+
     read_args = getfullargspec(read_method)
     nb_args = len(read_args.args)
 
@@ -366,6 +379,8 @@ def _get_wrapped_pipe_read_method(pipe, read_method):
             def read_pipe(self, pipe):
                 return get_worker().execute(read_method, self, pipe)
 
+    if read_pipe is not read_method:
+        read_pipe.__access_wrapped__ = True
     return read_pipe
 
 
@@ -398,6 +413,10 @@ def __patch_pipe_read_method(tango_device_klass, pipe):
 
 
 def _get_wrapped_pipe_write_method(pipe, write_method):
+    already_wrapped = hasattr(write_method, "__access_wrapped__")
+    if already_wrapped:
+        return write_method
+
     green_mode = pipe.write_green_mode
 
     if green_mode == GreenMode.Synchronous:
@@ -414,6 +433,7 @@ def _get_wrapped_pipe_write_method(pipe, write_method):
             value = pipe.get_value()
             return get_worker().execute(write_method, self, value)
 
+    write_pipe.__access_wrapped__ = True
     return write_pipe
 
 
@@ -468,6 +488,9 @@ def __patch_is_command_allowed_method(tango_device_klass, is_allowed_method, cmd
     :param cmd_name: command name
     :type cmd_name: str
     """
+    already_wrapped = hasattr(is_allowed_method, "__access_wrapped__")
+    if already_wrapped:
+        return is_allowed_method.__wrapped_method_name__
 
     method_name = getattr(is_allowed_method, "__name__", f"is_{cmd_name}_allowed")
 
@@ -484,8 +507,10 @@ def __patch_is_command_allowed_method(tango_device_klass, is_allowed_method, cmd
         method = is_allowed_method
 
     method_name = f"__wrapped_{method_name}__"
-
-    setattr(tango_device_klass, method_name, run_in_executor(method))
+    wrapped_method = run_in_executor(method)
+    wrapped_method.__access_wrapped__ = True
+    wrapped_method.__wrapped_method_name__ = method_name
+    setattr(tango_device_klass, method_name, wrapped_method)
 
     return method_name
 
@@ -494,52 +519,70 @@ def __patch_standard_device_methods(klass):
     # TODO allow to force non green mode
 
     init_device_orig = klass.init_device
+    already_wrapped = hasattr(init_device_orig, "__access_wrapped__")
+    if not already_wrapped:
 
-    @functools.wraps(init_device_orig)
-    def init_device(self):
-        return get_worker().execute(init_device_orig, self)
+        @functools.wraps(init_device_orig)
+        def init_device(self):
+            return get_worker().execute(init_device_orig, self)
 
-    setattr(klass, "init_device", init_device)
+        init_device.__access_wrapped__ = True
+        setattr(klass, "init_device", init_device)
 
     delete_device_orig = klass.delete_device
+    already_wrapped = hasattr(delete_device_orig, "__access_wrapped__")
+    if not already_wrapped:
 
-    @functools.wraps(delete_device_orig)
-    def delete_device(self):
-        return get_worker().execute(delete_device_orig, self)
+        @functools.wraps(delete_device_orig)
+        def delete_device(self):
+            return get_worker().execute(delete_device_orig, self)
 
-    setattr(klass, "delete_device", delete_device)
+        delete_device.__access_wrapped__ = True
+        setattr(klass, "delete_device", delete_device)
 
     dev_state_orig = klass.dev_state
+    already_wrapped = hasattr(dev_state_orig, "__access_wrapped__")
+    if not already_wrapped:
 
-    @functools.wraps(dev_state_orig)
-    def dev_state(self):
-        return get_worker().execute(dev_state_orig, self)
+        @functools.wraps(dev_state_orig)
+        def dev_state(self):
+            return get_worker().execute(dev_state_orig, self)
 
-    setattr(klass, "dev_state", dev_state)
+        dev_state.__access_wrapped__ = True
+        setattr(klass, "dev_state", dev_state)
 
     dev_status_orig = klass.dev_status
+    already_wrapped = hasattr(dev_status_orig, "__access_wrapped__")
+    if not already_wrapped:
 
-    @functools.wraps(dev_status_orig)
-    def dev_status(self):
-        return get_worker().execute(dev_status_orig, self)
+        @functools.wraps(dev_status_orig)
+        def dev_status(self):
+            return get_worker().execute(dev_status_orig, self)
 
-    setattr(klass, "dev_status", dev_status)
+        dev_status.__access_wrapped__ = True
+        setattr(klass, "dev_status", dev_status)
 
     read_attr_hardware_orig = klass.read_attr_hardware
+    already_wrapped = hasattr(read_attr_hardware_orig, "__access_wrapped__")
+    if not already_wrapped:
 
-    @functools.wraps(read_attr_hardware_orig)
-    def read_attr_hardware(self, attr_list):
-        return get_worker().execute(read_attr_hardware_orig, self, attr_list)
+        @functools.wraps(read_attr_hardware_orig)
+        def read_attr_hardware(self, attr_list):
+            return get_worker().execute(read_attr_hardware_orig, self, attr_list)
 
-    setattr(klass, "read_attr_hardware", read_attr_hardware)
+        read_attr_hardware.__access_wrapped__ = True
+        setattr(klass, "read_attr_hardware", read_attr_hardware)
 
     always_executed_hook_orig = klass.always_executed_hook
+    already_wrapped = hasattr(always_executed_hook_orig, "__access_wrapped__")
+    if not already_wrapped:
 
-    @functools.wraps(always_executed_hook_orig)
-    def always_executed_hook(self):
-        return get_worker().execute(always_executed_hook_orig, self)
+        @functools.wraps(always_executed_hook_orig)
+        def always_executed_hook(self):
+            return get_worker().execute(always_executed_hook_orig, self)
 
-    setattr(klass, "always_executed_hook", always_executed_hook)
+        always_executed_hook.__access_wrapped__ = True
+        setattr(klass, "always_executed_hook", always_executed_hook)
 
 
 class _DeviceClass(DeviceClass):
