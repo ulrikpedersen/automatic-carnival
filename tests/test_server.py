@@ -141,6 +141,50 @@ def test_identity_command(command_typed_values, server_green_mode):
             assert_close(proxy.identity(value), expected(value))
 
 
+@pytest.mark.parametrize("decoration", ["functools", "general"])
+def test_decorated_command(decoration, server_green_mode):
+    if decoration == "functools":
+
+        def decorator(function):
+            @wraps(function)
+            def _wrapper(*args, **kwargs):
+                return function(*args, **kwargs)
+
+            return _wrapper
+
+    else:
+
+        def decorator(function):
+            def _wrapper(*args, **kwargs):
+                return function(*args, **kwargs)
+
+            return _wrapper
+
+    class TestDevice(Device):
+        green_mode = server_green_mode
+        is_allowed = None
+
+        @command(dtype_in=int, dtype_out=int)
+        def identity(self, arg):
+            return arg
+
+        @decorator
+        def is_identity_allowed(self):
+            return self.is_allowed
+
+        @command(dtype_in=bool)
+        def make_allowed(self, yesno):
+            self.is_allowed = yesno
+
+    with DeviceTestContext(TestDevice) as proxy:
+        proxy.make_allowed(True)
+        assert_close(proxy.identity(123), 123)
+
+        proxy.make_allowed(False)
+        with pytest.raises(DevFailed):
+            proxy.identity(1)
+
+
 def test_command_isallowed(server_green_mode):
     is_allowed = None
 
