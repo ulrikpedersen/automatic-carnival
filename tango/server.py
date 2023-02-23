@@ -107,50 +107,24 @@ def _get_wrapped_read_method(attribute, read_method):
     if already_wrapped:
         return read_method
 
-    read_args = getfullargspec(read_method)
-    nb_args = len(read_args.args)
+    if attribute.read_green_mode:
 
-    green_mode = attribute.read_green_mode
-
-    if nb_args < 1:  # plain methods do not have "self" argument
-        if green_mode:
-
-            @functools.wraps(read_method)
-            def read_attr(self, attr):
-                worker = get_worker()
-                ret = worker.execute(read_method)
-                if not attr.get_value_flag() and ret is not None:
-                    set_complex_value(attr, ret)
-                return ret
-
-        else:
-
-            @functools.wraps(read_method)
-            def read_attr(self, attr):
-                ret = read_method()
-                if not attr.get_value_flag() and ret is not None:
-                    set_complex_value(attr, ret)
-                return ret
+        @functools.wraps(read_method)
+        def read_attr(self, attr):
+            worker = get_worker()
+            ret = worker.execute(read_method, self)
+            if not attr.get_value_flag() and ret is not None:
+                set_complex_value(attr, ret)
+            return ret
 
     else:
-        if green_mode:
 
-            @functools.wraps(read_method)
-            def read_attr(self, attr):
-                worker = get_worker()
-                ret = worker.execute(read_method, self)
-                if not attr.get_value_flag() and ret is not None:
-                    set_complex_value(attr, ret)
-                return ret
-
-        else:
-
-            @functools.wraps(read_method)
-            def read_attr(self, attr):
-                ret = read_method(self)
-                if not attr.get_value_flag() and ret is not None:
-                    set_complex_value(attr, ret)
-                return ret
+        @functools.wraps(read_method)
+        def read_attr(self, attr):
+            ret = read_method(self)
+            if not attr.get_value_flag() and ret is not None:
+                set_complex_value(attr, ret)
+            return ret
 
     read_attr.__access_wrapped__ = True
     return read_attr
@@ -185,40 +159,19 @@ def _get_wrapped_write_method(attribute, write_method):
     if already_wrapped:
         return write_method
 
-    read_args = getfullargspec(write_method)
-    nb_args = len(read_args.args)
+    if attribute.write_green_mode:
 
-    green_mode = attribute.write_green_mode
-
-    if nb_args < 2:  # plain methods do not have "self" argument
-        if green_mode:
-
-            @functools.wraps(write_method)
-            def write_attr(self, attr):
-                value = attr.get_write_value()
-                return get_worker().execute(write_method, value)
-
-        else:
-
-            @functools.wraps(write_method)
-            def write_attr(self, attr):
-                value = attr.get_write_value()
-                return write_method(value)
+        @functools.wraps(write_method)
+        def write_attr(self, attr):
+            value = attr.get_write_value()
+            return get_worker().execute(write_method, self, value)
 
     else:
-        if green_mode:
 
-            @functools.wraps(write_method)
-            def write_attr(self, attr):
-                value = attr.get_write_value()
-                return get_worker().execute(write_method, self, value)
-
-        else:
-
-            @functools.wraps(write_method)
-            def write_attr(self, attr):
-                value = attr.get_write_value()
-                return write_method(self, value)
+        @functools.wraps(write_method)
+        def write_attr(self, attr):
+            value = attr.get_write_value()
+            return write_method(self, value)
 
     write_attr.__access_wrapped__ = True
     return write_attr
@@ -262,34 +215,15 @@ def _get_wrapped_isallowed_method(attribute, isallowed_method):
     if already_wrapped:
         return isallowed_method
 
-    isallowed_args = getfullargspec(isallowed_method)
-    nb_args = len(isallowed_args.args)
+    if attribute.isallowed_green_mode:
 
-    green_mode = attribute.isallowed_green_mode
-    if nb_args < 2:  # plain methods do not have "self" argument
-        if green_mode:
-
-            @functools.wraps(isallowed_method)
-            def isallowed_attr(self, request):
-                worker = get_worker()
-                return worker.execute(isallowed_method, request)
-
-        else:
-
-            @functools.wraps(isallowed_method)
-            def isallowed_attr(self, request):
-                return isallowed_method(request)
+        @functools.wraps(isallowed_method)
+        def isallowed_attr(self, request):
+            worker = get_worker()
+            return worker.execute(isallowed_method, self, request)
 
     else:
-        if green_mode:
-
-            @functools.wraps(isallowed_method)
-            def isallowed_attr(self, request):
-                worker = get_worker()
-                return worker.execute(isallowed_method, self, request)
-
-        else:
-            isallowed_attr = isallowed_method
+        isallowed_attr = isallowed_method
 
     if isallowed_attr is not isallowed_method:
         isallowed_attr.__access_wrapped__ = True
@@ -345,39 +279,24 @@ def _get_wrapped_pipe_read_method(pipe, read_method):
     if already_wrapped:
         return read_method
 
-    read_args = getfullargspec(read_method)
-    nb_args = len(read_args.args)
+    if pipe.read_green_mode:
 
-    green_mode = pipe.read_green_mode
-
-    if nb_args < 2:
-        if green_mode == GreenMode.Synchronous:
-
-            @functools.wraps(read_method)
-            def read_pipe(self, pipe):
-                ret = read_method(self)
-                if not pipe.get_value_flag() and ret is not None:
-                    pipe.set_value(pipe, ret)
-                return ret
-
-        else:
-
-            @functools.wraps(read_method)
-            def read_pipe(self, pipe):
-                worker = get_worker()
-                ret = worker.execute(read_method, self)
-                if ret is not None:
-                    pipe.set_value(ret)
-                return ret
+        @functools.wraps(read_method)
+        def read_pipe(self, pipe):
+            worker = get_worker()
+            ret = worker.execute(read_method, self)
+            if ret is not None:
+                pipe.set_value(ret)
+            return ret
 
     else:
-        if green_mode == GreenMode.Synchronous:
-            read_pipe = read_method
-        else:
 
-            @functools.wraps(read_method)
-            def read_pipe(self, pipe):
-                return get_worker().execute(read_method, self, pipe)
+        @functools.wraps(read_method)
+        def read_pipe(self, pipe):
+            ret = read_method(self)
+            if not pipe.get_value_flag() and ret is not None:
+                pipe.set_value(pipe, ret)
+            return ret
 
     if read_pipe is not read_method:
         read_pipe.__access_wrapped__ = True
@@ -417,21 +336,19 @@ def _get_wrapped_pipe_write_method(pipe, write_method):
     if already_wrapped:
         return write_method
 
-    green_mode = pipe.write_green_mode
-
-    if green_mode == GreenMode.Synchronous:
+    if pipe.write_green_mode:
 
         @functools.wraps(write_method)
         def write_pipe(self, pipe):
             value = pipe.get_value()
-            return write_method(self, value)
+            return get_worker().execute(write_method, self, value)
 
     else:
 
         @functools.wraps(write_method)
         def write_pipe(self, pipe):
             value = pipe.get_value()
-            return get_worker().execute(write_method, self, value)
+            return write_method(self, value)
 
     write_pipe.__access_wrapped__ = True
     return write_pipe
@@ -493,21 +410,9 @@ def __patch_is_command_allowed_method(tango_device_klass, is_allowed_method, cmd
         return is_allowed_method.__wrapped_method_name__
 
     method_name = getattr(is_allowed_method, "__name__", f"is_{cmd_name}_allowed")
-
-    method_args = getfullargspec(is_allowed_method)
-    nb_args = len(method_args.args)
-
-    if not nb_args:
-
-        @functools.wraps(is_allowed_method)
-        def method(self):
-            return is_allowed_method()
-
-    else:
-        method = is_allowed_method
-
     method_name = f"__wrapped_{method_name}__"
-    wrapped_method = run_in_executor(method)
+
+    wrapped_method = run_in_executor(is_allowed_method)
     wrapped_method.__access_wrapped__ = True
     wrapped_method.__wrapped_method_name__ = method_name
     setattr(tango_device_klass, method_name, wrapped_method)

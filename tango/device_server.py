@@ -19,8 +19,6 @@ import functools
 import inspect
 import os
 
-from inspect import getfullargspec
-
 from ._tango import (
     DeviceImpl,
     Device_3Impl,
@@ -450,15 +448,7 @@ def __DeviceImpl__add_attribute(
         AttrWriteType.READ_WITH_WRITE,
     ):
         r_meth = __ensure_user_method_is_device_attr(self, r_name, r_meth)
-
-        read_args = getfullargspec(r_meth)
-        has_attr_argument = len(read_args.args) - int(__is_method_bound(r_meth))
-
-        r_meth = functools.partial(
-            __dynamic_attribute_reader,
-            r_meth=r_meth,
-            has_attr_argument=has_attr_argument,
-        )
+        r_meth = functools.partial(__dynamic_attribute_reader, r_meth=r_meth)
         r_name = f"__wrapped_{att_name}_{r_name}__"
         setattr(self, r_name, r_meth)
 
@@ -481,17 +471,7 @@ def __DeviceImpl__add_attribute(
         AttrWriteType.READ_WITH_WRITE,
     ):
         w_meth = __ensure_user_method_is_device_attr(self, w_name, w_meth)
-
-        write_args = getfullargspec(w_meth)
-        has_value_argument = (
-            len(write_args.args) - int(__is_method_bound(w_meth)) - 1
-        )  # we always pass attr
-
-        w_meth = functools.partial(
-            __dynamic_attribute_writer,
-            w_meth=w_meth,
-            has_value_argument=has_value_argument,
-        )
+        w_meth = functools.partial(__dynamic_attribute_writer, w_meth=w_meth)
         w_name = f"__wrapped_{att_name}_{w_name}__"
         setattr(self, w_name, w_meth)
 
@@ -511,33 +491,22 @@ def __DeviceImpl__add_attribute(
     if is_allo_meth is not None:
         is_allo_meth = __ensure_user_method_is_device_attr(self, ia_name, is_allo_meth)
         ia_name = f"__wrapped_{att_name}_{ia_name}__"
-
         setattr(self, ia_name, run_in_executor(is_allo_meth))
 
     self._add_attribute(attr, r_name, w_name, ia_name)
     return attr
 
 
-def __dynamic_attribute_reader(attr, r_meth, has_attr_argument):
+def __dynamic_attribute_reader(attr, r_meth):
     worker = get_worker()
-
-    if has_attr_argument:
-        ret = worker.execute(r_meth, attr)
-    else:
-        ret = worker.execute(r_meth)
-
+    ret = worker.execute(r_meth, attr)
     if not attr.get_value_flag() and ret is not None:
         set_complex_value(attr, ret)
-
     return ret
 
 
-def __dynamic_attribute_writer(attr, w_meth, has_value_argument):
+def __dynamic_attribute_writer(attr, w_meth):
     worker = get_worker()
-
-    if has_value_argument:
-        return worker.execute(w_meth, attr, attr.get_write_value())
-
     return worker.execute(w_meth, attr)
 
 
@@ -613,8 +582,6 @@ def __DeviceImpl__add_command(self, cmd, device_level=True):
         fisallowed_name = (
             f"__wrapped_{getattr(fisallowed, '__name__', f'is_{cmd_name}_allowed')}__"
         )
-        if len(getfullargspec(fisallowed).args) > 1:
-            fisallowed = functools.partial(fisallowed, self)
         setattr(self, fisallowed_name, run_in_executor(fisallowed))
     else:
         fisallowed_name = ""
