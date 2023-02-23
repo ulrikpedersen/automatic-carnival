@@ -445,6 +445,15 @@ def test_multi_with_two_devices_with_properties(server_green_mode):
         assert proxy2.get_prop2() == 5555
 
 
+def test_multi_raises_on_invalid_file_database_properties():
+    class TestDevice(Device):
+        empty = device_property(dtype=(str,))
+
+    with pytest.raises(RuntimeError, match="FileDatabase"):
+        with DeviceTestContext(TestDevice, properties={"empty": []}):
+            pass
+
+
 @pytest.fixture(
     # Per test we have the input config tuple, and then the expected exception type
     params=[

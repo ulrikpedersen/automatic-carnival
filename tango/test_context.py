@@ -26,7 +26,7 @@ from argparse import ArgumentParser, ArgumentTypeError
 # Local imports
 from .server import run
 from .utils import is_non_str_seq
-from . import DeviceProxy, Database, Util
+from . import Database, DeviceProxy, DevFailed, Util
 
 __all__ = (
     "MultiDeviceTestContext",
@@ -512,7 +512,18 @@ class MultiDeviceTestContext:
                 for (attribute_name, memorized_value) in memorized.items()
             }
             db.put_device_attribute_property(device_name, munged)
-        return db
+        try:
+            validated_db = Database(self.db)
+        except DevFailed:
+            with open(self.db, "r") as f:
+                content = f.read()
+            raise RuntimeError(
+                f"Invalid FileDatabase file was created.\n"
+                f"Check device properties (empty list or str?): "
+                f"{device_prop_info}.\n"
+                f"Problematic file has content:\n{content}"
+            )
+        return validated_db
 
     def delete_db(self):
         """delete temporary database file only if it was created by this class"""
