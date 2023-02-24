@@ -1125,7 +1125,9 @@ def test_read_write_dynamic_attribute(
         assert "dyn_attr" not in proxy.get_attribute_list()
 
 
-def test_read_write_dynamic_attribute_decorated_methods(server_green_mode):
+def test_read_write_dynamic_attribute_decorated_methods_default_names(
+    server_green_mode,
+):
     class TestDevice(Device):
         green_mode = server_green_mode
 
@@ -1148,6 +1150,62 @@ def test_read_write_dynamic_attribute_decorated_methods(server_green_mode):
 
         @general_decorator
         def is_attr_allowed(self, req_type):
+            assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+            return self.is_allowed
+        """
+        )
+
+        if server_green_mode != GreenMode.Asyncio:
+            exec(sync_code)
+        else:
+            exec(sync_code.replace("def ", "async def "))
+
+        @command(dtype_in=bool)
+        def make_allowed(self, yesno):
+            self.is_allowed = yesno
+
+    with DeviceTestContext(TestDevice) as proxy:
+        proxy.make_allowed(True)
+        proxy.attr = 123
+        assert proxy.attr == 123
+
+        proxy.make_allowed(False)
+        with pytest.raises(DevFailed):
+            proxy.attr = 123
+        with pytest.raises(DevFailed):
+            _ = proxy.attr
+
+
+def test_read_write_dynamic_attribute_decorated_methods_user_names(server_green_mode):
+    class TestDevice(Device):
+        green_mode = server_green_mode
+
+        attr_value = None
+        is_allowed = None
+
+        def initialize_dynamic_attributes(self):
+            attr = attribute(
+                name="attr",
+                dtype=int,
+                access=AttrWriteType.READ_WRITE,
+                fget=self.user_read,
+                fset=self.user_write,
+                fisallowed=self.user_is_allowed,
+            )
+            self.add_attribute(attr)
+
+        sync_code = textwrap.dedent(
+            """\
+        @general_decorator
+        def user_read(self, attr):
+            return self.attr_value
+
+        @general_decorator
+        def user_write(self, attr):
+            self.attr_value = attr.get_write_value()
+
+        @general_decorator
+        def user_is_allowed(self, req_type):
             assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
             return self.is_allowed
         """

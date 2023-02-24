@@ -448,8 +448,8 @@ def __DeviceImpl__add_attribute(
         AttrWriteType.READ_WRITE,
         AttrWriteType.READ_WITH_WRITE,
     ):
-        r_name = f"__wrapped_{att_name}_{r_name}__"
-        r_meth_green_mode = attr_data.read_green_mode if attr_data else True
+        r_name = f"__wrapped_read_{att_name}_{r_name}__"
+        r_meth_green_mode = getattr(attr_data, "read_green_mode", True)
         __patch_device_with_dynamic_attribute_read_method(
             self, r_name, r_meth, r_meth_green_mode
         )
@@ -472,8 +472,8 @@ def __DeviceImpl__add_attribute(
         AttrWriteType.READ_WRITE,
         AttrWriteType.READ_WITH_WRITE,
     ):
-        w_name = f"__wrapped_{att_name}_{w_name}__"
-        w_meth_green_mode = attr_data.write_green_mode if attr_data else True
+        w_name = f"__wrapped_write_{att_name}_{w_name}__"
+        w_meth_green_mode = getattr(attr_data, "write_green_mode", True)
         __patch_device_with_dynamic_attribute_write_method(
             self, w_name, w_meth, w_meth_green_mode
         )
@@ -492,8 +492,8 @@ def __DeviceImpl__add_attribute(
 
     # patch it if exists
     if is_allo_meth is not None:
-        ia_name = f"__wrapped_{att_name}_{ia_name}__"
-        ia_meth_green_mode = attr_data.isallowed_green_mode if attr_data else True
+        ia_name = f"__wrapped_is_allowed_{att_name}_{ia_name}__"
+        ia_meth_green_mode = getattr(attr_data, "isallowed_green_mode", True)
         __patch_device_with_dynamic_attribute_is_allowed_method(
             self, ia_name, is_allo_meth, ia_meth_green_mode
         )
