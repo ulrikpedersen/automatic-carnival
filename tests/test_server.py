@@ -526,40 +526,37 @@ def test_read_write_attribute(attribute_typed_values, server_green_mode):
             _ = proxy.attr
 
 
-def test_read_write_attribute_unbound_methods(server_green_mode):
-    class Value:
-        _value = None
-
-        def set(self, val):
-            self._value = val
-
-        def get(self):
-            return self._value
-
-    v = Value()
+def test_read_write_attribute_with_unbound_functions(server_green_mode):
+    v = {"attr": None}
     is_allowed = None
 
     if server_green_mode == GreenMode.Asyncio:
 
-        async def read_attr(self):
-            return v.get()
+        async def read_attr(device):
+            assert isinstance(device, TestDevice)
+            return v["attr"]
 
-        async def write_attr(self, val):
-            v.set(val)
+        async def write_attr(device, val):
+            assert isinstance(device, TestDevice)
+            v["attr"] = val
 
-        async def is_attr_allowed(self, req_type):
+        async def is_attr_allowed(device, req_type):
+            assert isinstance(device, TestDevice)
             assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
             return is_allowed
 
     else:
 
-        def read_attr(self):
-            return v.get()
+        def read_attr(device):
+            assert isinstance(device, TestDevice)
+            return v["attr"]
 
-        def write_attr(self, val):
-            v.set(val)
+        def write_attr(device, val):
+            assert isinstance(device, TestDevice)
+            v["attr"] = val
 
-        def is_attr_allowed(self, req_type):
+        def is_attr_allowed(device, req_type):
+            assert isinstance(device, TestDevice)
             assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
             return is_allowed
 
@@ -1611,34 +1608,25 @@ def test_dynamic_attribute_using_classic_api_like_sardana(device_impl_class):
 
 @pytest.mark.parametrize("read_function_signature", ["low_level", "high_level"])
 @pytest.mark.parametrize("patched", [True, False])
-def test_dynamic_attribute_with_non_device_method(
+def test_dynamic_attribute_with_unbound_functions(
     read_function_signature, patched, server_green_mode
 ):
-    class Value:
-        _value = None
-
-        def set(self, val):
-            self._value = val
-
-        def read(self):
-            return self._value
-
-    value = Value()
+    value = {"attr": None}
     is_allowed = None
 
     if server_green_mode == GreenMode.Asyncio:
 
         async def low_level_read_function(device, attr):
             assert isinstance(device, TestDevice)
-            attr.set_value(value.read())
+            attr.set_value(value["attr"])
 
         async def high_level_read_function(device, attr):
             assert isinstance(device, TestDevice)
-            return value.read()
+            return value["attr"]
 
         async def write_function(device, attr):
             assert isinstance(device, TestDevice)
-            value.set(attr.get_write_value())
+            value["attr"] = attr.get_write_value()
 
         async def is_allowed_function(device, req_type):
             assert isinstance(device, TestDevice)
@@ -1649,15 +1637,15 @@ def test_dynamic_attribute_with_non_device_method(
 
         def low_level_read_function(device, attr):
             assert isinstance(device, TestDevice)
-            attr.set_value(value.read())
+            attr.set_value(value["attr"])
 
         def high_level_read_function(device, attr):
             assert isinstance(device, TestDevice)
-            return value.read()
+            return value["attr"]
 
         def write_function(device, attr):
             assert isinstance(device, TestDevice)
-            value.set(attr.get_write_value())
+            value["attr"] = attr.get_write_value()
 
         def is_allowed_function(device, req_type):
             assert isinstance(device, TestDevice)
@@ -2237,13 +2225,16 @@ def test_inheritance_with_undecorated_attributes_and_unbound_functions(
     is_allowed = True
     values = {"a": 0.0, "b": 0.0}
 
-    def read_attr_a(self):
+    def read_attr_a(device):
+        assert isinstance(device, B)
         return values["a"]
 
-    def write_attr_a(self, value):
+    def write_attr_a(device, value):
+        assert isinstance(device, B)
         values["a"] = value
 
-    def is_attr_a_allowed(self, req_type):
+    def is_attr_a_allowed(device, req_type):
+        assert isinstance(device, B)
         assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
         return is_allowed
 
@@ -2257,13 +2248,16 @@ def test_inheritance_with_undecorated_attributes_and_unbound_functions(
             fisallowed=is_attr_a_allowed,
         )
 
-    def read_attr_b(self):
+    def read_attr_b(device):
+        assert isinstance(device, B)
         return values["b"]
 
-    def write_attr_b(self, value):
+    def write_attr_b(device, value):
+        assert isinstance(device, B)
         values["b"] = value
 
-    def is_attr_b_allowed(self, req_type):
+    def is_attr_b_allowed(device, req_type):
+        assert isinstance(device, B)
         assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
         return is_allowed
 
