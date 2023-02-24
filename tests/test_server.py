@@ -7,8 +7,6 @@ import pytest
 import enum
 import numpy as np
 
-from functools import wraps
-
 from tango import (
     AttrData,
     Attr,
@@ -45,7 +43,7 @@ from tango.test_utils import (
     BadEnumSkipValues,
     BadEnumDuplicates,
 )
-from tango.test_utils import assert_close, DEVICE_SERVER_ARGUMENTS
+from tango.test_utils import assert_close, general_decorator, DEVICE_SERVER_ARGUMENTS
 from tango.utils import (
     EnumTypeError,
     FROM_TANGO_TO_NUMPY_TYPE,
@@ -141,25 +139,7 @@ def test_identity_command(command_typed_values, server_green_mode):
             assert_close(proxy.identity(value), expected(value))
 
 
-@pytest.mark.parametrize("decoration", ["functools", "general"])
-def test_decorated_command(decoration, server_green_mode):
-    if decoration == "functools":
-
-        def decorator(function):
-            @wraps(function)
-            def _wrapper(*args, **kwargs):
-                return function(*args, **kwargs)
-
-            return _wrapper
-
-    else:
-
-        def decorator(function):
-            def _wrapper(*args, **kwargs):
-                return function(*args, **kwargs)
-
-            return _wrapper
-
+def test_decorated_command(server_green_mode):
     class TestDevice(Device):
         green_mode = server_green_mode
         is_allowed = None
@@ -168,7 +148,7 @@ def test_decorated_command(decoration, server_green_mode):
         def identity(self, arg):
             return arg
 
-        @decorator
+        @general_decorator
         def is_identity_allowed(self):
             return self.is_allowed
 
@@ -589,78 +569,51 @@ def test_read_write_attribute_with_unbound_functions(server_green_mode):
             _ = proxy.attr
 
 
-@pytest.mark.parametrize("decoration", ["functools", "general"])
-def test_read_write_attribute_decorated_methods(decoration, server_green_mode):
-    if decoration == "functools":
-
-        def decorator(function):
-            @wraps(function)
-            def _wrapper(*args, **kwargs):
-                return function(*args, **kwargs)
-
-            return _wrapper
-
-    else:
-
-        def decorator(function):
-            def _wrapper(*args, **kwargs):
-                return function(*args, **kwargs)
-
-            return _wrapper
-
+def test_read_write_attribute_decorated_methods(server_green_mode):
     class TestDevice(Device):
         green_mode = server_green_mode
-
-        attr = attribute(dtype=int, access=AttrWriteType.READ_WRITE)
-        async_attr = attribute(dtype=int, access=AttrWriteType.READ_WRITE)
 
         attr_value = None
         is_allowed = None
 
-        @decorator
-        def read_attr(self):
-            return self.attr_value
+        attr = attribute(dtype=int, access=AttrWriteType.READ_WRITE)
 
-        @decorator
-        def write_attr(self, value):
-            self.attr_value = value
+        sync_code = textwrap.dedent(
+            """\
+            @general_decorator
+            def read_attr(self):
+                return self.attr_value
 
-        @decorator
-        def is_attr_allowed(self, req_type):
-            assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
-            return self.is_allowed
+            @general_decorator
+            def write_attr(self, value):
+                self.attr_value = value
 
-        @decorator
-        async def read_async_attr(self):
-            return self.attr_value
+            @general_decorator
+            def is_attr_allowed(self, req_type):
+                assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+                return self.is_allowed
+            """
+        )
 
-        @decorator
-        async def write_async_attr(self, value):
-            self.attr_value = value
-
-        @decorator
-        async def is_async_attr_allowed(self, req_type):
-            assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
-            return self.is_allowed
+        if server_green_mode != GreenMode.Asyncio:
+            exec(sync_code)
+        else:
+            exec(sync_code.replace("def ", "async def "))
 
         @command(dtype_in=bool)
         def make_allowed(self, yesno):
             self.is_allowed = yesno
 
     with DeviceTestContext(TestDevice) as proxy:
-        if server_green_mode != GreenMode.Asyncio:
-            attr = "attr"
-        else:
-            attr = "async_attr"
         proxy.make_allowed(True)
-        setattr(proxy, attr, 123)
-        assert getattr(proxy, attr) == 123
+        proxy.attr = 123
+        assert proxy.attr == 123
 
         proxy.make_allowed(False)
         with pytest.raises(DevFailed):
-            setattr(proxy, attr, 123)
+            proxy.attr = 123
         with pytest.raises(DevFailed):
-            _ = getattr(proxy, attr)
+            _ = proxy.attr
 
 
 def test_read_write_wvalue_attribute(attribute_typed_values, server_green_mode):
@@ -1172,84 +1125,53 @@ def test_read_write_dynamic_attribute(
         assert "dyn_attr" not in proxy.get_attribute_list()
 
 
-@pytest.mark.parametrize("decoration", ["functools", "general"])
-def test_read_write_dynamic_attribute_decorated_methods(decoration, server_green_mode):
-    if decoration == "functools":
-
-        def decorator(function):
-            @wraps(function)
-            def _wrapper(*args, **kwargs):
-                return function(*args, **kwargs)
-
-            return _wrapper
-
-    else:
-
-        def decorator(function):
-            def _wrapper(*args, **kwargs):
-                return function(*args, **kwargs)
-
-            return _wrapper
-
+def test_read_write_dynamic_attribute_decorated_methods(server_green_mode):
     class TestDevice(Device):
         green_mode = server_green_mode
+
+        attr_value = None
+        is_allowed = None
 
         def initialize_dynamic_attributes(self):
             attr = attribute(name="attr", dtype=int, access=AttrWriteType.READ_WRITE)
             self.add_attribute(attr)
 
-            async_attr = attribute(
-                name="async_attr", dtype=int, access=AttrWriteType.READ_WRITE
-            )
-            self.add_attribute(async_attr)
-
-        attr_value = None
-        is_allowed = None
-
-        @decorator
+        sync_code = textwrap.dedent(
+            """\
+        @general_decorator
         def read_attr(self, attr):
             return self.attr_value
 
-        @decorator
+        @general_decorator
         def write_attr(self, attr):
             self.attr_value = attr.get_write_value()
 
-        @decorator
+        @general_decorator
         def is_attr_allowed(self, req_type):
             assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
             return self.is_allowed
+        """
+        )
 
-        @decorator
-        async def read_async_attr(self, attr):
-            return self.attr_value
-
-        @decorator
-        async def write_async_attr(self, attr):
-            self.attr_value = attr.get_write_value()
-
-        @decorator
-        async def is_async_attr_allowed(self, req_type):
-            assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
-            return self.is_allowed
+        if server_green_mode != GreenMode.Asyncio:
+            exec(sync_code)
+        else:
+            exec(sync_code.replace("def ", "async def "))
 
         @command(dtype_in=bool)
         def make_allowed(self, yesno):
             self.is_allowed = yesno
 
     with DeviceTestContext(TestDevice) as proxy:
-        if server_green_mode != GreenMode.Asyncio:
-            attr = "attr"
-        else:
-            attr = "async_attr"
         proxy.make_allowed(True)
-        setattr(proxy, attr, 123)
-        assert getattr(proxy, attr) == 123
+        proxy.attr = 123
+        assert proxy.attr == 123
 
         proxy.make_allowed(False)
         with pytest.raises(DevFailed):
-            setattr(proxy, attr, 123)
+            proxy.attr = 123
         with pytest.raises(DevFailed):
-            _ = getattr(proxy, attr)
+            _ = proxy.attr
 
 
 def test_read_write_dynamic_attribute_enum(server_green_mode, attr_data_format):

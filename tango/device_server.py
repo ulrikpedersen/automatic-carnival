@@ -449,7 +449,10 @@ def __DeviceImpl__add_attribute(
         AttrWriteType.READ_WITH_WRITE,
     ):
         r_name = f"__wrapped_{att_name}_{r_name}__"
-        __patch_device_with_dynamic_attribute_read_method(self, r_name, r_meth)
+        r_meth_green_mode = attr_data.read_green_mode if attr_data else True
+        __patch_device_with_dynamic_attribute_read_method(
+            self, r_name, r_meth, r_meth_green_mode
+        )
 
     # get write method and its name
     w_name = f"write_{att_name}"
@@ -470,7 +473,10 @@ def __DeviceImpl__add_attribute(
         AttrWriteType.READ_WITH_WRITE,
     ):
         w_name = f"__wrapped_{att_name}_{w_name}__"
-        __patch_device_with_dynamic_attribute_write_method(self, w_name, w_meth)
+        w_meth_green_mode = attr_data.write_green_mode if attr_data else True
+        __patch_device_with_dynamic_attribute_write_method(
+            self, w_name, w_meth, w_meth_green_mode
+        )
 
     # get is allowed method and its name
     ia_name = f"is_{att_name}_allowed"
@@ -487,78 +493,127 @@ def __DeviceImpl__add_attribute(
     # patch it if exists
     if is_allo_meth is not None:
         ia_name = f"__wrapped_{att_name}_{ia_name}__"
+        ia_meth_green_mode = attr_data.isallowed_green_mode if attr_data else True
         __patch_device_with_dynamic_attribute_is_allowed_method(
-            self, ia_name, is_allo_meth
+            self, ia_name, is_allo_meth, ia_meth_green_mode
         )
 
     self._add_attribute(attr, r_name, w_name, ia_name)
     return attr
 
 
-def __patch_device_with_dynamic_attribute_read_method(device, name, r_meth):
+def __patch_device_with_dynamic_attribute_read_method(
+    device, name, r_meth, r_meth_green_mode
+):
     if __is_device_method(device, r_meth):
+        if r_meth_green_mode:
 
-        @functools.wraps(r_meth)
-        def read_attr(device, attr):
-            worker = get_worker()
-            # already bound to device, so exclude device arg
-            ret = worker.execute(r_meth, attr)
-            if not attr.get_value_flag() and ret is not None:
-                set_complex_value(attr, ret)
-            return ret
+            @functools.wraps(r_meth)
+            def read_attr(device, attr):
+                worker = get_worker()
+                # already bound to device, so exclude device arg
+                ret = worker.execute(r_meth, attr)
+                if not attr.get_value_flag() and ret is not None:
+                    set_complex_value(attr, ret)
+                return ret
+
+        else:
+
+            @functools.wraps(r_meth)
+            def read_attr(device, attr):
+                ret = r_meth(attr)
+                if not attr.get_value_flag() and ret is not None:
+                    set_complex_value(attr, ret)
+                return ret
 
     else:
+        if r_meth_green_mode:
 
-        @functools.wraps(r_meth)
-        def read_attr(device, attr):
-            worker = get_worker()
-            # unbound function or not on device object, so include device arg
-            ret = worker.execute(r_meth, device, attr)
-            if not attr.get_value_flag() and ret is not None:
-                set_complex_value(attr, ret)
-            return ret
+            @functools.wraps(r_meth)
+            def read_attr(device, attr):
+                worker = get_worker()
+                # unbound function or not on device object, so include device arg
+                ret = worker.execute(r_meth, device, attr)
+                if not attr.get_value_flag() and ret is not None:
+                    set_complex_value(attr, ret)
+                return ret
+
+        else:
+
+            @functools.wraps(r_meth)
+            def read_attr(device, attr):
+                ret = r_meth(device, attr)
+                if not attr.get_value_flag() and ret is not None:
+                    set_complex_value(attr, ret)
+                return ret
 
     bound_method = types.MethodType(read_attr, device)
     setattr(device, name, bound_method)
 
 
-def __patch_device_with_dynamic_attribute_write_method(device, name, w_meth):
+def __patch_device_with_dynamic_attribute_write_method(
+    device, name, w_meth, w_meth_green_mode
+):
     if __is_device_method(device, w_meth):
+        if w_meth_green_mode:
 
-        @functools.wraps(w_meth)
-        def write_attr(device, attr):
-            worker = get_worker()
-            # already bound to device, so exclude device arg
-            return worker.execute(w_meth, attr)
+            @functools.wraps(w_meth)
+            def write_attr(device, attr):
+                worker = get_worker()
+                # already bound to device, so exclude device arg
+                return worker.execute(w_meth, attr)
+
+        else:
+
+            @functools.wraps(w_meth)
+            def write_attr(device, attr):
+                return w_meth(attr)
 
     else:
+        if w_meth_green_mode:
 
-        @functools.wraps(w_meth)
-        def write_attr(device, attr):
-            worker = get_worker()
-            # unbound function or not on device object, so include device arg
-            return worker.execute(w_meth, device, attr)
+            @functools.wraps(w_meth)
+            def write_attr(device, attr):
+                worker = get_worker()
+                # unbound function or not on device object, so include device arg
+                return worker.execute(w_meth, device, attr)
+
+        else:
+            write_attr = w_meth
 
     bound_method = types.MethodType(write_attr, device)
     setattr(device, name, bound_method)
 
 
-def __patch_device_with_dynamic_attribute_is_allowed_method(device, name, is_allo_meth):
+def __patch_device_with_dynamic_attribute_is_allowed_method(
+    device, name, is_allo_meth, ia_meth_green_mode
+):
     if __is_device_method(device, is_allo_meth):
+        if ia_meth_green_mode:
 
-        @functools.wraps(is_allo_meth)
-        def is_allowed_attr(device, request_type):
-            worker = get_worker()
-            # already bound to device, so exclude device arg
-            return worker.execute(is_allo_meth, request_type)
+            @functools.wraps(is_allo_meth)
+            def is_allowed_attr(device, request_type):
+                worker = get_worker()
+                # already bound to device, so exclude device arg
+                return worker.execute(is_allo_meth, request_type)
+
+        else:
+
+            @functools.wraps(is_allo_meth)
+            def is_allowed_attr(device, request_type):
+                return is_allo_meth(request_type)
 
     else:
+        if ia_meth_green_mode:
 
-        @functools.wraps(is_allo_meth)
-        def is_allowed_attr(device, request_type):
-            worker = get_worker()
-            # unbound function or not on device object, so include device arg
-            return worker.execute(is_allo_meth, device, request_type)
+            @functools.wraps(is_allo_meth)
+            def is_allowed_attr(device, request_type):
+                worker = get_worker()
+                # unbound function or not on device object, so include device arg
+                return worker.execute(is_allo_meth, device, request_type)
+
+        else:
+            is_allowed_attr = is_allo_meth
 
     bound_method = types.MethodType(is_allowed_attr, device)
     setattr(device, name, bound_method)

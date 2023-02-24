@@ -259,6 +259,13 @@ DEVICE_SERVER_ARGUMENTS = (
 )
 
 
+def general_decorator(function):
+    def _wrapper(*args, **kwargs):
+        return function(*args, **kwargs)
+
+    return _wrapper
+
+
 def repr_type(x):
     if isinstance(x, (list, tuple)):
         return f"({repr_type(x[0])},)"
