@@ -1,7 +1,7 @@
 .. currentmodule:: tango
 
 .. highlight:: python
-   :linenothreshold: 3
+   :linenothreshold: 10
 
 .. _pytango-howto:
 
@@ -906,29 +906,22 @@ is then passed to the :meth:`~tango.server.Device.add_attribute` method.
 Which arguments you have to provide depends on the type of the attribute.  For example,
 a WRITE attribute does not need a read method.
 
-.. note:: Starting from PyTango 9.4.0 the read and write methods for dynamic attributes
+.. note:: Starting from PyTango 9.4.0 the read methods for dynamic attributes
           can also be implemented with the high-level API.  Prior to that, only the low-level
           API was available.
 
-for the read function it is possible to use one of the following signatures::
+For the read function it is possible to use one of the following signatures::
 
     def low_level_read(self, attr):
         attr.set_value(self.attr_value)
 
-    def high_level_read_with_attr_argument(self, attr):
+    def high_level_read(self, attr):
         return self.attr_value
 
-    def high_level_read_without_attr_argument(self):
-        return self.attr_value
-
-for the write function it is possible to use one of the following signatures::
+For the write function there is only one signature::
 
     def low_level_write(self, attr):
         self.attr_value = attr.get_write_value()
-
-    def high_level_write(self, attr, value):
-        self.attr_value = value
-
 
 Here is an example of a device which creates a dynamic attribute on startup::
 
@@ -950,15 +943,18 @@ Here is an example of a device which creates a dynamic attribute on startup::
             self.add_attribute(attr)
 
         def generic_read(self, attr):
-            value = self._values[attr.get_name()]
+            attr_name = attr.get_name()
+            value = self._values[attr_name]
             return value
 
-        def generic_write(self, attr, value):
-            self._values[attr.get_name()] = value
+        def generic_write(self, attr):
+            attr_name = attr.get_name()
+            value = attr.get_write_value()
+            self._values[attr_name] = value
 
-        def generic_is_allowed(self, req_type):
+        def generic_is_allowed(self, request_type):
             # note: we don't know which attribute is being read!
-            # req_type will be either AttReqType.READ_REQ or AttReqType.WRITE_REQ
+            # request_type will be either AttReqType.READ_REQ or AttReqType.WRITE_REQ
             return True
 
 
@@ -996,13 +992,16 @@ point attribute with the specified name::
                 raise ValueError(f"Already have an attribute called {repr(attr_name)}")
 
         def generic_read(self, attr):
-            self.info_stream("Reading attribute %s", attr.get_name())
+            attr_name = attr.get_name()
+            self.info_stream("Reading attribute %s", attr_name)
             value = self._values[attr.get_name()]
             attr.set_value(value)
 
         def generic_write(self, attr):
-            self.info_stream("Writing attribute %s - value %s", attr.get_name(), attr.get_write_value())
-            self._values[attr.get_name()] = attr.get_write_value()
+            attr_name = attr.get_name()
+            value = attr.get_write_value()
+            self.info_stream("Writing attribute %s - value %s", attr_name, value)
+            self._values[attr.get_name()] = value
 
 An approach more in line with the low-level API is also possible, but not recommended for
 new devices. The Device_3Impl::add_attribute() method has the following
