@@ -28,7 +28,8 @@ cache:
 .matrix-wheel:
   image: ${IMAGE_REGISTRY}:${MANYLINUX}_${ARCH}_v1.2.0
   tags:
-    - maxiv-docker
+    - docker
+    - $RUNNER_TAG
   variables:
     IMAGE_REGISTRY: registry.gitlab.com/tango-controls/docker/pytango-builder
     MANYLINUX: manylinux2014
@@ -37,16 +38,27 @@ cache:
     WHEEL_REGEX: pytango*${PYTHON_TAG}*${ARCH}.whl
   parallel:
     matrix:
-      - ARCH: [x86_64, i686, aarch64]
+      - RUNNER_TAG: amd64
+        ARCH: [x86_64, i686]
         PYTHON_VER: [36, 37]
-        ABI_SUFFIX: ['m']
-
-      - ARCH: [x86_64, i686, aarch64]
+        ABI_SUFFIX: m
+      - RUNNER_TAG: amd64
+        ARCH: [x86_64, i686]
+        PYTHON_VER: [38, 39, 310, 311]
+      - RUNNER_TAG: aarch64
+        ARCH: aarch64
+        PYTHON_VER: [36, 37]
+        ABI_SUFFIX: m
+      - RUNNER_TAG: aarch64
+        ARCH: aarch64
         PYTHON_VER: [38, 39, 310, 311]
 
 run-pre-commit:
   stage: check
   image: registry.gitlab.com/tango-controls/docker/pre-commit
+  tags:
+    - docker
+    - amd64
   cache: []
   script:
     - pre-commit run --all-files
@@ -76,6 +88,9 @@ build-wheel:
 build-sdist:
   stage: build
   image: python:3.8
+  tags:
+    - docker
+    - amd64
   cache: []
   before_script:
     - pip install twine
@@ -90,16 +105,20 @@ build-sdist:
 build-docker-image:
   stage: image
   image: docker:latest
+  tags:
+    - dind
+    - amd64
   cache: []
   services:
-    - docker:dind
+    - docker:20.10.16-dind
   only:
     refs:
       - tags
   when: manual
   allow_failure: true
   variables:
-    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
@@ -116,7 +135,8 @@ test-source:
   stage: test
   image: condaforge/mambaforge:4.14.0-0
   tags:
-    - gitlab-org
+    - docker
+    - amd64
   variables:
     TANGO_DEPENDENCIES: "cpptango=${CPP_TANGO_VERSION} tango-test=3.6"
     DEBIAN_FRONTEND: "noninteractive"
@@ -178,6 +198,9 @@ test-docs:
   # official build is on https://readthedocs.org/projects/pytango/ but we test doc generation
   stage: test
   image: sphinxdoc/sphinx:latest
+  tags:
+    - docker
+    - amd64
   cache: []
   script:
     - python -m pip install numpy gevent psutil sphinx_rtd_theme
@@ -194,6 +217,9 @@ test-docs:
 release-pypi-package:
   stage: release
   image: python:3.8
+  tags:
+    - docker
+    - amd64
   cache: []
   before_script:
     - pip install twine
