@@ -91,11 +91,7 @@ def from_typeformat_to_type(dtype, dformat):
 
 def _get_wrapped_read_method(attribute, read_method):
     """
-    Checks which signature has method.
-    If the read method has 1 argument, the method is wrapped into another method
-    which has correct parameter definition to make it work.
-
-    Additionally, we wrap it with executor, if needed.
+    Make sure attr is updated on read, and wrap it with executor, if needed.
 
     :param attribute: the attribute data information
     :type attribute: AttrData
@@ -200,11 +196,7 @@ def __patch_write_method(tango_device_klass, attribute):
 
 def _get_wrapped_isallowed_method(attribute, isallowed_method):
     """
-    Checks which signature has method.
-    If the isallowed method has 1 argument, the method is wrapped into another method
-    which has correct parameter definition to make it work.
-
-    Additionally, we wrap it with executor, if needed.
+    Wraps is allowed method with executor, if needed.
 
     :param attribute: the attribute data information
     :type attribute: AttrData
@@ -218,9 +210,9 @@ def _get_wrapped_isallowed_method(attribute, isallowed_method):
     if attribute.isallowed_green_mode:
 
         @functools.wraps(isallowed_method)
-        def isallowed_attr(self, request):
+        def isallowed_attr(self, request_type):
             worker = get_worker()
-            return worker.execute(isallowed_method, self, request)
+            return worker.execute(isallowed_method, self, request_type)
 
     else:
         isallowed_attr = isallowed_method
@@ -254,8 +246,8 @@ def __patch_isallowed_method(tango_device_klass, attribute):
 
 def __patch_attr_methods(tango_device_klass, attribute):
     """
-    Finds read, write and isallowed methods for attribute, checks their signatures
-    and wraps into another method to make them work.
+    Finds read, write and isallowed methods for attribute, and
+    wraps into another method to make them work.
 
     Also patch methods with green executor, if requested.
 
