@@ -565,7 +565,7 @@ def __patch_device_with_dynamic_attribute_is_allowed_method(device, name, is_all
 
 
 def __is_device_method(device, func):
-    """Return True if function is bound to device object (i.e., a method)"""
+    """Return True if func is bound to device object (i.e., a method)"""
     return inspect.ismethod(func) and func.__self__ is device
 
 
@@ -618,7 +618,9 @@ def __DeviceImpl__add_command(self, cmd, device_level=True):
         fisallowed_name = (
             f"__wrapped_{getattr(fisallowed, '__name__', f'is_{cmd_name}_allowed')}__"
         )
-        setattr(self, fisallowed_name, run_in_executor(fisallowed))
+        __patch_device_with_dynamic_command_is_allowed_method(
+            self, fisallowed_name, fisallowed
+        )
     else:
         fisallowed_name = ""
 
@@ -626,6 +628,27 @@ def __DeviceImpl__add_command(self, cmd, device_level=True):
         cmd_name, cmd.__tango_command__[1], fisallowed_name, disp_level, device_level
     )
     return cmd
+
+
+def __patch_device_with_dynamic_command_is_allowed_method(device, name, is_allo_meth):
+    if __is_device_method(device, is_allo_meth):
+
+        @functools.wraps(is_allo_meth)
+        def is_allowed_cmd(device):
+            worker = get_worker()
+            # already bound to device, so exclude device arg
+            return worker.execute(is_allo_meth)
+
+    else:
+
+        @functools.wraps(is_allo_meth)
+        def is_allowed_cmd(device):
+            worker = get_worker()
+            # unbound function or not on device object, so include device arg
+            return worker.execute(is_allo_meth, device)
+
+    bound_method = types.MethodType(is_allowed_cmd, device)
+    setattr(device, name, bound_method)
 
 
 def __DeviceImpl__remove_command(self, cmd_name, free_it=False, clean_db=True):

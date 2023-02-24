@@ -20,8 +20,9 @@ This feature applies to both static and dynamic attributes/commands:
     - attribute is allowed method (``fisallowed`` kwarg)
     - command is allowed method (``fisallowed`` kwarg)
 
+The first argument to these functions will be a reference to the device instance.
 
-Trivial example::
+For example, using static attributes and commands::
 
     from tango import AttrWriteType, AttReqType
     from tango.server import Device, command, attribute
@@ -29,20 +30,24 @@ Trivial example::
     global_data = {"example_attr1": 100}
 
 
-    def read_example_attr1():
+    def read_example_attr1(device):
+        print(f"read from device {device.get_name()}")
         return global_data["example_attr1"]
 
 
-    def write_example_attr1(value):
+    def write_example_attr1(device, value):
+        print(f"write to device {device.get_name()}")
         global_data["example_attr1"] = value
 
 
-    def is_example_attr1_allowed(req_type):
+    def is_example_attr1_allowed(device, req_type):
+        print(f"is_allowed attr for device {device.get_name()}")
         assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
         return True
 
 
-    def is_cmd1_allowed():
+    def is_cmd1_allowed(device):
+        print(f"is_allowed cmd for device {device.get_name()}")
         return True
 
 
@@ -60,14 +65,8 @@ Trivial example::
         def identity1(self, value):
             return value
 
-As can be seen from the user functions above, they do not get any context about the request.  They do
-not know which device it came from.  This can definitely cause problems if a device server hosts multiple
-instances of the same device.
 
-It is also possible to include another argument in these functions.  If present, the first argument will
-be a reference to the device instance.
-
-For example::
+Another example, using dynamic attributes and commands::
 
     from tango import AttrWriteType, AttReqType
     from tango.server import Device, command, attribute
@@ -75,13 +74,14 @@ For example::
     global_data = {"example_attr2": 200}
 
 
-    def read_example_attr2(device):
-        print(f"read from device {device.get_name()}")
+    def read_example_attr2(device, attr):
+        print(f"read from device {device.get_name()} attr {attr.get_name()}")
         return global_data["example_attr2"]
 
 
-    def write_example_attr2(device, value):
-        print(f"write to device {device.get_name()}")
+    def write_example_attr2(device, attr):
+        print(f"write to device {device.get_name()} attr {attr.get_name()}")
+        value = attr.get_write_value()
         global_data["example_attr2"] = value
 
 
@@ -97,16 +97,23 @@ For example::
 
 
     class Test(Device):
+        def initialize_dynamic_attributes(self):
+            attr = attribute(
+                name="example_attr2",
+                dtype=int,
+                access=AttrWriteType.READ_WRITE,
+                fget=read_example_attr2,
+                fset=write_example_attr2,
+                fisallowed=is_example_attr2_allowed,
+            )
+            self.add_attribute(attr)
+            cmd = command(
+                f=self.identity2,
+                dtype_in=int,
+                dtype_out=int,
+                fisallowed=is_cmd2_allowed,
+            )
+            self.add_command(cmd)
 
-        example_attr2 = attribute(
-            fget=read_example_attr2,
-            fset=write_example_attr2,
-            fisallowed=is_example_attr2_allowed,
-            dtype=int,
-            access=AttrWriteType.READ_WRITE
-        )
-
-        @command(dtype_in=int, dtype_out=int, fisallowed=is_cmd2_allowed)
         def identity2(self, value):
             return value
-

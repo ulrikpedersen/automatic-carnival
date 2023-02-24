@@ -188,10 +188,12 @@ def test_decorated_command(decoration, server_green_mode):
 def test_command_isallowed(server_green_mode):
     is_allowed = None
 
-    def sync_allowed(self):
+    def sync_allowed(device):
+        assert isinstance(device, TestDevice)
         return is_allowed
 
-    async def async_allowed(self):
+    async def async_allowed(device):
+        assert isinstance(device, TestDevice)
         return is_allowed
 
     class IsAllowedCallableClass:
@@ -199,6 +201,7 @@ def test_command_isallowed(server_green_mode):
             self._is_allowed = None
 
         def __call__(self, device):
+            assert isinstance(device, TestDevice)
             return self._is_allowed
 
         def make_allowed(self, yesno):
@@ -210,7 +213,7 @@ def test_command_isallowed(server_green_mode):
         green_mode = server_green_mode
 
         def __init__(self, *args, **kwargs):
-            super(TestDevice, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
             self._is_allowed = True
 
         @command(dtype_in=int, dtype_out=int)
@@ -295,17 +298,20 @@ def device_command_level(request):
 def test_dynamic_command(server_green_mode, device_command_level):
     is_allowed = None
 
-    def sync_allowed():
+    def sync_allowed(device):
+        assert isinstance(device, TestDevice)
         return is_allowed
 
-    async def async_allowed():
+    async def async_allowed(device):
+        assert isinstance(device, TestDevice)
         return is_allowed
 
     class IsAllowedCallable:
         def __init__(self):
             self._is_allowed = None
 
-        def __call__(self):
+        def __call__(self, device):
+            assert isinstance(device, TestDevice)
             return self._is_allowed
 
         def make_allowed(self, yesno):
@@ -317,7 +323,7 @@ def test_dynamic_command(server_green_mode, device_command_level):
         green_mode = server_green_mode
 
         def __init__(self, *args, **kwargs):
-            super(TestDevice, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
             self._is_allowed = True
 
         def identity(self, arg):
