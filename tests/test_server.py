@@ -513,7 +513,7 @@ def test_read_write_attribute(attribute_typed_values, server_green_mode):
         def make_allowed(self, yesno):
             self._is_allowed = yesno
 
-    with DeviceTestContext(TestDevice, timeout=60000) as proxy:
+    with DeviceTestContext(TestDevice) as proxy:
         proxy.make_allowed(True)
         for value in values:
             proxy.attr = value
@@ -1628,31 +1628,39 @@ def test_dynamic_attribute_with_non_device_method(
 
     if server_green_mode == GreenMode.Asyncio:
 
-        async def low_level_read_function(attr):
+        async def low_level_read_function(device, attr):
+            assert isinstance(device, TestDevice)
             attr.set_value(value.read())
 
-        async def high_level_read_function(attr):
+        async def high_level_read_function(device, attr):
+            assert isinstance(device, TestDevice)
             return value.read()
 
-        async def write_function(attr):
+        async def write_function(device, attr):
+            assert isinstance(device, TestDevice)
             value.set(attr.get_write_value())
 
-        async def is_allowed_function(req_type):
+        async def is_allowed_function(device, req_type):
+            assert isinstance(device, TestDevice)
             assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
             return is_allowed
 
     else:
 
-        def low_level_read_function(attr):
+        def low_level_read_function(device, attr):
+            assert isinstance(device, TestDevice)
             attr.set_value(value.read())
 
-        def high_level_read_function(attr):
+        def high_level_read_function(device, attr):
+            assert isinstance(device, TestDevice)
             return value.read()
 
-        def write_function(attr):
+        def write_function(device, attr):
+            assert isinstance(device, TestDevice)
             value.set(attr.get_write_value())
 
-        def is_allowed_function(req_type):
+        def is_allowed_function(device, req_type):
+            assert isinstance(device, TestDevice)
             assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
             return is_allowed
 
@@ -1826,6 +1834,56 @@ def test_read_only_dynamic_attribute_with_dummy_write_method(
 
     with DeviceTestContext(TestDevice) as proxy:
         assert proxy.dyn_attr == 123
+
+
+def test_dynamic_attribute_with_method_in_other_class(server_green_mode):
+    class Helper:
+        value = 0
+        is_allowed = True
+
+        def read_method(self, device, attr):
+            assert isinstance(self, Helper)
+            assert isinstance(device, TestDevice)
+            assert attr.get_name() == "dyn_attr"
+            return self.value
+
+        def write_method(self, device, attr):
+            assert isinstance(self, Helper)
+            assert isinstance(device, TestDevice)
+            assert attr.get_name() == "dyn_attr"
+            self.value = attr.get_write_value()
+
+        def is_allowed_method(self, device, req_type):
+            assert isinstance(self, Helper)
+            assert isinstance(device, TestDevice)
+            assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+            return Helper.is_allowed
+
+    class TestDevice(Device):
+        green_mode = server_green_mode
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = Helper()
+
+        def initialize_dynamic_attributes(self):
+            self.add_attribute(
+                Attr("dyn_attr", DevLong, AttrWriteType.READ_WRITE),
+                r_meth=self.helper.read_method,
+                w_meth=self.helper.write_method,
+                is_allo_meth=self.helper.is_allowed_method,
+            )
+
+    with DeviceTestContext(TestDevice) as proxy:
+        Helper.is_allowed = True
+        proxy.dyn_attr = 123
+        assert proxy.dyn_attr == 123
+
+        Helper.is_allowed = False
+        with pytest.raises(DevFailed):
+            proxy.dyn_attr = 456
+        with pytest.raises(DevFailed):
+            _ = proxy.dyn_attr
 
 
 # Test properties
