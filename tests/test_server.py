@@ -1232,6 +1232,80 @@ def test_read_write_dynamic_attribute_decorated_methods_user_names(server_green_
             _ = proxy.attr
 
 
+def test_read_write_dynamic_attribute_decorated_shared_user_functions(
+    server_green_mode,
+):
+    class TestDevice(Device):
+        green_mode = server_green_mode
+
+        attr_values = {"attr1": None, "attr2": None}
+        is_allowed = None
+
+        def initialize_dynamic_attributes(self):
+            attr = attribute(
+                name="attr1",
+                dtype=int,
+                access=AttrWriteType.READ_WRITE,
+                fget=self.user_read,
+                fset=self.user_write,
+                fisallowed=self.user_is_allowed,
+            )
+            self.add_attribute(attr)
+            attr = attribute(
+                name="attr2",
+                dtype=int,
+                access=AttrWriteType.READ_WRITE,
+                fget=self.user_read,
+                fset=self.user_write,
+                fisallowed=self.user_is_allowed,
+            )
+            self.add_attribute(attr)
+
+        sync_code = textwrap.dedent(
+            """\
+        @general_decorator
+        def user_read(self, attr):
+            return self.attr_values[attr.get_name()]
+
+        @general_decorator
+        def user_write(self, attr):
+            self.attr_values[attr.get_name()] = attr.get_write_value()
+
+        @general_decorator
+        def user_is_allowed(self, req_type):
+            assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+            return self.is_allowed
+        """
+        )
+
+        if server_green_mode != GreenMode.Asyncio:
+            exec(sync_code)
+        else:
+            exec(sync_code.replace("def ", "async def "))
+
+        @command(dtype_in=bool)
+        def make_allowed(self, yesno):
+            self.is_allowed = yesno
+
+    with DeviceTestContext(TestDevice) as proxy:
+        proxy.make_allowed(True)
+        proxy.attr1 = 123
+        assert proxy.attr1 == 123
+        proxy.attr2 = 456
+        assert proxy.attr1 == 123
+        assert proxy.attr2 == 456
+
+        proxy.make_allowed(False)
+        with pytest.raises(DevFailed):
+            proxy.attr1 = 123
+        with pytest.raises(DevFailed):
+            _ = proxy.attr1
+        with pytest.raises(DevFailed):
+            proxy.attr2 = 123
+        with pytest.raises(DevFailed):
+            _ = proxy.attr2
+
+
 def test_read_write_dynamic_attribute_enum(server_green_mode, attr_data_format):
     values = (member.value for member in GoodEnum)
     enum_labels = get_enum_labels(GoodEnum)
