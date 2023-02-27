@@ -141,15 +141,13 @@ test-source:
     TANGO_DEPENDENCIES: "cpptango=${CPP_TANGO_VERSION} tango-test=3.6"
     DEBIAN_FRONTEND: "noninteractive"
   before_script:
-    - apt-get update -y --allow-releaseinfo-change-suite
-    - apt-get -y install make pkg-config rsync
     - sed -i 's/\[ -z "\$PS1" \] && return/# disabled early exit for non-interactive usage in container!/' ~/.bashrc
     - mamba init bash
     - source ~/.bashrc
     - mamba activate ./envs/$PYTHON_VERSION || mamba create --prefix ./envs/$PYTHON_VERSION --yes python=$PYTHON_VERSION
     - mamba activate ./envs/$PYTHON_VERSION
     # Install build dependencies
-    - mamba install --yes -c conda-forge -c tango-controls/label/dev -c conda-forge/label/cpptango_rc boost cppzmq cxx-compiler numpy $TANGO_DEPENDENCIES
+    - mamba install --yes -c conda-forge -c tango-controls/label/dev -c conda-forge/label/cpptango_rc boost cppzmq cxx-compiler numpy pkg-config rsync $TANGO_DEPENDENCIES
     - mamba clean --all --force-pkgs-dirs --yes
     # Use conda prefix as root for the dependencies
     - export BOOST_ROOT=$CONDA_PREFIX TANGO_ROOT=$CONDA_PREFIX ZMQ_ROOT=$CONDA_PREFIX OMNI_ROOT=$CONDA_PREFIX
