@@ -3,9 +3,10 @@ import sys
 import textwrap
 import threading
 import time
-import pytest
 import enum
+
 import numpy as np
+import pytest
 
 from tango import (
     AttrData,
@@ -33,6 +34,7 @@ from tango import (
     SPECTRUM,
     CmdArgType,
 )
+from tango.green import get_executor
 from tango.server import BaseDevice, Device
 from tango.pyutil import parse_args
 from tango.server import _get_tango_type_format, command, attribute, device_property
@@ -52,12 +54,6 @@ from tango.utils import (
     get_latest_device_class,
     is_pure_str,
 )
-
-# Asyncio imports
-try:
-    import asyncio
-except ImportError:
-    import trollius as asyncio  # noqa: F401
 
 # Constants
 WINDOWS = "nt" in os.name
@@ -1607,6 +1603,102 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(server_green_mode):
             proxy.dyn_attr6 = 6
         with pytest.raises(DevFailed):
             _ = proxy.dyn_attr6
+
+
+@pytest.mark.parametrize("use_green_mode", [True, False])
+def test_dynamic_attribute_with_green_mode(use_green_mode, server_green_mode):
+    class TestDevice(Device):
+        green_mode = server_green_mode
+        attr_value = 123
+
+        def initialize_dynamic_attributes(self):
+            global executor
+            executor = get_executor(server_green_mode)
+            attr = attribute(
+                name="attr_r",
+                dtype=int,
+                access=AttrWriteType.READ,
+                fget=self.user_read,
+                read_green_mode=use_green_mode,
+            )
+            self.add_attribute(attr)
+            attr = attribute(
+                name="attr_rw",
+                dtype=int,
+                access=AttrWriteType.READ_WRITE,
+                fget=self.user_read,
+                fset=self.user_write,
+                read_green_mode=use_green_mode,
+                write_green_mode=use_green_mode,
+            )
+            self.add_attribute(attr)
+            attr = attribute(
+                name="attr_ia",
+                dtype=int,
+                access=AttrWriteType.READ,
+                fget=self.user_read,
+                fisallowed=self.user_is_allowed,
+                read_green_mode=use_green_mode,
+                isallowed_green_mode=use_green_mode,
+            )
+            self.add_attribute(attr)
+            attr = attribute(
+                name="attr_rw_always_ok",
+                dtype=int,
+                access=AttrWriteType.READ_WRITE,
+                fget=self.user_read,
+                fset=self.user_write,
+                green_mode=True,
+            )
+            self.add_attribute(attr)
+
+        sync_code = textwrap.dedent(
+            """\
+        def user_read(self, attr):
+            self.assert_executor_context_correct(attr.get_name())
+            return self.attr_value
+
+        def user_write(self, attr):
+            self.assert_executor_context_correct(attr.get_name())
+            self.attr_value = attr.get_write_value()
+
+        def user_is_allowed(self, req_type):
+            self.assert_executor_context_correct()
+            assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+            return True
+        """
+        )
+
+        if server_green_mode != GreenMode.Asyncio:
+            exec(sync_code)
+        else:
+            exec(sync_code.replace("def ", "async def "))
+
+        def assert_executor_context_correct(self, attr_name=""):
+            check_required = attr_name != "attr_rw_always_ok"
+            if check_required and executor.asynchronous:
+                assert executor.in_executor_context() == use_green_mode
+
+    with DeviceTestContext(TestDevice) as proxy:
+        coroutines_will_fail = (
+            server_green_mode == GreenMode.Asyncio and use_green_mode is False
+        )
+        if coroutines_will_fail:
+            with pytest.raises(DevFailed):
+                _ = proxy.attr_r
+
+            original_value = proxy.attr_rw_always_ok
+            proxy.attr_rw = 456  # this won't complete, as coroutine not awaited
+            assert proxy.attr_rw_always_ok == original_value
+
+            with pytest.raises(DevFailed):
+                _ = proxy.attr_ia
+        else:
+            # normal behaviour
+            assert proxy.attr_r == 123
+            proxy.attr_rw = 456
+            assert proxy.attr_rw == 456
+            assert proxy.attr_ia == 456
 
 
 @pytest.mark.parametrize(
