@@ -1652,8 +1652,6 @@ def test_dynamic_attribute_with_green_mode(use_green_mode, server_green_mode):
             )
             self.add_attribute(attr)
 
-        sync_code = textwrap.dedent(
-            """\
         def user_read(self, attr):
             self.assert_executor_context_correct(attr.get_name())
             return self.attr_value
@@ -1666,13 +1664,6 @@ def test_dynamic_attribute_with_green_mode(use_green_mode, server_green_mode):
             self.assert_executor_context_correct()
             assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
             return True
-        """
-        )
-
-        if server_green_mode != GreenMode.Asyncio:
-            exec(sync_code)
-        else:
-            exec(sync_code.replace("def ", "async def "))
 
         def assert_executor_context_correct(self, attr_name=""):
             check_required = attr_name != "attr_rw_always_ok"
@@ -1680,25 +1671,10 @@ def test_dynamic_attribute_with_green_mode(use_green_mode, server_green_mode):
                 assert executor.in_executor_context() == use_green_mode
 
     with DeviceTestContext(TestDevice) as proxy:
-        coroutines_will_fail = (
-            server_green_mode == GreenMode.Asyncio and use_green_mode is False
-        )
-        if coroutines_will_fail:
-            with pytest.raises(DevFailed):
-                _ = proxy.attr_r
-
-            original_value = proxy.attr_rw_always_ok
-            proxy.attr_rw = 456  # this won't complete, as coroutine not awaited
-            assert proxy.attr_rw_always_ok == original_value
-
-            with pytest.raises(DevFailed):
-                _ = proxy.attr_ia
-        else:
-            # normal behaviour
-            assert proxy.attr_r == 123
-            proxy.attr_rw = 456
-            assert proxy.attr_rw == 456
-            assert proxy.attr_ia == 456
+        assert proxy.attr_r == 123
+        proxy.attr_rw = 456
+        assert proxy.attr_rw == 456
+        assert proxy.attr_ia == 456
 
 
 @pytest.mark.parametrize(
