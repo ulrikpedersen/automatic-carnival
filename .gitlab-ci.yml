@@ -133,7 +133,7 @@ build-docker-image:
 
 test-source:
   stage: test
-  image: condaforge/mambaforge:4.14.0-0
+  image: condaforge/mambaforge:22.11.1-4
   tags:
     - docker
     - amd64
