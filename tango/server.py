@@ -1114,9 +1114,10 @@ class pipe(PipeData):
     fisallowed             :obj:`str` or :obj:`callable`    'is_<pipe_name>_allowed'                is allowed method name or method object
     label                  :obj:`str`                       '<pipe_name>'                           pipe label
     doc (or description)   :obj:`str`                       ''                                      pipe description
-    green_mode             :obj:`~tango.GreenMode`          None                                    green mode for read and write. None means use server green mode.
-    read_green_mode        :obj:`~tango.GreenMode`          None                                    green mode for read. None means use server green mode.
-    write_green_mode       :obj:`~tango.GreenMode`          None                                    green mode for write. None means use server green mode.
+    green_mode             :obj:`bool`                      True                                    Default green mode for read/write/isallowed functions. If True: run with green mode executor, if False: run directly
+    read_green_mode        :obj:`bool`                      'green_mode' value                      green mode for read function. If True: run with green mode executor, if False: run directly
+    write_green_mode       :obj:`bool`                      'green_mode' value                      green mode for write function. If True: run with green mode executor, if False: run directly
+    isallowed_green_mode   :obj:`bool`                      'green_mode' value                      green mode for is allowed function. If True: run with green mode executor, if False: run directly
     ===================== ================================ ======================================= =======================================================================================
 
     The same example with a read-write ROI, a customized label and description::
@@ -1158,6 +1159,9 @@ class pipe(PipeData):
     the pipe access to READ_WRITE.
 
     .. versionadded:: 9.2.0
+
+    .. versionadded:: 9.4.0
+        added isallowed_green_mode option
     '''
 
     def __init__(self, fget=None, **kwargs):
