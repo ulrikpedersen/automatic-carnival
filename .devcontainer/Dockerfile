@@ -1,6 +1,6 @@
 # Source for base image:  https://github.com/conda-forge/docker-images
 
-FROM --platform=linux/amd64 condaforge/mambaforge:4.14.0-0
+FROM --platform=linux/amd64 condaforge/mambaforge:22.11.1-4
 
 ARG PYTHON_VERSION=3.10
 ARG CPP_TANGO_VERSION=9.4.1
@@ -12,10 +12,10 @@ SHELL ["/bin/bash", "--login", "-c"]
 # install required packages
 # - if we use cpptango dev - we have to build TangoTest, so also packages to build
 RUN if [[ "${CPP_TANGO_VERSION}" = *"dev"* ]] || [[ "${CPP_TANGO_VERSION}" = *"rc"* ]]; then \
-      export BUILD_DEPENDENCIES="build-essential cmake git libcos4-dev libomniorb4-dev libomnithread4-dev libzmq3-dev omniidl"; \
+      export BUILD_DEPENDENCIES="build-essential cmake git libcos4-dev libomniorb4-dev libomnithread4-dev libzmq3-dev make omniidl pkg-config"; \
     fi && \
     apt-get update -y && \
-    DEBIAN_FRONTEND=noninteractive apt-get -y install make pkg-config rsync $BUILD_DEPENDENCIES && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install $BUILD_DEPENDENCIES && \
     apt-get autoremove -y && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
@@ -45,7 +45,7 @@ RUN export PYTHON_TEST_PACKAGES="pytest pytest-forked 'gevent!=1.5a1' psutil" &&
       export TANGO_TEST_PACKAGE=tango-test=$TANGO_TEST_VERSION; \
     fi && \
     mamba install --yes -c conda-forge -c tango-controls/label/dev -c conda-forge/label/cpptango_rc \
-      boost cppzmq cxx-compiler numpy cpptango=$CPP_TANGO_VERSION $TANGO_TEST_PACKAGE $PYTHON_TEST_PACKAGES && \
+      boost cppzmq cxx-compiler numpy pkg-config cpptango=$CPP_TANGO_VERSION $TANGO_TEST_PACKAGE $PYTHON_TEST_PACKAGES && \
     mamba clean --all --force-pkgs-dirs --yes
 
 # if we use cpptango dev/rc - we build TangoTest
