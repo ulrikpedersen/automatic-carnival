@@ -27,7 +27,6 @@ from setuptools.command.install import install
 
 from distutils.command.build import build as dftbuild
 from distutils.unixccompiler import UnixCCompiler
-from distutils.version import LooseVersion as V
 
 # numpy is only required when compiling, not when building the sdist for example
 try:
@@ -266,28 +265,15 @@ class build(dftbuild):
 
 class build_ext(dftbuild_ext):
     def build_extensions(self):
-        self.use_cpp_0x = False
         if isinstance(self.compiler, UnixCCompiler):
             compiler_pars = self.compiler.compiler_so
             while "-Wstrict-prototypes" in compiler_pars:
                 del compiler_pars[compiler_pars.index("-Wstrict-prototypes")]
-            # self.compiler.compiler_so = " ".join(compiler_pars)
-
-            # mimic tango check to activate C++0x extension
-            compiler = self.compiler.compiler
-            proc = subprocess.Popen(compiler + ["-dumpversion"], stdout=subprocess.PIPE)
-            pipe = proc.stdout
-            proc.wait()
-            gcc_ver = pipe.readlines()[0].decode().strip()
-            if V(gcc_ver) >= V("4.3.3"):
-                self.use_cpp_0x = True
         dftbuild_ext.build_extensions(self)
 
     def build_extension(self, ext):
-        if self.use_cpp_0x:
-            ext.extra_compile_args += ["-std=c++14"]
-            ext.define_macros += [("PYTANGO_HAS_UNIQUE_PTR", "1")]
         ext.extra_compile_args += [
+            "-std=c++14",
             "-Wno-deprecated-declarations",
         ]
         dftbuild_ext.build_extension(self, ext)
