@@ -89,7 +89,7 @@ def from_typeformat_to_type(dtype, dformat):
     return scalar_to_array_type(dtype)
 
 
-def _get_wrapped_read_method(attribute, read_method):
+def __get_wrapped_read_method(attribute, read_method):
     """
     Make sure attr is updated on read, and wrap it with executor, if needed.
 
@@ -128,7 +128,8 @@ def _get_wrapped_read_method(attribute, read_method):
 
 def __patch_read_method(tango_device_klass, attribute):
     """
-    Finds read method for attribute, wraps it with executor and adds wrapped method to device dict.
+    Finds read method for attribute, wraps it with executor and adds
+    wrapped method to device dict.
 
     :param tango_device_klass: a DeviceImpl class
     :type tango_device_klass: class
@@ -140,14 +141,14 @@ def __patch_read_method(tango_device_klass, attribute):
         method_name = attribute.read_method_name
         read_method = getattr(tango_device_klass, method_name)
 
-    read_attr = _get_wrapped_read_method(attribute, read_method)
+    read_attr = __get_wrapped_read_method(attribute, read_method)
     method_name = f"__read_{attribute.attr_name}_wrapper__"
     attribute.read_method_name = method_name
 
     setattr(tango_device_klass, method_name, read_attr)
 
 
-def _get_wrapped_write_method(attribute, write_method):
+def __get_wrapped_write_method(attribute, write_method):
     """
     Wraps write method with executor, if needed.
     """
@@ -175,7 +176,8 @@ def _get_wrapped_write_method(attribute, write_method):
 
 def __patch_write_method(tango_device_klass, attribute):
     """
-    Finds write method for attribute, wraps it with executor and adds wrapped method to device dict.
+    Finds write method for attribute, wraps it with executor and adds
+    wrapped method to device dict.
 
     :param tango_device_klass: a DeviceImpl class
     :type tango_device_klass: class
@@ -187,14 +189,14 @@ def __patch_write_method(tango_device_klass, attribute):
         method_name = attribute.write_method_name
         write_method = getattr(tango_device_klass, method_name)
 
-    write_attr = _get_wrapped_write_method(attribute, write_method)
+    write_attr = __get_wrapped_write_method(attribute, write_method)
     method_name = f"__write_{attribute.attr_name}_wrapper__"
     attribute.write_method_name = method_name
 
     setattr(tango_device_klass, method_name, write_attr)
 
 
-def _get_wrapped_isallowed_method(attribute, isallowed_method):
+def __get_wrapped_isallowed_method(attribute, isallowed_method):
     """
     Wraps is allowed method with executor, if needed.
 
@@ -224,7 +226,8 @@ def _get_wrapped_isallowed_method(attribute, isallowed_method):
 
 def __patch_isallowed_method(tango_device_klass, attribute):
     """
-    Finds isallowed method for attribute, wraps it with executor and adds wrapped method to device dict.
+    Finds isallowed method for attribute, wraps it with executor and adds
+    wrapped method to device dict.
 
     :param tango_device_klass: a DeviceImpl class
     :type tango_device_klass: class
@@ -237,7 +240,7 @@ def __patch_isallowed_method(tango_device_klass, attribute):
         isallowed_method = getattr(tango_device_klass, method_name, None)
 
     if isallowed_method:
-        isallowed_attr = _get_wrapped_isallowed_method(attribute, isallowed_method)
+        isallowed_attr = __get_wrapped_isallowed_method(attribute, isallowed_method)
         method_name = f"__is_{attribute.attr_name}_allowed_wrapper__"
         attribute.is_allowed_name = method_name
 
@@ -266,7 +269,7 @@ def __patch_attr_methods(tango_device_klass, attribute):
     __patch_isallowed_method(tango_device_klass, attribute)
 
 
-def _get_wrapped_pipe_read_method(pipe, read_method):
+def __get_wrapped_pipe_read_method(pipe, read_method):
     already_wrapped = hasattr(read_method, "__access_wrapped__")
     if already_wrapped:
         return read_method
@@ -286,8 +289,8 @@ def _get_wrapped_pipe_read_method(pipe, read_method):
         @functools.wraps(read_method)
         def read_pipe(self, pipe):
             ret = read_method(self)
-            if not pipe.get_value_flag() and ret is not None:
-                pipe.set_value(pipe, ret)
+            if ret is not None:
+                pipe.set_value(ret)
             return ret
 
     if read_pipe is not read_method:
@@ -297,11 +300,8 @@ def _get_wrapped_pipe_read_method(pipe, read_method):
 
 def __patch_pipe_read_method(tango_device_klass, pipe):
     """
-    Checks if method given by it's name for the given DeviceImpl
-    class has the correct signature. If a read/write method doesn't
-    have a parameter (the traditional Pipe), then the method is
-    wrapped into another method which has correct parameter definition
-    to make it work.
+    Finds read method for pipe, wraps it with executor and adds wrapped
+    method to device dict.
 
     :param tango_device_klass: a DeviceImpl class
     :type tango_device_klass: class
@@ -309,21 +309,18 @@ def __patch_pipe_read_method(tango_device_klass, pipe):
     :type pipe: PipeData
     """
     read_method = getattr(pipe, "fget", None)
-    if read_method:
-        method_name = f"__read_{pipe.pipe_name}__"
-        pipe.read_method_name = method_name
-    else:
+    if not read_method:
         method_name = pipe.read_method_name
         read_method = getattr(tango_device_klass, method_name)
 
-    read_pipe = _get_wrapped_pipe_read_method(pipe, read_method)
+    read_pipe = __get_wrapped_pipe_read_method(pipe, read_method)
     method_name = f"__read_{pipe.pipe_name}_wrapper__"
     pipe.read_method_name = method_name
 
     setattr(tango_device_klass, method_name, read_pipe)
 
 
-def _get_wrapped_pipe_write_method(pipe, write_method):
+def __get_wrapped_pipe_write_method(pipe, write_method):
     already_wrapped = hasattr(write_method, "__access_wrapped__")
     if already_wrapped:
         return write_method
@@ -348,11 +345,8 @@ def _get_wrapped_pipe_write_method(pipe, write_method):
 
 def __patch_pipe_write_method(tango_device_klass, pipe):
     """
-    Checks if method given by it's name for the given DeviceImpl
-    class has the correct signature. If a read/write method doesn't
-    have a parameter (the traditional Pipe), then the method is
-    wrapped into another method which has correct parameter definition
-    to make it work.
+    Finds write method for pipe, wraps it with executor and adds wrapped
+    method to device dict.
 
     :param tango_device_klass: a DeviceImpl class
     :type tango_device_klass: class
@@ -360,23 +354,76 @@ def __patch_pipe_write_method(tango_device_klass, pipe):
     :type pipe: PipeData
     """
     write_method = getattr(pipe, "fset", None)
-    if write_method:
-        method_name = f"__write_{pipe.pipe_name}__"
-        pipe.write_method_name = method_name
-    else:
+    if not write_method:
         method_name = pipe.write_method_name
         write_method = getattr(tango_device_klass, method_name)
 
-    write_pipe = _get_wrapped_pipe_write_method(pipe, write_method)
+    write_pipe = __get_wrapped_pipe_write_method(pipe, write_method)
+    method_name = f"__write_{pipe.pipe_name}_wrapper__"
+    pipe.write_method_name = method_name
+
     setattr(tango_device_klass, method_name, write_pipe)
+
+
+def __get_wrapped_pipe_isallowed_method(pipe, isallowed_method):
+    """
+    Wraps is allowed method with executor, if needed.
+
+    :param pipe: the pipe data information
+    :type pipe: PipeData
+    :param isallowed_method: is allowed method
+    :type isallowed_method: callable
+    """
+    already_wrapped = hasattr(isallowed_method, "__access_wrapped__")
+    if already_wrapped:
+        return isallowed_method
+
+    if pipe.isallowed_green_mode:
+
+        @functools.wraps(isallowed_method)
+        def isallowed_pipe(self, request_type):
+            worker = get_worker()
+            return worker.execute(isallowed_method, self, request_type)
+
+    else:
+        isallowed_pipe = isallowed_method
+
+    if isallowed_pipe is not isallowed_method:
+        isallowed_pipe.__access_wrapped__ = True
+    return isallowed_pipe
+
+
+def __patch_pipe_isallowed_method(tango_device_klass, pipe):
+    """
+    Finds isallowed method for pipe, wraps it with executor and adds
+    wrapped method to device dict.
+
+    :param tango_device_klass: a DeviceImpl class
+    :type tango_device_klass: class
+    :param pipe: the pipe data information
+    :type pipe: PipeData
+    """
+    isallowed_method = getattr(pipe, "fisallowed", None)
+    if not isallowed_method:
+        method_name = pipe.is_allowed_name
+        isallowed_method = getattr(tango_device_klass, method_name, None)
+
+    if isallowed_method:
+        isallowed_attr = __get_wrapped_pipe_isallowed_method(pipe, isallowed_method)
+        method_name = f"__is_{pipe.pipe_name}_allowed_wrapper__"
+        pipe.is_allowed_name = method_name
+
+        setattr(tango_device_klass, method_name, isallowed_attr)
 
 
 def __patch_pipe_methods(tango_device_klass, pipe):
     """
-    Checks if the read and write methods have the correct signature.
-    If a read/write method doesn't have a parameter (the traditional
-    Pipe), then the method is wrapped into another method to make
-    this work.
+    Finds read, write and isallowed methods for pipe, and
+    wraps into another method to make them work.
+
+    Also patch methods with green executor, if requested.
+
+    Finally, adds pathed methods to the device dict.
 
     :param tango_device_klass: a DeviceImpl class
     :type tango_device_klass: class
@@ -386,6 +433,7 @@ def __patch_pipe_methods(tango_device_klass, pipe):
     __patch_pipe_read_method(tango_device_klass, pipe)
     if pipe.pipe_write == PipeWriteType.PIPE_READ_WRITE:
         __patch_pipe_write_method(tango_device_klass, pipe)
+    __patch_pipe_isallowed_method(tango_device_klass, pipe)
 
 
 def __patch_is_command_allowed_method(tango_device_klass, is_allowed_method, cmd_name):
@@ -1121,6 +1169,9 @@ class pipe(PipeData):
         self.write_green_mode = kwargs.pop("write_green_mode", green_mode)
         self.isallowed_green_mode = kwargs.pop("isallowed_green_mode", green_mode)
 
+        if not fget:
+            fget = kwargs.pop("fread", None)
+
         if fget:
             if inspect.isroutine(fget):
                 self.fget = fget
@@ -1128,6 +1179,18 @@ class pipe(PipeData):
                     if fget.__doc__ is not None:
                         kwargs["doc"] = fget.__doc__
             kwargs["fget"] = fget
+
+        fset = kwargs.pop("fwrite", kwargs.pop("fset", None))
+        if fset:
+            if inspect.isroutine(fset):
+                self.fset = fset
+            kwargs["fset"] = fset
+
+        fisallowed = kwargs.pop("fisallowed", None)
+        if fisallowed:
+            if inspect.isroutine(fisallowed):
+                self.fisallowed = fisallowed
+            kwargs["fisallowed"] = fisallowed
 
         super().__init__(name, class_name)
         self.__doc__ = kwargs.get("doc", kwargs.get("description", "TANGO pipe"))
