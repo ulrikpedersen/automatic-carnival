@@ -140,6 +140,7 @@ def test_decorated_command(server_green_mode):
         green_mode = server_green_mode
         is_allowed = None
 
+        @general_decorator()
         @command(dtype_in=int, dtype_out=int)
         def identity(self, arg):
             return arg
