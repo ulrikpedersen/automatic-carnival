@@ -274,12 +274,8 @@ void PyCallBackPushEvent::fill_py_event(Tango::EventData* ev, object & py_ev, ob
     // attr_value pointer but its own copy, so my efforts are useless.
     if (ev->attr_value)
     {
-#ifdef PYTANGO_HAS_UNIQUE_PTR
         Tango::DeviceAttribute *attr = new Tango::DeviceAttribute;
-	(*attr) = std::move(*ev->attr_value);
-#else
-	Tango::DeviceAttribute *attr = new Tango::DeviceAttribute(*ev->attr_value);
-#endif
+        (*attr) = std::move(*ev->attr_value);
         py_ev.attr("attr_value") = PyDeviceAttribute::convert_to_python(attr, *ev->device, extract_as);
     }
     // ev->attr_value = 0; // Do not delete, python will.
@@ -304,12 +300,8 @@ void PyCallBackPushEvent::fill_py_event(Tango::PipeEventData* ev, object & py_ev
 {
     copy_device(ev, py_ev, py_device);
     if (ev->pipe_value) {
-#ifdef PYTANGO_HAS_UNIQUE_PTR
         Tango::DevicePipe *pipe_value = new Tango::DevicePipe;
         (*pipe_value) = std::move(*ev->pipe_value);
-#else
-        Tango::DevicePipe *pipe_value = new Tango::DevicePipe(*ev->pipe_value);
-#endif
         py_ev.attr("pipe_value") = PyTango::DevicePipe::convert_to_python(pipe_value, extract_as);
     }
 }
