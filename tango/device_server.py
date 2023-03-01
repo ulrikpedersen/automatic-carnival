@@ -18,8 +18,7 @@ import copy
 import functools
 import inspect
 import os
-
-from inspect import getfullargspec
+import types
 
 from ._tango import (
     DeviceImpl,
@@ -449,18 +448,11 @@ def __DeviceImpl__add_attribute(
         AttrWriteType.READ_WRITE,
         AttrWriteType.READ_WITH_WRITE,
     ):
-        r_meth = __ensure_user_method_is_device_attr(self, r_name, r_meth)
-
-        read_args = getfullargspec(r_meth)
-        has_attr_argument = len(read_args.args) - int(__is_method_bound(r_meth))
-
-        r_meth = functools.partial(
-            __dynamic_attribute_reader,
-            r_meth=r_meth,
-            has_attr_argument=has_attr_argument,
+        r_name = f"__wrapped_read_{att_name}_{r_name}__"
+        r_meth_green_mode = getattr(attr_data, "read_green_mode", True)
+        __patch_device_with_dynamic_attribute_read_method(
+            self, r_name, r_meth, r_meth_green_mode
         )
-        r_name = f"__wrapped_{att_name}_{r_name}__"
-        setattr(self, r_name, r_meth)
 
     # get write method and its name
     w_name = f"write_{att_name}"
@@ -480,20 +472,11 @@ def __DeviceImpl__add_attribute(
         AttrWriteType.READ_WRITE,
         AttrWriteType.READ_WITH_WRITE,
     ):
-        w_meth = __ensure_user_method_is_device_attr(self, w_name, w_meth)
-
-        write_args = getfullargspec(w_meth)
-        has_value_argument = (
-            len(write_args.args) - int(__is_method_bound(w_meth)) - 1
-        )  # we always pass attr
-
-        w_meth = functools.partial(
-            __dynamic_attribute_writer,
-            w_meth=w_meth,
-            has_value_argument=has_value_argument,
+        w_name = f"__wrapped_write_{att_name}_{w_name}__"
+        w_meth_green_mode = getattr(attr_data, "write_green_mode", True)
+        __patch_device_with_dynamic_attribute_write_method(
+            self, w_name, w_meth, w_meth_green_mode
         )
-        w_name = f"__wrapped_{att_name}_{w_name}__"
-        setattr(self, w_name, w_meth)
 
     # get is allowed method and its name
     ia_name = f"is_{att_name}_allowed"
@@ -509,59 +492,136 @@ def __DeviceImpl__add_attribute(
 
     # patch it if exists
     if is_allo_meth is not None:
-        is_allo_meth = __ensure_user_method_is_device_attr(self, ia_name, is_allo_meth)
-        ia_name = f"__wrapped_{att_name}_{ia_name}__"
-
-        setattr(self, ia_name, run_in_executor(is_allo_meth))
+        ia_name = f"__wrapped_is_allowed_{att_name}_{ia_name}__"
+        ia_meth_green_mode = getattr(attr_data, "isallowed_green_mode", True)
+        __patch_device_with_dynamic_attribute_is_allowed_method(
+            self, ia_name, is_allo_meth, ia_meth_green_mode
+        )
 
     self._add_attribute(attr, r_name, w_name, ia_name)
     return attr
 
 
-def __dynamic_attribute_reader(attr, r_meth, has_attr_argument):
-    worker = get_worker()
+def __patch_device_with_dynamic_attribute_read_method(
+    device, name, r_meth, r_meth_green_mode
+):
+    if __is_device_method(device, r_meth):
+        if r_meth_green_mode:
 
-    if has_attr_argument:
-        ret = worker.execute(r_meth, attr)
+            @functools.wraps(r_meth)
+            def read_attr(device, attr):
+                worker = get_worker()
+                # already bound to device, so exclude device arg
+                ret = worker.execute(r_meth, attr)
+                if not attr.get_value_flag() and ret is not None:
+                    set_complex_value(attr, ret)
+                return ret
+
+        else:
+
+            @functools.wraps(r_meth)
+            def read_attr(device, attr):
+                ret = r_meth(attr)
+                if not attr.get_value_flag() and ret is not None:
+                    set_complex_value(attr, ret)
+                return ret
+
     else:
-        ret = worker.execute(r_meth)
+        if r_meth_green_mode:
 
-    if not attr.get_value_flag() and ret is not None:
-        set_complex_value(attr, ret)
+            @functools.wraps(r_meth)
+            def read_attr(device, attr):
+                worker = get_worker()
+                # unbound function or not on device object, so include device arg
+                ret = worker.execute(r_meth, device, attr)
+                if not attr.get_value_flag() and ret is not None:
+                    set_complex_value(attr, ret)
+                return ret
 
-    return ret
+        else:
+
+            @functools.wraps(r_meth)
+            def read_attr(device, attr):
+                ret = r_meth(device, attr)
+                if not attr.get_value_flag() and ret is not None:
+                    set_complex_value(attr, ret)
+                return ret
+
+    bound_method = types.MethodType(read_attr, device)
+    setattr(device, name, bound_method)
 
 
-def __dynamic_attribute_writer(attr, w_meth, has_value_argument):
-    worker = get_worker()
+def __patch_device_with_dynamic_attribute_write_method(
+    device, name, w_meth, w_meth_green_mode
+):
+    if __is_device_method(device, w_meth):
+        if w_meth_green_mode:
 
-    if has_value_argument:
-        return worker.execute(w_meth, attr, attr.get_write_value())
+            @functools.wraps(w_meth)
+            def write_attr(device, attr):
+                worker = get_worker()
+                # already bound to device, so exclude device arg
+                return worker.execute(w_meth, attr)
 
-    return worker.execute(w_meth, attr)
+        else:
+
+            @functools.wraps(w_meth)
+            def write_attr(device, attr):
+                return w_meth(attr)
+
+    else:
+        if w_meth_green_mode:
+
+            @functools.wraps(w_meth)
+            def write_attr(device, attr):
+                worker = get_worker()
+                # unbound function or not on device object, so include device arg
+                return worker.execute(w_meth, device, attr)
+
+        else:
+            write_attr = w_meth
+
+    bound_method = types.MethodType(write_attr, device)
+    setattr(device, name, bound_method)
 
 
-def __is_method_bound(method):
-    """
-    checks if method belongs to any class,
-    """
-    return hasattr(method, "__self__")
+def __patch_device_with_dynamic_attribute_is_allowed_method(
+    device, name, is_allo_meth, ia_meth_green_mode
+):
+    if __is_device_method(device, is_allo_meth):
+        if ia_meth_green_mode:
+
+            @functools.wraps(is_allo_meth)
+            def is_allowed_attr(device, request_type):
+                worker = get_worker()
+                # already bound to device, so exclude device arg
+                return worker.execute(is_allo_meth, request_type)
+
+        else:
+
+            @functools.wraps(is_allo_meth)
+            def is_allowed_attr(device, request_type):
+                return is_allo_meth(request_type)
+
+    else:
+        if ia_meth_green_mode:
+
+            @functools.wraps(is_allo_meth)
+            def is_allowed_attr(device, request_type):
+                worker = get_worker()
+                # unbound function or not on device object, so include device arg
+                return worker.execute(is_allo_meth, device, request_type)
+
+        else:
+            is_allowed_attr = is_allo_meth
+
+    bound_method = types.MethodType(is_allowed_attr, device)
+    setattr(device, name, bound_method)
 
 
-def __ensure_user_method_is_device_attr(obj, name, user_method):
-    if user_method is not None:
-        # we have to check that user provided us with the device method,
-        # otherwise method won't be found during call
-        is_device_method = getattr(obj, name, None) == user_method
-
-        if not is_device_method:
-            # in case user gave us class method, we are trying to find it in device:
-            bound_user_method = getattr(obj, name, None)
-            if bound_user_method:
-                user_method = bound_user_method
-            else:
-                setattr(obj, name, user_method)
-    return user_method
+def __is_device_method(device, func):
+    """Return True if func is bound to device object (i.e., a method)"""
+    return inspect.ismethod(func) and func.__self__ is device
 
 
 def __DeviceImpl__remove_attribute(self, attr_name):
@@ -613,9 +673,9 @@ def __DeviceImpl__add_command(self, cmd, device_level=True):
         fisallowed_name = (
             f"__wrapped_{getattr(fisallowed, '__name__', f'is_{cmd_name}_allowed')}__"
         )
-        if len(getfullargspec(fisallowed).args) > 1:
-            fisallowed = functools.partial(fisallowed, self)
-        setattr(self, fisallowed_name, run_in_executor(fisallowed))
+        __patch_device_with_dynamic_command_is_allowed_method(
+            self, fisallowed_name, fisallowed
+        )
     else:
         fisallowed_name = ""
 
@@ -623,6 +683,27 @@ def __DeviceImpl__add_command(self, cmd, device_level=True):
         cmd_name, cmd.__tango_command__[1], fisallowed_name, disp_level, device_level
     )
     return cmd
+
+
+def __patch_device_with_dynamic_command_is_allowed_method(device, name, is_allo_meth):
+    if __is_device_method(device, is_allo_meth):
+
+        @functools.wraps(is_allo_meth)
+        def is_allowed_cmd(device):
+            worker = get_worker()
+            # already bound to device, so exclude device arg
+            return worker.execute(is_allo_meth)
+
+    else:
+
+        @functools.wraps(is_allo_meth)
+        def is_allowed_cmd(device):
+            worker = get_worker()
+            # unbound function or not on device object, so include device arg
+            return worker.execute(is_allo_meth, device)
+
+    bound_method = types.MethodType(is_allowed_cmd, device)
+    setattr(device, name, bound_method)
 
 
 def __DeviceImpl__remove_command(self, cmd_name, free_it=False, clean_db=True):

@@ -3,6 +3,8 @@
 import enum
 import numpy as np
 
+from functools import wraps
+
 # Local imports
 from . import DevState, GreenMode, AttrDataFormat, ExtractAs
 from .server import Device
@@ -257,6 +259,18 @@ DEVICE_SERVER_ARGUMENTS = (
         [],
     ),  # lowercase "orb" should fail
 )
+
+
+def general_decorator(function=None):
+    if function:
+
+        @wraps(function)
+        def _wrapper(*args, **kwargs):
+            return function(*args, **kwargs)
+
+        return _wrapper
+    else:
+        return general_decorator
 
 
 def repr_type(x):

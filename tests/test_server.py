@@ -3,9 +3,10 @@ import sys
 import textwrap
 import threading
 import time
-import pytest
 import enum
+
 import numpy as np
+import pytest
 
 from tango import (
     AttrData,
@@ -33,6 +34,7 @@ from tango import (
     SPECTRUM,
     CmdArgType,
 )
+from tango.green import get_executor
 from tango.server import BaseDevice, Device
 from tango.pyutil import parse_args
 from tango.server import _get_tango_type_format, command, attribute, device_property
@@ -43,7 +45,7 @@ from tango.test_utils import (
     BadEnumSkipValues,
     BadEnumDuplicates,
 )
-from tango.test_utils import assert_close, DEVICE_SERVER_ARGUMENTS
+from tango.test_utils import assert_close, general_decorator, DEVICE_SERVER_ARGUMENTS
 from tango.utils import (
     EnumTypeError,
     FROM_TANGO_TO_NUMPY_TYPE,
@@ -52,12 +54,6 @@ from tango.utils import (
     get_latest_device_class,
     is_pure_str,
 )
-
-# Asyncio imports
-try:
-    import asyncio
-except ImportError:
-    import trollius as asyncio  # noqa: F401
 
 # Constants
 WINDOWS = "nt" in os.name
@@ -139,13 +135,42 @@ def test_identity_command(command_typed_values, server_green_mode):
             assert_close(proxy.identity(value), expected(value))
 
 
+def test_decorated_command(server_green_mode):
+    class TestDevice(Device):
+        green_mode = server_green_mode
+        is_allowed = None
+
+        @general_decorator()
+        @command(dtype_in=int, dtype_out=int)
+        def identity(self, arg):
+            return arg
+
+        @general_decorator
+        def is_identity_allowed(self):
+            return self.is_allowed
+
+        @command(dtype_in=bool)
+        def make_allowed(self, yesno):
+            self.is_allowed = yesno
+
+    with DeviceTestContext(TestDevice) as proxy:
+        proxy.make_allowed(True)
+        assert_close(proxy.identity(123), 123)
+
+        proxy.make_allowed(False)
+        with pytest.raises(DevFailed):
+            proxy.identity(1)
+
+
 def test_command_isallowed(server_green_mode):
     is_allowed = None
 
-    def sync_allowed():
+    def sync_allowed(device):
+        assert isinstance(device, TestDevice)
         return is_allowed
 
-    async def async_allowed():
+    async def async_allowed(device):
+        assert isinstance(device, TestDevice)
         return is_allowed
 
     class IsAllowedCallableClass:
@@ -153,6 +178,7 @@ def test_command_isallowed(server_green_mode):
             self._is_allowed = None
 
         def __call__(self, device):
+            assert isinstance(device, TestDevice)
             return self._is_allowed
 
         def make_allowed(self, yesno):
@@ -164,7 +190,7 @@ def test_command_isallowed(server_green_mode):
         green_mode = server_green_mode
 
         def __init__(self, *args, **kwargs):
-            super(TestDevice, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
             self._is_allowed = True
 
         @command(dtype_in=int, dtype_out=int)
@@ -249,10 +275,12 @@ def device_command_level(request):
 def test_dynamic_command(server_green_mode, device_command_level):
     is_allowed = None
 
-    def sync_allowed():
+    def sync_allowed(device):
+        assert isinstance(device, TestDevice)
         return is_allowed
 
-    async def async_allowed():
+    async def async_allowed(device):
+        assert isinstance(device, TestDevice)
         return is_allowed
 
     class IsAllowedCallable:
@@ -260,6 +288,7 @@ def test_dynamic_command(server_green_mode, device_command_level):
             self._is_allowed = None
 
         def __call__(self, device):
+            assert isinstance(device, TestDevice)
             return self._is_allowed
 
         def make_allowed(self, yesno):
@@ -271,7 +300,7 @@ def test_dynamic_command(server_green_mode, device_command_level):
         green_mode = server_green_mode
 
         def __init__(self, *args, **kwargs):
-            super(TestDevice, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
             self._is_allowed = True
 
         def identity(self, arg):
@@ -467,7 +496,7 @@ def test_read_write_attribute(attribute_typed_values, server_green_mode):
         def make_allowed(self, yesno):
             self._is_allowed = yesno
 
-    with DeviceTestContext(TestDevice, timeout=60000) as proxy:
+    with DeviceTestContext(TestDevice) as proxy:
         proxy.make_allowed(True)
         for value in values:
             proxy.attr = value
@@ -480,40 +509,37 @@ def test_read_write_attribute(attribute_typed_values, server_green_mode):
             _ = proxy.attr
 
 
-def test_read_write_attribute_unbound_methods(server_green_mode):
-    class Value:
-        _value = None
-
-        def set(self, val):
-            self._value = val
-
-        def get(self):
-            return self._value
-
-    v = Value()
+def test_read_write_attribute_with_unbound_functions(server_green_mode):
+    v = {"attr": None}
     is_allowed = None
 
     if server_green_mode == GreenMode.Asyncio:
 
-        async def read_attr():
-            return v.get()
+        async def read_attr(device):
+            assert isinstance(device, TestDevice)
+            return v["attr"]
 
-        async def write_attr(val):
-            v.set(val)
+        async def write_attr(device, val):
+            assert isinstance(device, TestDevice)
+            v["attr"] = val
 
-        async def is_attr_allowed(req_type):
+        async def is_attr_allowed(device, req_type):
+            assert isinstance(device, TestDevice)
             assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
             return is_allowed
 
     else:
 
-        def read_attr():
-            return v.get()
+        def read_attr(device):
+            assert isinstance(device, TestDevice)
+            return v["attr"]
 
-        def write_attr(val):
-            v.set(val)
+        def write_attr(device, val):
+            assert isinstance(device, TestDevice)
+            v["attr"] = val
 
-        def is_attr_allowed(req_type):
+        def is_attr_allowed(device, req_type):
+            assert isinstance(device, TestDevice)
             assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
             return is_allowed
 
@@ -534,6 +560,53 @@ def test_read_write_attribute_unbound_methods(server_green_mode):
         assert proxy.attr == 123
 
         is_allowed = False
+        with pytest.raises(DevFailed):
+            proxy.attr = 123
+        with pytest.raises(DevFailed):
+            _ = proxy.attr
+
+
+def test_read_write_attribute_decorated_methods(server_green_mode):
+    class TestDevice(Device):
+        green_mode = server_green_mode
+
+        attr_value = None
+        is_allowed = None
+
+        attr = attribute(dtype=int, access=AttrWriteType.READ_WRITE)
+
+        sync_code = textwrap.dedent(
+            """\
+            @general_decorator
+            def read_attr(self):
+                return self.attr_value
+
+            @general_decorator
+            def write_attr(self, value):
+                self.attr_value = value
+
+            @general_decorator
+            def is_attr_allowed(self, req_type):
+                assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+                return self.is_allowed
+            """
+        )
+
+        if server_green_mode != GreenMode.Asyncio:
+            exec(sync_code)
+        else:
+            exec(sync_code.replace("def ", "async def "))
+
+        @command(dtype_in=bool)
+        def make_allowed(self, yesno):
+            self.is_allowed = yesno
+
+    with DeviceTestContext(TestDevice) as proxy:
+        proxy.make_allowed(True)
+        proxy.attr = 123
+        assert proxy.attr == 123
+
+        proxy.make_allowed(False)
         with pytest.raises(DevFailed):
             proxy.attr = 123
         with pytest.raises(DevFailed):
@@ -982,7 +1055,7 @@ def test_attribute_access_with_default_method_names(server_green_mode):
 
 
 @pytest.fixture(
-    ids=["low_level_read", "high_level_read_with_attr", "high_level_read_no_attr"],
+    ids=["low_level_read", "high_level_read"],
     params=[
         textwrap.dedent(
             """\
@@ -996,41 +1069,14 @@ def test_attribute_access_with_default_method_names(server_green_mode):
                             return self.attr_value
                             """
         ),
-        textwrap.dedent(
-            """\
-                        def read_dyn_attr(self):
-                            return self.attr_value
-                            """
-        ),
     ],
 )
 def dynamic_attribute_read_function(request):
     return request.param
 
 
-@pytest.fixture(
-    ids=["low_level_write", "high_level_write"],
-    params=[
-        textwrap.dedent(
-            """\
-                        def write_dyn_attr(self, attr):
-                            self.attr_value = attr.get_write_value()
-                            """
-        ),
-        textwrap.dedent(
-            """\
-                        def write_dyn_attr(self, attr, value):
-                            self.attr_value = value
-                            """
-        ),
-    ],
-)
-def dynamic_attribute_write_function(request):
-    return request.param
-
-
 def test_read_write_dynamic_attribute(
-    dynamic_attribute_read_function, dynamic_attribute_write_function, server_green_mode
+    dynamic_attribute_read_function, server_green_mode
 ):
     class TestDevice(Device):
         green_mode = server_green_mode
@@ -1054,12 +1100,19 @@ def test_read_write_dynamic_attribute(
         def delete_dyn_attr(self):
             self.remove_attribute("dyn_attr")
 
+        sync_write = textwrap.dedent(
+            """\
+            def write_dyn_attr(self, attr):
+                self.attr_value = attr.get_write_value()
+        """
+        )
+
         if server_green_mode != GreenMode.Asyncio:
             exec(dynamic_attribute_read_function)
-            exec(dynamic_attribute_write_function)
+            exec(sync_write)
         else:
             exec(dynamic_attribute_read_function.replace("def ", "async def "))
-            exec(dynamic_attribute_write_function.replace("def ", "async def "))
+            exec(sync_write.replace("def ", "async def "))
 
     with DeviceTestContext(TestDevice) as proxy:
         proxy.add_dyn_attr()
@@ -1067,6 +1120,187 @@ def test_read_write_dynamic_attribute(
         assert proxy.dyn_attr == 123
         proxy.delete_dyn_attr()
         assert "dyn_attr" not in proxy.get_attribute_list()
+
+
+def test_read_write_dynamic_attribute_decorated_methods_default_names(
+    server_green_mode,
+):
+    class TestDevice(Device):
+        green_mode = server_green_mode
+
+        attr_value = None
+        is_allowed = None
+
+        def initialize_dynamic_attributes(self):
+            attr = attribute(name="attr", dtype=int, access=AttrWriteType.READ_WRITE)
+            self.add_attribute(attr)
+
+        sync_code = textwrap.dedent(
+            """\
+        @general_decorator
+        def read_attr(self, attr):
+            return self.attr_value
+
+        @general_decorator
+        def write_attr(self, attr):
+            self.attr_value = attr.get_write_value()
+
+        @general_decorator
+        def is_attr_allowed(self, req_type):
+            assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+            return self.is_allowed
+        """
+        )
+
+        if server_green_mode != GreenMode.Asyncio:
+            exec(sync_code)
+        else:
+            exec(sync_code.replace("def ", "async def "))
+
+        @command(dtype_in=bool)
+        def make_allowed(self, yesno):
+            self.is_allowed = yesno
+
+    with DeviceTestContext(TestDevice) as proxy:
+        proxy.make_allowed(True)
+        proxy.attr = 123
+        assert proxy.attr == 123
+
+        proxy.make_allowed(False)
+        with pytest.raises(DevFailed):
+            proxy.attr = 123
+        with pytest.raises(DevFailed):
+            _ = proxy.attr
+
+
+def test_read_write_dynamic_attribute_decorated_methods_user_names(server_green_mode):
+    class TestDevice(Device):
+        green_mode = server_green_mode
+
+        attr_value = None
+        is_allowed = None
+
+        def initialize_dynamic_attributes(self):
+            attr = attribute(
+                name="attr",
+                dtype=int,
+                access=AttrWriteType.READ_WRITE,
+                fget=self.user_read,
+                fset=self.user_write,
+                fisallowed=self.user_is_allowed,
+            )
+            self.add_attribute(attr)
+
+        sync_code = textwrap.dedent(
+            """\
+        @general_decorator
+        def user_read(self, attr):
+            return self.attr_value
+
+        @general_decorator
+        def user_write(self, attr):
+            self.attr_value = attr.get_write_value()
+
+        @general_decorator
+        def user_is_allowed(self, req_type):
+            assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+            return self.is_allowed
+        """
+        )
+
+        if server_green_mode != GreenMode.Asyncio:
+            exec(sync_code)
+        else:
+            exec(sync_code.replace("def ", "async def "))
+
+        @command(dtype_in=bool)
+        def make_allowed(self, yesno):
+            self.is_allowed = yesno
+
+    with DeviceTestContext(TestDevice) as proxy:
+        proxy.make_allowed(True)
+        proxy.attr = 123
+        assert proxy.attr == 123
+
+        proxy.make_allowed(False)
+        with pytest.raises(DevFailed):
+            proxy.attr = 123
+        with pytest.raises(DevFailed):
+            _ = proxy.attr
+
+
+def test_read_write_dynamic_attribute_decorated_shared_user_functions(
+    server_green_mode,
+):
+    class TestDevice(Device):
+        green_mode = server_green_mode
+
+        attr_values = {"attr1": None, "attr2": None}
+        is_allowed = None
+
+        def initialize_dynamic_attributes(self):
+            attr = attribute(
+                name="attr1",
+                dtype=int,
+                access=AttrWriteType.READ_WRITE,
+                fget=self.user_read,
+                fset=self.user_write,
+                fisallowed=self.user_is_allowed,
+            )
+            self.add_attribute(attr)
+            attr = attribute(
+                name="attr2",
+                dtype=int,
+                access=AttrWriteType.READ_WRITE,
+                fget=self.user_read,
+                fset=self.user_write,
+                fisallowed=self.user_is_allowed,
+            )
+            self.add_attribute(attr)
+
+        sync_code = textwrap.dedent(
+            """\
+        @general_decorator
+        def user_read(self, attr):
+            return self.attr_values[attr.get_name()]
+
+        @general_decorator
+        def user_write(self, attr):
+            self.attr_values[attr.get_name()] = attr.get_write_value()
+
+        @general_decorator
+        def user_is_allowed(self, req_type):
+            assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+            return self.is_allowed
+        """
+        )
+
+        if server_green_mode != GreenMode.Asyncio:
+            exec(sync_code)
+        else:
+            exec(sync_code.replace("def ", "async def "))
+
+        @command(dtype_in=bool)
+        def make_allowed(self, yesno):
+            self.is_allowed = yesno
+
+    with DeviceTestContext(TestDevice) as proxy:
+        proxy.make_allowed(True)
+        proxy.attr1 = 123
+        assert proxy.attr1 == 123
+        proxy.attr2 = 456
+        assert proxy.attr1 == 123
+        assert proxy.attr2 == 456
+
+        proxy.make_allowed(False)
+        with pytest.raises(DevFailed):
+            proxy.attr1 = 123
+        with pytest.raises(DevFailed):
+            _ = proxy.attr1
+        with pytest.raises(DevFailed):
+            proxy.attr2 = 123
+        with pytest.raises(DevFailed):
+            _ = proxy.attr2
 
 
 def test_read_write_dynamic_attribute_enum(server_green_mode, attr_data_format):
@@ -1128,11 +1362,11 @@ def test_read_write_dynamic_attribute_enum(server_green_mode, attr_data_format):
 
         sync_code = textwrap.dedent(
             """\
-            def read_dyn_attr(self):
+            def read_dyn_attr(self, attr):
                 return self.attr_value
 
-            def write_dyn_attr(self, attr, value):
-                self.attr_value = value
+            def write_dyn_attr(self, attr):
+                self.attr_value = attr.get_write_value()
                 """
         )
 
@@ -1276,15 +1510,15 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(server_green_mode):
         # tests without duplicating all the code.
         read_code = textwrap.dedent(
             """\
-            def read_dyn_attr(self):
+            def read_dyn_attr(self, attr):
                 return self.attr_value
                 """
         )
 
         write_code = textwrap.dedent(
             """\
-            def write_dyn_attr(self, attr, value):
-                self.attr_value = value
+            def write_dyn_attr(self, attr):
+                self.attr_value = attr.get_write_value()
                 """
         )
 
@@ -1372,6 +1606,78 @@ def test_read_write_dynamic_attribute_is_allowed_with_async(server_green_mode):
             _ = proxy.dyn_attr6
 
 
+@pytest.mark.parametrize("use_green_mode", [True, False])
+def test_dynamic_attribute_with_green_mode(use_green_mode, server_green_mode):
+    class TestDevice(Device):
+        green_mode = server_green_mode
+        attr_value = 123
+
+        def initialize_dynamic_attributes(self):
+            global executor
+            executor = get_executor(server_green_mode)
+            attr = attribute(
+                name="attr_r",
+                dtype=int,
+                access=AttrWriteType.READ,
+                fget=self.user_read,
+                read_green_mode=use_green_mode,
+            )
+            self.add_attribute(attr)
+            attr = attribute(
+                name="attr_rw",
+                dtype=int,
+                access=AttrWriteType.READ_WRITE,
+                fget=self.user_read,
+                fset=self.user_write,
+                read_green_mode=use_green_mode,
+                write_green_mode=use_green_mode,
+            )
+            self.add_attribute(attr)
+            attr = attribute(
+                name="attr_ia",
+                dtype=int,
+                access=AttrWriteType.READ,
+                fget=self.user_read,
+                fisallowed=self.user_is_allowed,
+                read_green_mode=use_green_mode,
+                isallowed_green_mode=use_green_mode,
+            )
+            self.add_attribute(attr)
+            attr = attribute(
+                name="attr_rw_always_ok",
+                dtype=int,
+                access=AttrWriteType.READ_WRITE,
+                fget=self.user_read,
+                fset=self.user_write,
+                green_mode=True,
+            )
+            self.add_attribute(attr)
+
+        def user_read(self, attr):
+            self.assert_executor_context_correct(attr.get_name())
+            return self.attr_value
+
+        def user_write(self, attr):
+            self.assert_executor_context_correct(attr.get_name())
+            self.attr_value = attr.get_write_value()
+
+        def user_is_allowed(self, req_type):
+            self.assert_executor_context_correct()
+            assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+            return True
+
+        def assert_executor_context_correct(self, attr_name=""):
+            check_required = attr_name != "attr_rw_always_ok"
+            if check_required and executor.asynchronous:
+                assert executor.in_executor_context() == use_green_mode
+
+    with DeviceTestContext(TestDevice) as proxy:
+        assert proxy.attr_r == 123
+        proxy.attr_rw = 456
+        assert proxy.attr_rw == 456
+        assert proxy.attr_ia == 456
+
+
 @pytest.mark.parametrize(
     "device_impl_class", [Device_4Impl, Device_5Impl, LatestDeviceImpl]
 )
@@ -1429,64 +1735,49 @@ def test_dynamic_attribute_using_classic_api_like_sardana(device_impl_class):
             proxy.attr1 = 12.0
 
 
-@pytest.mark.parametrize(
-    "read_function_signature", ["low_level", "high_level_mixed", "high_level"]
-)
+@pytest.mark.parametrize("read_function_signature", ["low_level", "high_level"])
 @pytest.mark.parametrize("patched", [True, False])
-def test_dynamic_attribute_with_non_device_method(
+def test_dynamic_attribute_with_unbound_functions(
     read_function_signature, patched, server_green_mode
 ):
-    class Value:
-        _value = None
-
-        def set(self, val):
-            self._value = val
-
-        def read(self):
-            return self._value
-
-    value = Value()
+    value = {"attr": None}
     is_allowed = None
 
     if server_green_mode == GreenMode.Asyncio:
 
-        async def low_level_read_function(attr):
-            attr.set_value(value.read())
+        async def low_level_read_function(device, attr):
+            assert isinstance(device, TestDevice)
+            attr.set_value(value["attr"])
 
-        async def high_level_mixed_read_function(attr):
-            return value.read()
+        async def high_level_read_function(device, attr):
+            assert isinstance(device, TestDevice)
+            return value["attr"]
 
-        async def high_level_read_function():
-            return value.read()
+        async def write_function(device, attr):
+            assert isinstance(device, TestDevice)
+            value["attr"] = attr.get_write_value()
 
-        async def low_level_write_function(attr):
-            value.set(attr.get_write_value())
-
-        async def high_level_write_function(attr, in_value):
-            value.set(in_value)
-
-        async def is_allowed_function(req_type):
+        async def is_allowed_function(device, req_type):
+            assert isinstance(device, TestDevice)
             assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
             return is_allowed
 
     else:
 
-        def low_level_read_function(attr):
-            attr.set_value(value.read())
+        def low_level_read_function(device, attr):
+            assert isinstance(device, TestDevice)
+            attr.set_value(value["attr"])
 
-        def high_level_mixed_read_function(attr):
-            return value.read()
+        def high_level_read_function(device, attr):
+            assert isinstance(device, TestDevice)
+            return value["attr"]
 
-        def high_level_read_function():
-            return value.read()
+        def write_function(device, attr):
+            assert isinstance(device, TestDevice)
+            value["attr"] = attr.get_write_value()
 
-        def low_level_write_function(attr):
-            value.set(attr.get_write_value())
-
-        def high_level_write_function(attr, in_value):
-            value.set(in_value)
-
-        def is_allowed_function(req_type):
+        def is_allowed_function(device, req_type):
+            assert isinstance(device, TestDevice)
             assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
             return is_allowed
 
@@ -1496,13 +1787,8 @@ def test_dynamic_attribute_with_non_device_method(
         def initialize_dynamic_attributes(self):
             if read_function_signature == "low_level":
                 read_function = low_level_read_function
-                write_function = low_level_write_function
-            elif read_function_signature == "high_level_mixed":
-                read_function = high_level_mixed_read_function
-                write_function = high_level_write_function
-            else:
+            elif read_function_signature == "high_level":
                 read_function = high_level_read_function
-                write_function = high_level_write_function
 
             # trick to run server with non device method: patch __dict__
             if patched:
@@ -1653,7 +1939,7 @@ def test_read_only_dynamic_attribute_with_dummy_write_method(
 
         sync_code = textwrap.dedent(
             """\
-            def read_dyn_attr(self):
+            def read_dyn_attr(self, attr):
                 return self.attr_value
                 """
         )
@@ -1665,6 +1951,56 @@ def test_read_only_dynamic_attribute_with_dummy_write_method(
 
     with DeviceTestContext(TestDevice) as proxy:
         assert proxy.dyn_attr == 123
+
+
+def test_dynamic_attribute_with_method_in_other_class(server_green_mode):
+    class Helper:
+        value = 0
+        is_allowed = True
+
+        def read_method(self, device, attr):
+            assert isinstance(self, Helper)
+            assert isinstance(device, TestDevice)
+            assert attr.get_name() == "dyn_attr"
+            return self.value
+
+        def write_method(self, device, attr):
+            assert isinstance(self, Helper)
+            assert isinstance(device, TestDevice)
+            assert attr.get_name() == "dyn_attr"
+            self.value = attr.get_write_value()
+
+        def is_allowed_method(self, device, req_type):
+            assert isinstance(self, Helper)
+            assert isinstance(device, TestDevice)
+            assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
+            return Helper.is_allowed
+
+    class TestDevice(Device):
+        green_mode = server_green_mode
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = Helper()
+
+        def initialize_dynamic_attributes(self):
+            self.add_attribute(
+                Attr("dyn_attr", DevLong, AttrWriteType.READ_WRITE),
+                r_meth=self.helper.read_method,
+                w_meth=self.helper.write_method,
+                is_allo_meth=self.helper.is_allowed_method,
+            )
+
+    with DeviceTestContext(TestDevice) as proxy:
+        Helper.is_allowed = True
+        proxy.dyn_attr = 123
+        assert proxy.dyn_attr == 123
+
+        Helper.is_allowed = False
+        with pytest.raises(DevFailed):
+            proxy.dyn_attr = 456
+        with pytest.raises(DevFailed):
+            _ = proxy.dyn_attr
 
 
 # Test properties
@@ -2018,13 +2354,16 @@ def test_inheritance_with_undecorated_attributes_and_unbound_functions(
     is_allowed = True
     values = {"a": 0.0, "b": 0.0}
 
-    def read_attr_a():
+    def read_attr_a(device):
+        assert isinstance(device, B)
         return values["a"]
 
-    def write_attr_a(value):
+    def write_attr_a(device, value):
+        assert isinstance(device, B)
         values["a"] = value
 
-    def is_attr_a_allowed(req_type):
+    def is_attr_a_allowed(device, req_type):
+        assert isinstance(device, B)
         assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
         return is_allowed
 
@@ -2038,13 +2377,16 @@ def test_inheritance_with_undecorated_attributes_and_unbound_functions(
             fisallowed=is_attr_a_allowed,
         )
 
-    def read_attr_b():
+    def read_attr_b(device):
+        assert isinstance(device, B)
         return values["b"]
 
-    def write_attr_b(value):
+    def write_attr_b(device, value):
+        assert isinstance(device, B)
         values["b"] = value
 
-    def is_attr_b_allowed(req_type):
+    def is_attr_b_allowed(device, req_type):
+        assert isinstance(device, B)
         assert req_type in (AttReqType.READ_REQ, AttReqType.WRITE_REQ)
         return is_allowed
 
@@ -2126,7 +2468,7 @@ def test_inheritance_command_is_allowed_by_kwarg_method(server_green_mode):
 def test_inheritance_command_is_allowed_by_kwarg_unbound_function(server_green_mode):
     is_allowed = True
 
-    def fisallowed_function():
+    def fisallowed_function(self):
         return is_allowed
 
     class A(Device):
