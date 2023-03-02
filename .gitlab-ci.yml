@@ -62,7 +62,7 @@ run-triage:
   cache: []
   script:
     - gem install gitlab-triage
-    - gitlab-triage --dry-run --token $GITLAB_TRIAGE_API_TOKEN --source-id $CI_PROJECT_PATH
+    - gitlab-triage --token $GITLAB_TRIAGE_API_TOKEN --source-id $CI_PROJECT_PATH
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
 
