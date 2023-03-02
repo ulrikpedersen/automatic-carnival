@@ -18,7 +18,7 @@ resource_rules:
             Hi! Thank you for your contribution!
 
             This issue has been **automatically marked as stale** because it has not had recent activity.
-            It will be closed automatically within 15 days if no further activity occurs.
+            It will be closed automatically within 27 days if no further activity occurs.
 
             NOTE: If this issue was closed prematurely, please leave a comment.
       - name: Close stale issues
@@ -27,7 +27,7 @@ resource_rules:
             attribute: updated_at
             condition: older_than
             interval_type: days
-            interval: 15
+            interval: 27
           labels:
             - stale
           state: opened
@@ -54,7 +54,7 @@ resource_rules:
             Hi! Thank you for your contribution!
 
             This Merge Request has been **automatically marked as stale** because it has not had recent activity.
-            It will be closed automatically within 15 days if no further activity occurs.
+            It will be closed automatically within 27 days if no further activity occurs.
 
             NOTE: If this MR was closed prematurely, please leave a comment.
       - name: Close stale Merge Requests
@@ -63,7 +63,7 @@ resource_rules:
             attribute: updated_at
             condition: older_than
             interval_type: days
-            interval: 15
+            interval: 27
           labels:
             - stale
           state: opened
