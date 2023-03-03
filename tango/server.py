@@ -1653,33 +1653,51 @@ def run(
     """
     Provides a simple way to run a tango server. It handles exceptions
     by writting a message to the msg_stream.
+  
+    :Examples:
 
-    The `classes` parameter can be either a sequence of:
+        Example 1: registering and running a PowerSupply inheriting from
+        :class:`~tango.server.Device`::
 
-    * :class:`~tango.server.Device` or
-    * a sequence of two elements
-      :class:`~tango.DeviceClass`, :class:`~tango.DeviceImpl` or
-    * a sequence of three elements
-      :class:`~tango.DeviceClass`, :class:`~tango.DeviceImpl`,
-      tango class name (str)
+            from tango.server import Device, run
 
-    or a dictionary where:
+            class PowerSupply(Device):
+                pass
 
-    * key is the tango class name
-    * value is either:
-        * a :class:`~tango.server.Device` class or
-        * a sequence of two elements
-          :class:`~tango.DeviceClass`, :class:`~tango.DeviceImpl`
-          or
-        * a sequence of three elements
-          :class:`~tango.DeviceClass`, :class:`~tango.DeviceImpl`,
-          tango class name (str)
+            run((PowerSupply,))
 
-    The optional `post_init_callback` can be a callable (without
-    arguments) or a tuple where the first element is the callable,
-    the second is a list of arguments (optional) and the third is a
-    dictionary of keyword arguments (also optional).
+        Example 2: registering and running a MyServer defined by tango
+        classes `MyServerClass` and `MyServer`::
 
+            from tango import Device_4Impl, DeviceClass
+            from tango.server import run
+
+            class MyServer(Device_4Impl):
+                pass
+
+            class MyServerClass(DeviceClass):
+                pass
+
+            run({'MyServer': (MyServerClass, MyServer)})
+
+        Example 3: registering and running a MyServer defined by tango
+        classes `MyServerClass` and `MyServer`::
+
+            from tango import Device_4Impl, DeviceClass
+            from tango.server import Device, run
+
+            class PowerSupply(Device):
+                pass
+
+            class MyServer(Device_4Impl):
+                pass
+
+            class MyServerClass(DeviceClass):
+                pass
+
+            run([PowerSupply, [MyServerClass, MyServer]])
+            # or: run({'MyServer': (MyServerClass, MyServer)})
+    
     .. note::
        the order of registration of tango classes defines the order
        tango uses to initialize the corresponding devices.
@@ -1687,54 +1705,14 @@ def run(
        order of registration becomes arbitrary. If you need a
        predefined order use a sequence or an OrderedDict.
 
-    Example 1: registering and running a PowerSupply inheriting from
-    :class:`~tango.server.Device`::
-
-        from tango.server import Device, run
-
-        class PowerSupply(Device):
-            pass
-
-        run((PowerSupply,))
-
-    Example 2: registering and running a MyServer defined by tango
-    classes `MyServerClass` and `MyServer`::
-
-        from tango import Device_4Impl, DeviceClass
-        from tango.server import run
-
-        class MyServer(Device_4Impl):
-            pass
-
-        class MyServerClass(DeviceClass):
-            pass
-
-        run({'MyServer': (MyServerClass, MyServer)})
-
-    Example 3: registering and running a MyServer defined by tango
-    classes `MyServerClass` and `MyServer`::
-
-        from tango import Device_4Impl, DeviceClass
-        from tango.server import Device, run
-
-        class PowerSupply(Device):
-            pass
-
-        class MyServer(Device_4Impl):
-            pass
-
-        class MyServerClass(DeviceClass):
-            pass
-
-        run([PowerSupply, [MyServerClass, MyServer]])
-        # or: run({'MyServer': (MyServerClass, MyServer)})
-
     :param classes:
-        a sequence of :class:`~tango.server.Device` classes or
-        a dictionary where keyword is the tango class name and value
-        is a sequence of Tango Device Class python class, and Tango
-        Device python class
-    :type classes: sequence or dict
+        Defines for which Tango Device Classes the server will run.
+        If :class:`~dict` is provided, it's key is the tango class name
+        and value is either: 
+            | :class:`~tango.server.Device`
+            | two element sequence: :class:`~tango.DeviceClass`, :class:`~tango.DeviceImpl`
+            | three element sequence: :class:`~tango.DeviceClass`, :class:`~tango.DeviceImpl`, tango class name :class:`~str`
+    :type classes: Sequence[tango.server.Device] | dict
 
     :param args:
         list of command line arguments [default: None, meaning use
@@ -1755,8 +1733,12 @@ def run(
     :param post_init_callback:
         an optional callback that is executed between the calls
         Util.server_init and Util.server_run
+        The optional `post_init_callback` can be a callable (without
+        arguments) or a tuple where the first element is the callable,
+        the second is a list of arguments (optional) and the third is a
+        dictionary of keyword arguments (also optional).
     :type post_init_callback:
-        callable or tuple (see description above)
+        callable or tuple
 
     :param raises:
         Disable error handling and propagate exceptions from the server
