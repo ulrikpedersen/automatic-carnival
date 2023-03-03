@@ -73,13 +73,14 @@ See `ruff README <https://github.com/charliermarsh/ruff#editor-integrations>`_.
 .. _pipx: https://pypa.github.io/pipx/
 
 
+.. _conda-for-development:
+
 Using Conda for development
 ---------------------------
 
 For local development, it is recommended to work in a :ref:`Conda environment <conda-build-from-source>`.
 
 To run the tests locally (after activating your Conda environment):
-      - ``$ python -m pip install -e ".[tests]"``
       - ``$ pytest``
 
 To run only some tests, use a filter argument, ``-k``:
