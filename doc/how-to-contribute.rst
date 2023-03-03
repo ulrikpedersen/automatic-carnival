@@ -73,6 +73,19 @@ See `ruff README <https://github.com/charliermarsh/ruff#editor-integrations>`_.
 .. _pipx: https://pypa.github.io/pipx/
 
 
+Using Conda for development
+---------------------------
+
+For local development, it is recommended to work in a :ref:`Conda environment <conda-build-from-source>`.
+
+To run the tests locally (after activating your Conda environment):
+      - ``$ python -m pip install -e ".[tests]"``
+      - ``$ pytest``
+
+To run only some tests, use a filter argument, ``-k``:
+      - ``$ pytest -k test_ping``
+
+
 Using Docker for development
 ----------------------------
 
@@ -80,8 +93,13 @@ Docker containers are useful for developing, testing and debugging PyTango.  See
 folder ``.devcontainer`` in the root of the source repo.  It includes instructions for
 building the Docker images and using them for development.
 
-For direct usage, rather than PyTango developement, a Docker image with PyTango already
-installed is available:  https://hub.docker.com/r/tangocs/tango-pytango.
+For direct usage, rather than PyTango developement, Docker images with PyTango already
+installed are available from the
+`Square Kilometre Array Organisation's repository <https://artefact.skao.int/#browse/search/docker=format=docker%20AND%20attributes.docker.imageName=ska-tango-images-tango-pytango>`_.
+
+For example:
+ - ``docker run --rm -ti artefact.skao.int/ska-tango-images-tango-pytango:9.3.12``
+
 
 Releasing a new version
 -----------------------
