@@ -16,12 +16,61 @@ following links:
 
 
 ****************************
+What's new in PyTango 9.4.1?
+****************************
+
+Date: unreleased  (9.4.1rc1 on 2023-03-03)
+
+Type: major release (breaking changes compared to 9.4.0)
+
+Changed
+=======
+
+- Removed additional function signatures for high-level attribute read/write/is_allowed
+  methods that were added in 9.4.0 resulting in a regression.  For example, the high-level
+  write method API for dynamic attributes of the form ``write_method(self, attr, value)``
+  has been removed, leaving only ``write_method(self, attr)``.  Similarly, unbound functions
+  that could used without a reference to the device object, like ``read_function()``, are no
+  longer supported - only ``read_function(device)``.
+  See the :ref:`migration guide <to9.4_non_bound_user_funcs>`.
+- The dependencies packaged with the binary PyPI wheels are as follows:
+    - Linux:
+        - cpptango: 9.4.1
+        - omniorb: 4.2.5  (changed since PyTango 9.4.0)
+        - libzmq: v4.3.4
+        - cppzmq: v4.7.1
+        - libjpeg-turbo: 2.0.9
+        - tango-idl: 5.1.1
+        - boost: 1.80.0 (with patch for Python 3.11 support)
+    - Windows:
+        - cpptango: 9.4.1
+        - omniorb: 4.2.5
+        - libzmq: v4.0.5-2
+        - cppzmq: v4.7.1
+        - libjpeg-turbo: 2.0.3
+        - tango-idl: 5.1.2
+        - boost: 1.73.0
+
+Fixed
+=====
+
+- Regression for undecorated read attribute accessor functions in derived device classes.  E.g., if we
+  have ``class A(Device)`` with attribute reading via method ``A.read_my_attribute``, then
+  reading ``my_attribute`` from ``class B(A)`` would fail.  More generally, repeated wrapping
+  of methods related to attributes, commands and standard methods (like ``init_device``) is now
+  avoided.
+- Regression when applying additional decorators on attribute accessor functions.  Method calls
+  would have the wrong signature and fail.
+
+****************************
 What's new in PyTango 9.4.0?
 ****************************
 
 Date: 2023-02-15
 
 Type: major release
+
+.. warning:: significant regressions - use newer release!
 
 Changed
 =======

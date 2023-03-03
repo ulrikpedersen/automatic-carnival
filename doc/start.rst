@@ -119,7 +119,7 @@ The basic steps are shown below (specify your Python version).
 For more variations, see the folder ``.devcontainer`` in the root of the source repository
 with an example of the compilation in a Docker container.  The ``.gitlab-ci.yml``
 file in the source repo is another good reference for Conda-based compilation.
-For further details on development, see :ref:`Conda environment <conda-for-development>`.
+For further details on development, see :ref:`Conda development <conda-for-development>`.
 
 Linux
 ~~~~~
