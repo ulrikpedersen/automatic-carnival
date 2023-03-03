@@ -98,6 +98,8 @@ Building and installing from source (hard)
 This is the more complicated option, as you need to have all the correct dependencies and build tools
 installed.
 
+.. _conda-build-from-source:
+
 Conda
 ~~~~~
 
@@ -105,18 +107,19 @@ The basic steps are shown below (specify your Python version).
 
 .. sourcecode:: console
 
-   $ conda create -n pytangodev -c conda-forge boost cpptango cppzmq cxx-compiler numpy pkg-config psutil python=3.11
+   $ conda create -n pytangodev -c conda-forge boost cpptango tango-test cppzmq cxx-compiler gevent numpy packaging pkg-config psutil pytest pytest-forked python=3.11
    $ conda activate pytangodev
    $ git clone https://gitlab.com/tango-controls/pytango.git
    $ cd pytango
    $ export BOOST_ROOT=$CONDA_PREFIX TANGO_ROOT=$CONDA_PREFIX ZMQ_ROOT=$CONDA_PREFIX OMNI_ROOT=$CONDA_PREFIX
    $ export BOOST_PYTHON_LIB=boost_python$(python -c "import sys; print(f'{sys.version_info.major}{sys.version_info.minor}')")
-   $ python setup.py build
-   $ python setup.py install
+   $ pip install -v -e ".[tests]"
+   $ pytest
 
 For more variations, see the folder ``.devcontainer`` in the root of the source repository
 with an example of the compilation in a Docker container.  The ``.gitlab-ci.yml``
 file in the source repo is another good reference for Conda-based compilation.
+For further details on development, see :ref:`Conda development <conda-for-development>`.
 
 Linux
 ~~~~~
