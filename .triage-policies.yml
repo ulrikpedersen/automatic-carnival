@@ -1,0 +1,73 @@
+resource_rules:
+  issues:
+    rules:
+      - name: Comment 1 year old issues
+        conditions:
+          date:
+            attribute: updated_at
+            condition: older_than
+            interval_type: months
+            interval: 12
+          forbidden_labels:
+            - stale
+          state: opened
+        actions:
+          labels:
+            - stale
+          comment: |
+            Hi! Thank you for your contribution!
+
+            This issue has been **automatically marked as stale** because it has not had recent activity.
+            It will be closed automatically within 27 days if no further activity occurs.
+
+            NOTE: If this issue was closed prematurely, please leave a comment.
+      - name: Close stale issues
+        conditions:
+          date:
+            attribute: updated_at
+            condition: older_than
+            interval_type: days
+            interval: 27
+          labels:
+            - stale
+          state: opened
+        actions:
+          labels:
+            - stale::closed
+          status: close
+  merge_requests:
+    rules:
+      - name: Comment 1 year old Merge Requests
+        conditions:
+          date:
+            attribute: updated_at
+            condition: older_than
+            interval_type: months
+            interval: 12
+          forbidden_labels:
+            - stale
+          state: opened
+        actions:
+          labels:
+            - stale
+          comment: |
+            Hi! Thank you for your contribution!
+
+            This Merge Request has been **automatically marked as stale** because it has not had recent activity.
+            It will be closed automatically within 27 days if no further activity occurs.
+
+            NOTE: If this MR was closed prematurely, please leave a comment.
+      - name: Close stale Merge Requests
+        conditions:
+          date:
+            attribute: updated_at
+            condition: older_than
+            interval_type: days
+            interval: 27
+          labels:
+            - stale
+          state: opened
+        actions:
+          labels:
+            - stale::closed
+          status: close
