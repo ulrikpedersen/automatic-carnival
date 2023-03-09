@@ -708,7 +708,7 @@ def __patch_device_with_dynamic_command_is_allowed_method(device, name, is_allo_
 
 def __DeviceImpl__remove_command(self, cmd_name, free_it=False, clean_db=True):
     """
-    remove_command(self, attr_name)
+    remove_command(self, cmd_name, free_it=False, clean_db=True)
 
         Remove one command from the device command list.
 
