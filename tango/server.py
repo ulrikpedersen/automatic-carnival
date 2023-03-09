@@ -1653,7 +1653,7 @@ def run(
     """
     Provides a simple way to run a tango server. It handles exceptions
     by writting a message to the msg_stream.
-  
+
     :Examples:
 
         Example 1: registering and running a PowerSupply inheriting from
@@ -1697,7 +1697,7 @@ def run(
 
             run([PowerSupply, [MyServerClass, MyServer]])
             # or: run({'MyServer': (MyServerClass, MyServer)})
-    
+
     .. note::
        the order of registration of tango classes defines the order
        tango uses to initialize the corresponding devices.
@@ -1708,7 +1708,7 @@ def run(
     :param classes:
         Defines for which Tango Device Classes the server will run.
         If :class:`~dict` is provided, it's key is the tango class name
-        and value is either: 
+        and value is either:
             | :class:`~tango.server.Device`
             | two element sequence: :class:`~tango.DeviceClass`, :class:`~tango.DeviceImpl`
             | three element sequence: :class:`~tango.DeviceClass`, :class:`~tango.DeviceImpl`, tango class name :class:`~str`
