@@ -241,7 +241,7 @@ __Connection__command_inout_asynch.__name__ = "command_inout_asynch"
 
 def __Connection__command_inout_reply(self, idx, timeout=None):
     """
-    command_inout_reply(self, id, timeout=None) -> DeviceData
+    command_inout_reply(self, idx, timeout=None) -> DeviceData
 
             Check if the answer of an asynchronous command_inout is arrived
             (polling model). If the reply is arrived and if it is a valid
