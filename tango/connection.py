@@ -241,34 +241,22 @@ __Connection__command_inout_asynch.__name__ = "command_inout_asynch"
 
 def __Connection__command_inout_reply(self, idx, timeout=None):
     """
-    command_inout_reply(self, id) -> DeviceData
+    command_inout_reply(self, idx, timeout=None) -> DeviceData
 
             Check if the answer of an asynchronous command_inout is arrived
             (polling model). If the reply is arrived and if it is a valid
             reply, it is returned to the caller in a DeviceData object. If
-            the reply is an exception, it is re-thrown by this call. An
-            exception is also thrown in case of the reply is not yet arrived.
-
-        Parameters :
-            - id      : (int) Asynchronous call identifier.
-        Return     : (DeviceData)
-        Throws     : AsynCall, AsynReplyNotArrived, CommunicationFailed, DevFailed from device
-
-    command_inout_reply(self, id, timeout) -> DeviceData
-
-            Check if the answer of an asynchronous command_inout is arrived
-            (polling model). id is the asynchronous call identifier. If the
-            reply is arrived and if it is a valid reply, it is returned to
-            the caller in a DeviceData object. If the reply is an exception,
-            it is re-thrown by this call. If the reply is not yet arrived,
-            the call will wait (blocking the process) for the time specified
+            the reply is an exception, it is re-thrown by this call. If optional
+            `timeout` parameter is not provided an exception is also thrown in case
+            of the reply is not yet arrived. If `timeout` is provided, the call will
+            wait (blocking the process) for the time specified
             in timeout. If after timeout milliseconds, the reply is still
             not there, an exception is thrown. If timeout is set to 0, the
             call waits until the reply arrived.
 
         Parameters :
-            - id      : (int) Asynchronous call identifier.
-            - timeout : (int)
+            - idx      : (int) Asynchronous call identifier.
+            - timeout  : (int) (optional) Milliseconds to wait for the reply.
         Return     : (DeviceData)
         Throws     : AsynCall, AsynReplyNotArrived, CommunicationFailed, DevFailed from device
     """
