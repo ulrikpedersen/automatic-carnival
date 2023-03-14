@@ -872,15 +872,15 @@ then you can use the generic device_factory's call to the
 It is simply necessary to re-define this method within your <Device>Class and to create
 the dynamic attributes within this method.
 
-Internally, the high-level API re-defines dyn_attr() to call initialize_dynamic_attributes()
-for each device.
+Internally, the high-level API re-defines :meth:`~tango.DeviceClass.dyn_attr` to call
+:meth:`~tango.server.Device.initialize_dynamic_attributes` for each device.
 
-.. note:: The dyn_attr() (and initialize_dynamic_attributes() for high-level API) methods
-          are only called once when the device server starts, since the Python device_factory
-          method is only called once. Within the device_factory method, init_device() is
-          called for all devices and only after that is dyn_attr() called for all devices.
-          If the Init command is executed on a device it will not call the dyn_attr() method
-          again.
+.. note:: The ``dyn_attr()`` (and ``initialize_dynamic_attributes()`` for high-level API) methods
+          are only called **once** when the device server starts, since the Python device_factory
+          method is only called once. Within the device_factory method, ``init_device()`` is
+          called for all devices and only after that is ``dyn_attr()`` called for all devices.
+          If the ``Init`` command is executed on a device it will not call the ``dyn_attr()`` method
+          again (and will not call ``initialize_dynamic_attributes()`` either).
 
 There is another point to be noted regarding dynamic attributes within a Python
 device server. The Tango Python device server core checks that for each
