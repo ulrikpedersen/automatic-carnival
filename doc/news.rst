@@ -19,7 +19,7 @@ following links:
 What's new in PyTango 9.4.1?
 ****************************
 
-Date: unreleased  (9.4.1rc1 on 2023-03-03)
+Date: 2023-03-15
 
 Type: major release (breaking changes compared to 9.4.0)
 
@@ -30,7 +30,7 @@ Changed
   methods that were added in 9.4.0 resulting in a regression.  For example, the high-level
   write method API for dynamic attributes of the form ``write_method(self, attr, value)``
   has been removed, leaving only ``write_method(self, attr)``.  Similarly, unbound functions
-  that could used without a reference to the device object, like ``read_function()``, are no
+  that could be used without a reference to the device object, like ``read_function()``, are no
   longer supported - only ``read_function(device)``.
   See the :ref:`migration guide <to9.4_non_bound_user_funcs>`.
 - The dependencies packaged with the binary PyPI wheels are as follows:

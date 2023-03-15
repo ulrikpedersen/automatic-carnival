@@ -119,7 +119,7 @@ Document revisions
 +----------+----------------------------------------------------------------------------------+-----------------------------------------------------+-----------------------------------+
 | 15/02/23 | `9.4.0 <http://pytango.readthedocs.io/en/v9.4.0>`_                               | 9.4.0 Release                                       | A\. Joubert                       |
 +----------+----------------------------------------------------------------------------------+-----------------------------------------------------+-----------------------------------+
-| ??/??/?? | `9.4.1 <http://pytango.readthedocs.io/en/v9.4.1>`_                               | 9.4.1 Release                                       | A\. Joubert                       |
+| 15/03/23 | `9.4.1 <http://pytango.readthedocs.io/en/v9.4.1>`_                               | 9.4.1 Release                                       | A\. Joubert                       |
 +----------+----------------------------------------------------------------------------------+-----------------------------------------------------+-----------------------------------+
 
 .. _pytango-version-history:
@@ -130,7 +130,7 @@ Version history
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Version  | Changes                                                                                                                                                                             |
 +==========+=====================================================================================================================================================================================+
-| 9.4.1rc1 | *Release candidate 1 for 9.4.1*.                                                                                                                                                    |
+| 9.4.1    | 9.4.1 release.                                                                                                                                                                      |
 |          |                                                                                                                                                                                     |
 |          | Bug fixes and changes:                                                                                                                                                              |
 |          |     - `!547: Fix attributes with device inheritance and repeated method wrapping regression in 9.4.0 <https://gitlab.com/tango-controls/pytango/-/merge_requests/547>`_             |
@@ -140,7 +140,8 @@ Version history
 |          |     - `!546: Add note about pip version for binary packages <https://gitlab.com/tango-controls/pytango/-/merge_requests/546>`_                                                      |
 |          |     - `!544: Bump version to 9.4.1dev0 <https://gitlab.com/tango-controls/pytango/-/merge_requests/544>`_                                                                           |
 |          |     - `!555: Update docs and bump version for 9.4.0rc1 <https://gitlab.com/tango-controls/pytango/-/merge_requests/555>`_                                                           |
-|          |     - `!xyz: Bump for 9.4.1 <https://gitlab.com/tango-controls/pytango/-/merge_requests/xyz>`_                                                                                      |
+|          |     - `!559: Groom docstrings <https://gitlab.com/tango-controls/pytango/-/merge_requests/559>`_                                                                                    |
+|          |     - `!560: Bump for 9.4.1 <https://gitlab.com/tango-controls/pytango/-/merge_requests/560>`_                                                                                      |
 |          |                                                                                                                                                                                     |
 |          | Deprecation fixes:                                                                                                                                                                  |
 |          |     - `!553: Remove compiler version check from setup.py <https://gitlab.com/tango-controls/pytango/-/merge_requests/553>`_                                                         |
@@ -152,10 +153,10 @@ Version history
 |          |     - `!550: Update mambaforge image and use conda instead of apt packages in CI <https://gitlab.com/tango-controls/pytango/-/merge_requests/550>`_                                 |
 |          |     - `!552: Run gitlab-triage to update old issues/MRs <https://gitlab.com/tango-controls/pytango/-/merge_requests/552>`_                                                          |
 |          |                                                                                                                                                                                     |
-|          | More details in the `full changelog 9.4.0...9.4.1rc1 <https://gitlab.com/tango-controls/pytango/-/compare/v9.4.0...v9.4.1rc1>`_                                                     |
+|          | More details in the `full changelog 9.4.0...9.4.1 <https://gitlab.com/tango-controls/pytango/-/compare/v9.4.0...v9.4.1>`_                                                           |
 |          |                                                                                                                                                                                     |
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| 9.4.0    | 9.4.0 release.                                                                                                                                                                      |
+| 9.4.0    | 9.4.0 release (not recommended due to significant regressions).                                                                                                                     |
 |          |                                                                                                                                                                                     |
 |          | Features:                                                                                                                                                                           |
 |          |     - `!522: Support of non-bound methods for attributes <https://gitlab.com/tango-controls/pytango/-/merge_requests/522>`_                                                         |

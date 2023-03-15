@@ -1709,6 +1709,7 @@ def run(
         Defines for which Tango Device Classes the server will run.
         If :class:`~dict` is provided, it's key is the tango class name
         and value is either:
+
             | :class:`~tango.server.Device`
             | two element sequence: :class:`~tango.DeviceClass`, :class:`~tango.DeviceImpl`
             | three element sequence: :class:`~tango.DeviceClass`, :class:`~tango.DeviceImpl`, tango class name :class:`~str`
