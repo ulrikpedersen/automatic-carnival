@@ -4,7 +4,7 @@
 History of changes
 ==================
 
-:Contributers: T\. Coutinho
+:Contributers: PyTango Team - see `source repo history <https://gitlab.com/tango-controls/pytango/-/graphs/develop?ref_type=heads>`_ for full details.
 
 :Last Update: |today|
 
@@ -117,6 +117,10 @@ Document revisions
 +----------+----------------------------------------------------------------------------------+-----------------------------------------------------+-----------------------------------+
 | 28/09/22 | `9.3.6 <http://pytango.readthedocs.io/en/v9.3.6>`_                               | 9.3.6 Release                                       | Y\. Matveev                       |
 +----------+----------------------------------------------------------------------------------+-----------------------------------------------------+-----------------------------------+
+| 15/02/23 | `9.4.0 <http://pytango.readthedocs.io/en/v9.4.0>`_                               | 9.4.0 Release                                       | A\. Joubert                       |
++----------+----------------------------------------------------------------------------------+-----------------------------------------------------+-----------------------------------+
+| 15/03/23 | `9.4.1 <http://pytango.readthedocs.io/en/v9.4.1>`_                               | 9.4.1 Release                                       | A\. Joubert                       |
++----------+----------------------------------------------------------------------------------+-----------------------------------------------------+-----------------------------------+
 
 .. _pytango-version-history:
 
@@ -126,15 +130,110 @@ Version history
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Version  | Changes                                                                                                                                                                             |
 +==========+=====================================================================================================================================================================================+
+| 9.4.1    | 9.4.1 release.                                                                                                                                                                      |
+|          |                                                                                                                                                                                     |
+|          | Bug fixes and changes:                                                                                                                                                              |
+|          |     - `!547: Fix attributes with device inheritance and repeated method wrapping regression in 9.4.0 <https://gitlab.com/tango-controls/pytango/-/merge_requests/547>`_             |
+|          |     - `!548: Fix decorated attribute methods regression in 9.4.0 <https://gitlab.com/tango-controls/pytango/-/merge_requests/548>`_                                                 |
+|          |                                                                                                                                                                                     |
+|          | Doc fixes:                                                                                                                                                                          |
+|          |     - `!546: Add note about pip version for binary packages <https://gitlab.com/tango-controls/pytango/-/merge_requests/546>`_                                                      |
+|          |     - `!544: Bump version to 9.4.1dev0 <https://gitlab.com/tango-controls/pytango/-/merge_requests/544>`_                                                                           |
+|          |     - `!555: Update docs and bump version for 9.4.0rc1 <https://gitlab.com/tango-controls/pytango/-/merge_requests/555>`_                                                           |
+|          |     - `!559: Groom docstrings <https://gitlab.com/tango-controls/pytango/-/merge_requests/559>`_                                                                                    |
+|          |     - `!560: Bump for 9.4.1 <https://gitlab.com/tango-controls/pytango/-/merge_requests/560>`_                                                                                      |
+|          |                                                                                                                                                                                     |
+|          | Deprecation fixes:                                                                                                                                                                  |
+|          |     - `!553: Remove compiler version check from setup.py <https://gitlab.com/tango-controls/pytango/-/merge_requests/553>`_                                                         |
+|          |                                                                                                                                                                                     |
+|          | DevOps changes:                                                                                                                                                                     |
+|          |     - `!545: Run black on repo and add to pre-commit-config <https://gitlab.com/tango-controls/pytango/-/merge_requests/545>`_                                                      |
+|          |     - `!554: Update to omniorb 4.2.5 for Linux wheels <https://gitlab.com/tango-controls/pytango/-/merge_requests/554>`_                                                            |
+|          |     - `!549: Use new tango-controls group runners <https://gitlab.com/tango-controls/pytango/-/merge_requests/549>`_                                                                |
+|          |     - `!550: Update mambaforge image and use conda instead of apt packages in CI <https://gitlab.com/tango-controls/pytango/-/merge_requests/550>`_                                 |
+|          |     - `!552: Run gitlab-triage to update old issues/MRs <https://gitlab.com/tango-controls/pytango/-/merge_requests/552>`_                                                          |
+|          |                                                                                                                                                                                     |
+|          | More details in the `full changelog 9.4.0...9.4.1 <https://gitlab.com/tango-controls/pytango/-/compare/v9.4.0...v9.4.1>`_                                                           |
+|          |                                                                                                                                                                                     |
++----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 9.4.0    | 9.4.0 release (not recommended due to significant regressions).                                                                                                                     |
+|          |                                                                                                                                                                                     |
+|          | Features:                                                                                                                                                                           |
+|          |     - `!522: Support of non-bound methods for attributes <https://gitlab.com/tango-controls/pytango/-/merge_requests/522>`_                                                         |
+|          |     - `!535: Allow developer to optionally add attributes to a DeviceProxy instance <https://gitlab.com/tango-controls/pytango/-/merge_requests/535>`_                              |
+|          |     - `!515: DevEnum spectrum and image attributes support added <https://gitlab.com/tango-controls/pytango/-/merge_requests/515>`_                                                 |
+|          |     - `!502: Provide binary wheels on PyPI using pytango-builder images <https://gitlab.com/tango-controls/pytango/-/merge_requests/502>`_                                          |
+|          |     - `!510: Added high level API for dynamic attributes <https://gitlab.com/tango-controls/pytango/-/merge_requests/510>`_                                                         |
+|          |     - `!511: Added fisallowed kwarg for static/dynamic commands and is_allowed method for dynamic commands <https://gitlab.com/tango-controls/pytango/-/merge_requests/511>`_       |
+|          |     - `!528: Added getter, read and is_allowed attribute decorators <https://gitlab.com/tango-controls/pytango/-/merge_requests/528>`_                                              |
+|          |     - `!542: Improve device types autocompletion in IDEs <https://gitlab.com/tango-controls/pytango/-/merge_requests/542>`_                                                         |
+|          |                                                                                                                                                                                     |
+|          | Changes:                                                                                                                                                                            |
+|          |     - `!490: Drop Python 2.7 and 3.5 support <https://gitlab.com/tango-controls/pytango/-/merge_requests/490>`_                                                                     |
+|          |     - `!486: Switch support from cppTango 9.3 to 9.4 <https://gitlab.com/tango-controls/pytango/-/merge_requests/486>`_                                                             |
+|          |     - `!536: Require cppTango>=9.4.1 to import the library <https://gitlab.com/tango-controls/pytango/-/merge_requests/536>`_                                                       |
+|          |     - `!489: Make numpy a hard requirement <https://gitlab.com/tango-controls/pytango/-/merge_requests/489>`_                                                                       |
+|          |     - `!493: Improve spectrum and image attribute behaviour with empty lists (breaking change to API!) <https://gitlab.com/tango-controls/pytango/-/merge_requests/493>`_           |
+|          |     - `!492: Change DServer inheritance from Device_4Impl to Device_5Impl <https://gitlab.com/tango-controls/pytango/-/merge_requests/492>`_                                        |
+|          |     - `!514: Remove Python 2 compatibility code <https://gitlab.com/tango-controls/pytango/-/merge_requests/514>`_                                                                  |
+|          |     - `!539: Update CI to cppTango 9.4.1, change default ORBendpoint host to 0.0.0.0, fix tests <https://gitlab.com/tango-controls/pytango/-/merge_requests/539>`_                  |
+|          |     - `!541: Workaround cppTango#1055 for DatabaseDS startup <https://gitlab.com/tango-controls/pytango/-/merge_requests/541>`_                                                     |
+|          |                                                                                                                                                                                     |
+|          | Bug fixes:                                                                                                                                                                          |
+|          |     - `!495: Fix log streams with % and no args <https://gitlab.com/tango-controls/pytango/-/merge_requests/495>`_                                                                  |
+|          |     - `!516: Resolve "Crash when writing numpy.array to DeviceProxy string array attributes" <https://gitlab.com/tango-controls/pytango/-/merge_requests/516>`_                     |
+|          |     - `!533: Fix high-level enum read exception when quality is ATTR_INVALID <https://gitlab.com/tango-controls/pytango/-/merge_requests/533>`_                                     |
+|          |                                                                                                                                                                                     |
+|          | Doc fixes:                                                                                                                                                                          |
+|          |     - `!505: Fix some docs related to Tango.Util <https://gitlab.com/tango-controls/pytango/-/merge_requests/505>`_                                                                 |
+|          |     - `!523: Document set_write_value WAttribute method <https://gitlab.com/tango-controls/pytango/-/merge_requests/523>`_                                                          |
+|          |     - `!524: Fixed documentation for DeviceProxy.get_attribute_config_ex <https://gitlab.com/tango-controls/pytango/-/merge_requests/524>`_                                         |
+|          |     - `!526: Clarify gevent dependency <https://gitlab.com/tango-controls/pytango/-/merge_requests/526>`_                                                                           |
+|          |     - `!487: Bump for 9.4.0 <https://gitlab.com/tango-controls/pytango/-/merge_requests/487>`_                                                                                      |
+|          |     - `!500: Update docs for 9.3 to 9.4 changes <https://gitlab.com/tango-controls/pytango/-/merge_requests/500>`_                                                                  |
+|          |     - `!501: Update version for 9.4.0rc1 <https://gitlab.com/tango-controls/pytango/-/merge_requests/501>`_                                                                         |
+|          |     - `!507: Update version for 9.4.0rc2 <https://gitlab.com/tango-controls/pytango/-/merge_requests/507>`_                                                                         |
+|          |     - `!538: Update version for 9.4.0rc3 <https://gitlab.com/tango-controls/pytango/-/merge_requests/538>`_                                                                         |
+|          |     - `!512: Add some more training examples <https://gitlab.com/tango-controls/pytango/-/merge_requests/512>`_                                                                     |
+|          |     - `!540: Update docs and bump version for 9.4.0 release <https://gitlab.com/tango-controls/pytango/-/merge_requests/540>`_                                                      |
+|          |                                                                                                                                                                                     |
+|          | Deprecation fixes:                                                                                                                                                                  |
+|          |     - `!491: Remove unused method CppDeviceClassWrap::delete_class <https://gitlab.com/tango-controls/pytango/-/merge_requests/491>`_                                               |
+|          |     - `!494: Remove unnecessary constants TANGO_LONG32 and TANGO_LONG64 <https://gitlab.com/tango-controls/pytango/-/merge_requests/494>`_                                          |
+|          |     - `!497: Replace pytest-xdist with pytest-forked for testing <https://gitlab.com/tango-controls/pytango/-/merge_requests/497>`_                                                 |
+|          |     - `!498: Fix Python 3.11 compatibility <https://gitlab.com/tango-controls/pytango/-/merge_requests/498>`_                                                                       |
+|          |     - `!513: Replace deprecated distutils.version <https://gitlab.com/tango-controls/pytango/-/merge_requests/513>`_                                                                |
+|          |     - `!534: Replace deprecated numpy.bool8 alias <https://gitlab.com/tango-controls/pytango/-/merge_requests/534>`_                                                                |
+|          |                                                                                                                                                                                     |
+|          | DevOps changes:                                                                                                                                                                     |
+|          |     - `!531: Configure unit tests report in gitlab-ci <https://gitlab.com/tango-controls/pytango/-/merge_requests/531>`_                                                            |
+|          |     - `!532: Run ruff via pre-commit <https://gitlab.com/tango-controls/pytango/-/merge_requests/532>`_                                                                             |
+|          |     - `!519: Testing: improve error message for event test failures <https://gitlab.com/tango-controls/pytango/-/merge_requests/519>`_                                              |
+|          |     - `!530: Unnecessary tests removed <https://gitlab.com/tango-controls/pytango/-/merge_requests/530>`_                                                                           |
+|          |     - `!496: Force numpy installation with help of pyproject.toml (PEP 518) before build <https://gitlab.com/tango-controls/pytango/-/merge_requests/496>`_                         |
+|          |     - `!509: Prefer binary dependencies for test-wheel <https://gitlab.com/tango-controls/pytango/-/merge_requests/509>`_                                                           |
+|          |     - `!508: Allow failure for aarch64 test <https://gitlab.com/tango-controls/pytango/-/merge_requests/508>`_                                                                      |
+|          |     - `!488: Add cpptango_rc to the Dockerfile <https://gitlab.com/tango-controls/pytango/-/merge_requests/488>`_                                                                   |
+|          |     - `!520: Devcontainer fix for Mac M1 host <https://gitlab.com/tango-controls/pytango/-/merge_requests/520>`_                                                                    |
+|          |     - `!525: Git ignore code-workspace and .DS_Store files <https://gitlab.com/tango-controls/pytango/-/merge_requests/525>`_                                                       |
+|          |     - `!499: Disable AppVeyor but keep the config file <https://gitlab.com/tango-controls/pytango/-/merge_requests/499>`_                                                           |
+|          |     - `!503: Disable AppVeyor builds temporarily <https://gitlab.com/tango-controls/pytango/-/merge_requests/503>`_                                                                 |
+|          |     - `!504: Update AppVeyor CI for cppTango 9.4.0 <https://gitlab.com/tango-controls/pytango/-/merge_requests/504>`_                                                               |
+|          |     - `!506: Update AppVeyor cppTango 9.4.0.windows1 package <https://gitlab.com/tango-controls/pytango/-/merge_requests/506>`_                                                     |
+|          |     - `!543: Fix readme syntax and add twine check <https://gitlab.com/tango-controls/pytango/-/merge_requests/543>`_                                                               |
+|          |                                                                                                                                                                                     |
+|          | More details in the `full changelog 9.3.6...9.4.0 <https://gitlab.com/tango-controls/pytango/-/compare/v9.3.6...v9.4.0>`_                                                           |
+|          |                                                                                                                                                                                     |
++----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | 9.3.6    | 9.3.6 release.                                                                                                                                                                      |
 |          |                                                                                                                                                                                     |
 |          | Changes:                                                                                                                                                                            |
-|          |     - `Pull Request #482: Use cpptango 9.3.5 for Widows wheels (except Py27 x64) <https://gitlab.com/tango-controls/pytango/-/merge_requests/482>`_                                        |
+|          |     - `Pull Request #482: Use cpptango 9.3.5 for Widows wheels (except Py27 x64) <https://gitlab.com/tango-controls/pytango/-/merge_requests/482>`_                                 |
 |          |                                                                                                                                                                                     |
 |          | Bug fixes:                                                                                                                                                                          |
-|          |     - `Pull Request #477: Resolve "Dynamic attribute in 9.3.5 fails" <https://gitlab.com/tango-controls/pytango/-/merge_requests/477>`_                                     |
-|          |     - `Pull Request #479: Fix green mode usage from run method kwarg <https://gitlab.com/tango-controls/pytango/-/merge_requests/479>`_              |
-|          |     - `Pull Request #480: Resolve "read-only dynamic attribute with dummy write function fails in 9.3.5" <https://gitlab.com/tango-controls/pytango/-/merge_requests/480>`_                           |
+|          |     - `Pull Request #477: Resolve "Dynamic attribute in 9.3.5 fails" <https://gitlab.com/tango-controls/pytango/-/merge_requests/477>`_                                             |
+|          |     - `Pull Request #479: Fix green mode usage from run method kwarg <https://gitlab.com/tango-controls/pytango/-/merge_requests/479>`_                                             |
+|          |     - `Pull Request #480: Resolve "read-only dynamic attribute with dummy write function fails in 9.3.5" <https://gitlab.com/tango-controls/pytango/-/merge_requests/480>`_         |
 |          |                                                                                                                                                                                     |
 +----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | 9.3.5    | 9.3.5 release.                                                                                                                                                                      |

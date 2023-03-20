@@ -18,18 +18,29 @@ import copy
 import functools
 import inspect
 import os
-
-from inspect import getfullargspec
+import types
 
 from ._tango import (
-    DeviceImpl, Device_3Impl, Device_4Impl, Device_5Impl,
-    DevFailed, Attribute, WAttribute, AttrWriteType,
-    MultiAttribute, MultiClassAttribute,
-    Attr, Logger, AttrWriteType, AttrDataFormat,
-    DispLevel, UserDefaultAttrProp, StdStringVector)
+    DeviceImpl,
+    Device_3Impl,
+    Device_4Impl,
+    Device_5Impl,
+    DevFailed,
+    Attribute,
+    WAttribute,
+    AttrWriteType,
+    MultiAttribute,
+    MultiClassAttribute,
+    Attr,
+    Logger,
+    AttrDataFormat,
+    DispLevel,
+    UserDefaultAttrProp,
+    StdStringVector,
+)
 
 from .utils import document_method as __document_method
-from .utils import copy_doc, get_latest_device_class, is_pure_str
+from .utils import copy_doc, get_latest_device_class, set_complex_value, is_pure_str
 from .green import get_executor
 from .attr_data import AttrData
 
@@ -37,11 +48,19 @@ from .log4tango import TangoStream
 
 __docformat__ = "restructuredtext"
 
-__all__ = ("ChangeEventProp", "PeriodicEventProp",
-           "ArchiveEventProp", "AttributeAlarm", "EventProperties",
-           "AttributeConfig", "AttributeConfig_2",
-           "AttributeConfig_3", "AttributeConfig_5",
-           "MultiAttrProp", "device_server_init")
+__all__ = (
+    "ChangeEventProp",
+    "PeriodicEventProp",
+    "ArchiveEventProp",
+    "AttributeAlarm",
+    "EventProperties",
+    "AttributeConfig",
+    "AttributeConfig_2",
+    "AttributeConfig_3",
+    "AttributeConfig_5",
+    "MultiAttrProp",
+    "device_server_init",
+)
 
 # Worker access
 
@@ -59,15 +78,18 @@ def get_worker():
 
 # patcher for methods
 def run_in_executor(fn):
-    if not hasattr(fn, 'wrapped_with_executor'):
+    if not hasattr(fn, "wrapped_with_executor"):
+
         @functools.wraps(fn)
         def wrapper(*args, **kwargs):
             return get_worker().execute(fn, *args, **kwargs)
+
         # to avoid double wrapping we add an empty field, and then use it to check, whether function is already wrapped
         wrapper.wrapped_with_executor = True
         return wrapper
     else:
         return fn
+
 
 def get_source_location():
     """Helper function that provides source location for logging functions."""
@@ -75,14 +97,18 @@ def get_source_location():
     # have a fixed number here beause loggers/streams are used in many places
     # inside pytango with varying call stack depth.
     for frame, filename, lineno, _, _, _ in inspect.stack():
-        module = frame.f_globals['__name__']
+        module = frame.f_globals["__name__"]
         if module != "tango" and not module.startswith("tango."):
             filename = os.path.basename(filename)
             return filename, lineno
     return "(unknown)", 0
 
 
-class LatestDeviceImpl(get_latest_device_class()):
+# Note: the inheritance below doesn't call get_latest_device_class(),
+#       because such dynamic inheritance breaks auto-completion in IDEs.
+#       Instead, we manually provide the correct class here, and verify
+#       that the inheritance is correct via a unit test, in test_server.py.
+class LatestDeviceImpl(Device_5Impl):
     __doc__ = f"""\
     Latest implementation of the TANGO device base class (alias for {get_latest_device_class().__name__}).
 
@@ -95,12 +121,12 @@ class AttributeAlarm:
     AttributeAlarm."""
 
     def __init__(self):
-        self.min_alarm = ''
-        self.max_alarm = ''
-        self.min_warning = ''
-        self.max_warning = ''
-        self.delta_t = ''
-        self.delta_val = ''
+        self.min_alarm = ""
+        self.max_alarm = ""
+        self.min_warning = ""
+        self.max_warning = ""
+        self.delta_t = ""
+        self.delta_val = ""
         self.extensions = []
 
 
@@ -109,8 +135,8 @@ class ChangeEventProp:
     ChangeEventProp."""
 
     def __init__(self):
-        self.rel_change = ''
-        self.abs_change = ''
+        self.rel_change = ""
+        self.abs_change = ""
         self.extensions = []
 
 
@@ -119,7 +145,7 @@ class PeriodicEventProp:
     PeriodicEventProp."""
 
     def __init__(self):
-        self.period = ''
+        self.period = ""
         self.extensions = []
 
 
@@ -128,9 +154,9 @@ class ArchiveEventProp:
     ArchiveEventProp."""
 
     def __init__(self):
-        self.rel_change = ''
-        self.abs_change = ''
-        self.period = ''
+        self.rel_change = ""
+        self.abs_change = ""
+        self.period = ""
         self.extensions = []
 
 
@@ -149,45 +175,45 @@ class MultiAttrProp:
     MultiAttrProp."""
 
     def __init__(self):
-        self.label = ''
-        self.description = ''
-        self.unit = ''
-        self.standard_unit = ''
-        self.display_unit = ''
-        self.format = ''
-        self.min_value = ''
-        self.max_value = ''
-        self.min_alarm = ''
-        self.max_alarm = ''
-        self.min_warning = ''
-        self.max_warning = ''
-        self.delta_t = ''
-        self.delta_val = ''
-        self.event_period = ''
-        self.archive_period = ''
-        self.rel_change = ''
-        self.abs_change = ''
-        self.archive_rel_change = ''
-        self.archive_abs_change = ''
+        self.label = ""
+        self.description = ""
+        self.unit = ""
+        self.standard_unit = ""
+        self.display_unit = ""
+        self.format = ""
+        self.min_value = ""
+        self.max_value = ""
+        self.min_alarm = ""
+        self.max_alarm = ""
+        self.min_warning = ""
+        self.max_warning = ""
+        self.delta_t = ""
+        self.delta_val = ""
+        self.event_period = ""
+        self.archive_period = ""
+        self.rel_change = ""
+        self.abs_change = ""
+        self.archive_rel_change = ""
+        self.archive_abs_change = ""
 
 
 def _init_attr_config(attr_cfg):
     """Helper function to initialize attribute config objects"""
-    attr_cfg.name = ''
+    attr_cfg.name = ""
     attr_cfg.writable = AttrWriteType.READ
     attr_cfg.data_format = AttrDataFormat.SCALAR
     attr_cfg.data_type = 0
     attr_cfg.max_dim_x = 0
     attr_cfg.max_dim_y = 0
-    attr_cfg.description = ''
-    attr_cfg.label = ''
-    attr_cfg.unit = ''
-    attr_cfg.standard_unit = ''
-    attr_cfg.display_unit = ''
-    attr_cfg.format = ''
-    attr_cfg.min_value = ''
-    attr_cfg.max_value = ''
-    attr_cfg.writable_attr_name = ''
+    attr_cfg.description = ""
+    attr_cfg.label = ""
+    attr_cfg.unit = ""
+    attr_cfg.standard_unit = ""
+    attr_cfg.display_unit = ""
+    attr_cfg.format = ""
+    attr_cfg.min_value = ""
+    attr_cfg.max_value = ""
+    attr_cfg.writable_attr_name = ""
     attr_cfg.extensions = []
 
 
@@ -197,8 +223,8 @@ class AttributeConfig:
 
     def __init__(self):
         _init_attr_config(self)
-        self.min_alarm = ''
-        self.max_alarm = ''
+        self.min_alarm = ""
+        self.max_alarm = ""
 
 
 class AttributeConfig_2:
@@ -208,8 +234,8 @@ class AttributeConfig_2:
     def __init__(self):
         _init_attr_config(self)
         self.level = DispLevel.OPERATOR
-        self.min_alarm = ''
-        self.max_alarm = ''
+        self.min_alarm = ""
+        self.max_alarm = ""
 
 
 class AttributeConfig_3:
@@ -233,7 +259,7 @@ class AttributeConfig_5:
         self.memorized = False
         self.mem_init = False
         self.level = -1
-        self.root_attr_name = ''
+        self.root_attr_name = ""
         self.enum_labels = []
         self.att_alarm = AttributeAlarm()
         self.event_prop = EventProperties()
@@ -291,7 +317,7 @@ def __Attribute__set_properties(self, attr_cfg, dev=None):
 
 
 def __Attribute__str(self):
-    return f'{self.__class__.__name__}({self.get_name()})'
+    return f"{self.__class__.__name__}({self.get_name()})"
 
 
 def __init_Attribute():
@@ -335,7 +361,7 @@ def __DeviceImpl__get_device_properties(self, ds_class=None):
         try:
             # Call this method in a try/except in case this is called during the DS shutdown sequence
             ds_class = self.get_device_class()
-        except:
+        except Exception:
             return
     try:
         pu = self.prop_util = ds_class.prop_util
@@ -345,14 +371,22 @@ def __DeviceImpl__get_device_properties(self, ds_class=None):
         for prop_name in class_prop:
             setattr(self, prop_name, pu.get_property_values(prop_name, class_prop))
         for prop_name in self.device_property_list:
-            setattr(self, prop_name, self.prop_util.get_property_values(prop_name, self.device_property_list))
+            setattr(
+                self,
+                prop_name,
+                self.prop_util.get_property_values(
+                    prop_name, self.device_property_list
+                ),
+            )
     except DevFailed as df:
         print(80 * "-")
         print(df)
         raise df
 
 
-def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_meth=None):
+def __DeviceImpl__add_attribute(
+    self, attr, r_meth=None, w_meth=None, is_allo_meth=None
+):
     """
     add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_meth=None) -> Attr
 
@@ -362,6 +396,10 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
         an attribute to a device at device creation time, this attribute will be added
         to the device class attribute list. Therefore, all devices belonging to the
         same class created after this attribute addition will also have this attribute.
+
+        If you pass a reference to unbound method for read, write or is_allowed method
+        (e.g. DeviceClass.read_function or self.__class__.read_function),
+        during execution the corresponding bound method (self.read_function) will be used.
 
         :param attr: the new attribute to be added to the list.
         :type attr: server.attribute or Attr or AttrData
@@ -385,7 +423,6 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
 
         :raises DevFailed:
     """
-
     attr_data = None
     if isinstance(attr, AttrData):
         attr_data = attr
@@ -393,84 +430,198 @@ def __DeviceImpl__add_attribute(self, attr, r_meth=None, w_meth=None, is_allo_me
 
     att_name = attr.get_name()
 
-    r_name = f'read_{att_name}'
+    # get read method and its name
+    r_name = f"read_{att_name}"
     if r_meth is None:
         if attr_data is not None:
             r_name = attr_data.read_method_name
-        if hasattr(attr_data, 'fget'):
+        if hasattr(attr_data, "fget"):
             r_meth = attr_data.fget
         elif hasattr(self, r_name):
             r_meth = getattr(self, r_name)
     else:
         r_name = r_meth.__name__
 
-    if attr.get_writable() in (AttrWriteType.READ,
-                               AttrWriteType.READ_WRITE,
-                               AttrWriteType.READ_WITH_WRITE,
-                               ):
-        _ensure_user_method_can_be_called(self, r_name, r_meth)
+    # patch it if attribute is readable
+    if attr.get_writable() in (
+        AttrWriteType.READ,
+        AttrWriteType.READ_WRITE,
+        AttrWriteType.READ_WITH_WRITE,
+    ):
+        r_name = f"__wrapped_read_{att_name}_{r_name}__"
+        r_meth_green_mode = getattr(attr_data, "read_green_mode", True)
+        __patch_device_with_dynamic_attribute_read_method(
+            self, r_name, r_meth, r_meth_green_mode
+        )
 
-    w_name = f'write_{att_name}'
+    # get write method and its name
+    w_name = f"write_{att_name}"
     if w_meth is None:
         if attr_data is not None:
             w_name = attr_data.write_method_name
-        if hasattr(attr_data, 'fset'):
+        if hasattr(attr_data, "fset"):
             w_meth = attr_data.fset
         elif hasattr(self, w_name):
             w_meth = getattr(self, w_name)
     else:
         w_name = w_meth.__name__
 
-    if attr.get_writable() in (AttrWriteType.WRITE,
-                               AttrWriteType.READ_WRITE,
-                               AttrWriteType.READ_WITH_WRITE,
-                               ):
-        _ensure_user_method_can_be_called(self, w_name, w_meth)
+    # patch it if attribute is writable
+    if attr.get_writable() in (
+        AttrWriteType.WRITE,
+        AttrWriteType.READ_WRITE,
+        AttrWriteType.READ_WITH_WRITE,
+    ):
+        w_name = f"__wrapped_write_{att_name}_{w_name}__"
+        w_meth_green_mode = getattr(attr_data, "write_green_mode", True)
+        __patch_device_with_dynamic_attribute_write_method(
+            self, w_name, w_meth, w_meth_green_mode
+        )
 
-    ia_name = f'is_{att_name}_allowed'
+    # get is allowed method and its name
+    ia_name = f"is_{att_name}_allowed"
     if is_allo_meth is None:
         if attr_data is not None:
             ia_name = attr_data.is_allowed_name
-        if hasattr(attr_data, 'fisallowed'):
+        if hasattr(attr_data, "fisallowed"):
             is_allo_meth = attr_data.fisallowed
         elif hasattr(self, ia_name):
             is_allo_meth = getattr(self, ia_name)
     else:
-            ia_name = is_allo_meth.__name__
-    _ensure_user_method_can_be_called(self, ia_name, is_allo_meth)
+        ia_name = is_allo_meth.__name__
+
+    # patch it if exists
+    if is_allo_meth is not None:
+        ia_name = f"__wrapped_is_allowed_{att_name}_{ia_name}__"
+        ia_meth_green_mode = getattr(attr_data, "isallowed_green_mode", True)
+        __patch_device_with_dynamic_attribute_is_allowed_method(
+            self, ia_name, is_allo_meth, ia_meth_green_mode
+        )
 
     self._add_attribute(attr, r_name, w_name, ia_name)
     return attr
 
 
-def _ensure_user_method_can_be_called(obj, name, user_method):
-    if user_method is not None:
+def __patch_device_with_dynamic_attribute_read_method(
+    device, name, r_meth, r_meth_green_mode
+):
+    if __is_device_method(device, r_meth):
+        if r_meth_green_mode:
 
-        # we have to check that user provided us with the device method,
-        # otherwise method won't be found during call
-        is_device_method = getattr(obj, name, None) == user_method
+            @functools.wraps(r_meth)
+            def read_attr(device, attr):
+                worker = get_worker()
+                # already bound to device, so exclude device arg
+                ret = worker.execute(r_meth, attr)
+                if not attr.get_value_flag() and ret is not None:
+                    set_complex_value(attr, ret)
+                return ret
 
-        if not is_device_method:
-            # in case user gave us class method, we are trying to find it in device:
-            bound_user_method = getattr(obj, name, None)
-            if bound_user_method is None:
-                raise ValueError(
-                    f"User-supplied method for attributes must be "
-                    f"available as a bound method on the Device class. "
-                    f"When accessing Tango attributes, the PyTango extension "
-                    f"code, PyAttr::read, uses the name of the method "
-                    f"to get a reference to it from the Device object. "
-                    f"{name} was not found on {obj}."
-                )
-            user_method = bound_user_method
+        else:
 
-        # If server run in async mode, all calls must be wrapped with async executor:
-        user_method_cannot_be_run_directly = get_worker().asynchronous
-        if user_method_cannot_be_run_directly:
-            setattr(obj, name, run_in_executor(user_method))
+            @functools.wraps(r_meth)
+            def read_attr(device, attr):
+                ret = r_meth(attr)
+                if not attr.get_value_flag() and ret is not None:
+                    set_complex_value(attr, ret)
+                return ret
 
-    # else user hasn't provided a method, which may be OK (e.g., using named lookup, or
-    # unnecessary method like a write for a read-only attribute).
+    else:
+        if r_meth_green_mode:
+
+            @functools.wraps(r_meth)
+            def read_attr(device, attr):
+                worker = get_worker()
+                # unbound function or not on device object, so include device arg
+                ret = worker.execute(r_meth, device, attr)
+                if not attr.get_value_flag() and ret is not None:
+                    set_complex_value(attr, ret)
+                return ret
+
+        else:
+
+            @functools.wraps(r_meth)
+            def read_attr(device, attr):
+                ret = r_meth(device, attr)
+                if not attr.get_value_flag() and ret is not None:
+                    set_complex_value(attr, ret)
+                return ret
+
+    bound_method = types.MethodType(read_attr, device)
+    setattr(device, name, bound_method)
+
+
+def __patch_device_with_dynamic_attribute_write_method(
+    device, name, w_meth, w_meth_green_mode
+):
+    if __is_device_method(device, w_meth):
+        if w_meth_green_mode:
+
+            @functools.wraps(w_meth)
+            def write_attr(device, attr):
+                worker = get_worker()
+                # already bound to device, so exclude device arg
+                return worker.execute(w_meth, attr)
+
+        else:
+
+            @functools.wraps(w_meth)
+            def write_attr(device, attr):
+                return w_meth(attr)
+
+    else:
+        if w_meth_green_mode:
+
+            @functools.wraps(w_meth)
+            def write_attr(device, attr):
+                worker = get_worker()
+                # unbound function or not on device object, so include device arg
+                return worker.execute(w_meth, device, attr)
+
+        else:
+            write_attr = w_meth
+
+    bound_method = types.MethodType(write_attr, device)
+    setattr(device, name, bound_method)
+
+
+def __patch_device_with_dynamic_attribute_is_allowed_method(
+    device, name, is_allo_meth, ia_meth_green_mode
+):
+    if __is_device_method(device, is_allo_meth):
+        if ia_meth_green_mode:
+
+            @functools.wraps(is_allo_meth)
+            def is_allowed_attr(device, request_type):
+                worker = get_worker()
+                # already bound to device, so exclude device arg
+                return worker.execute(is_allo_meth, request_type)
+
+        else:
+
+            @functools.wraps(is_allo_meth)
+            def is_allowed_attr(device, request_type):
+                return is_allo_meth(request_type)
+
+    else:
+        if ia_meth_green_mode:
+
+            @functools.wraps(is_allo_meth)
+            def is_allowed_attr(device, request_type):
+                worker = get_worker()
+                # unbound function or not on device object, so include device arg
+                return worker.execute(is_allo_meth, device, request_type)
+
+        else:
+            is_allowed_attr = is_allo_meth
+
+    bound_method = types.MethodType(is_allowed_attr, device)
+    setattr(device, name, bound_method)
+
+
+def __is_device_method(device, func):
+    """Return True if func is bound to device object (i.e., a method)"""
+    return inspect.ismethod(func) and func.__self__ is device
 
 
 def __DeviceImpl__remove_attribute(self, attr_name):
@@ -519,20 +670,45 @@ def __DeviceImpl__add_command(self, cmd, device_level=True):
         fisallowed = getattr(self, fisallowed, None)
 
     if fisallowed is not None:
-        fisallowed_name = f"__wrapped_{getattr(fisallowed, '__name__', f'is_{cmd_name}_allowed')}__"
-        if len(getfullargspec(fisallowed).args) > 1:
-            fisallowed = functools.partial(fisallowed, self)
-        setattr(self, fisallowed_name, run_in_executor(fisallowed))
+        fisallowed_name = (
+            f"__wrapped_{getattr(fisallowed, '__name__', f'is_{cmd_name}_allowed')}__"
+        )
+        __patch_device_with_dynamic_command_is_allowed_method(
+            self, fisallowed_name, fisallowed
+        )
     else:
-        fisallowed_name = ''
+        fisallowed_name = ""
 
-    self._add_command(cmd_name, cmd.__tango_command__[1], fisallowed_name, disp_level, device_level)
+    self._add_command(
+        cmd_name, cmd.__tango_command__[1], fisallowed_name, disp_level, device_level
+    )
     return cmd
+
+
+def __patch_device_with_dynamic_command_is_allowed_method(device, name, is_allo_meth):
+    if __is_device_method(device, is_allo_meth):
+
+        @functools.wraps(is_allo_meth)
+        def is_allowed_cmd(device):
+            worker = get_worker()
+            # already bound to device, so exclude device arg
+            return worker.execute(is_allo_meth)
+
+    else:
+
+        @functools.wraps(is_allo_meth)
+        def is_allowed_cmd(device):
+            worker = get_worker()
+            # unbound function or not on device object, so include device arg
+            return worker.execute(is_allo_meth, device)
+
+    bound_method = types.MethodType(is_allowed_cmd, device)
+    setattr(device, name, bound_method)
 
 
 def __DeviceImpl__remove_command(self, cmd_name, free_it=False, clean_db=True):
     """
-    remove_command(self, attr_name)
+    remove_command(self, cmd_name, free_it=False, clean_db=True)
 
         Remove one command from the device command list.
 
@@ -679,7 +855,7 @@ def __DeviceImpl__fatal(self):
 
 
 def __DeviceImpl__str(self):
-    return f'{self.__class__.__name__}({self.get_name()})'
+    return f"{self.__class__.__name__}({self.get_name()})"
 
 
 def __init_DeviceImpl():
@@ -846,7 +1022,7 @@ def __UserDefaultAttrProp_set_enum_labels(self, enum_labels):
 
 
 def __Attr__str(self):
-    return f'{self.__class__.__name__}({self.get_name()})'
+    return f"{self.__class__.__name__}({self.get_name()})"
 
 
 def __init_Attr():
@@ -878,58 +1054,78 @@ def __doc_DeviceImpl():
     This class inherits from CORBA classes where all the network layer is implemented.
     """
 
-    document_method("init_device", """
+    document_method(
+        "init_device",
+        """
     init_device(self)
 
         Intialize the device.
-    """)
+    """,
+    )
 
-    document_method("set_state", """
+    document_method(
+        "set_state",
+        """
     set_state(self, new_state)
 
         Set device state.
 
         :param new_state: the new device state
         :type new_state: DevState
-    """)
+    """,
+    )
 
-    document_method("get_state", """
+    document_method(
+        "get_state",
+        """
     get_state(self) -> DevState
 
         Get a COPY of the device state.
 
         :returns: Current device state
         :rtype: DevState
-    """)
+    """,
+    )
 
-    document_method("get_prev_state", """
+    document_method(
+        "get_prev_state",
+        """
     get_prev_state(self) -> DevState
 
         Get a COPY of the device's previous state.
 
         :returns: the device's previous state
         :rtype: DevState
-    """)
+    """,
+    )
 
-    document_method("get_name", """
+    document_method(
+        "get_name",
+        """
     get_name(self) -> (str)
 
         Get a COPY of the device name.
 
         :returns: the device name
         :rtype: str
-    """)
+    """,
+    )
 
-    document_method("get_device_attr", """
+    document_method(
+        "get_device_attr",
+        """
     get_device_attr(self) -> MultiAttribute
 
         Get device multi attribute object.
 
         :returns: the device's MultiAttribute object
         :rtype: MultiAttribute
-    """)
+    """,
+    )
 
-    document_method("register_signal", """
+    document_method(
+        "register_signal",
+        """
     register_signal(self, signo)
 
         Register a signal.
@@ -939,9 +1135,12 @@ def __doc_DeviceImpl():
 
         :param signo: signal identifier
         :type signo: int
-    """)
+    """,
+    )
 
-    document_method("unregister_signal", """
+    document_method(
+        "unregister_signal",
+        """
     unregister_signal(self, signo)
 
         Unregister a signal.
@@ -951,27 +1150,36 @@ def __doc_DeviceImpl():
 
         :param signo: signal identifier
         :type signo: int
-    """)
+    """,
+    )
 
-    document_method("get_status", """
+    document_method(
+        "get_status",
+        """
     get_status(self, ) -> str
 
         Get a COPY of the device status.
 
         :returns: the device status
         :rtype: str
-    """)
+    """,
+    )
 
-    document_method("set_status", """
+    document_method(
+        "set_status",
+        """
     set_status(self, new_status)
 
         Set device status.
 
         :param new_status: the new device status
         :type new_status: str
-    """)
+    """,
+    )
 
-    document_method("append_status", """
+    document_method(
+        "append_status",
+        """
     append_status(self, status, new_line=False)
 
         Appends a string to the device status.
@@ -980,9 +1188,12 @@ def __doc_DeviceImpl():
         :type status: str
         :param new_line: If true, appends a new line character before the string. Default is False
         :type new_line: bool
-    """)
+    """,
+    )
 
-    document_method("dev_state", """
+    document_method(
+        "dev_state",
+        """
     dev_state(self) -> DevState
 
         Get device state.
@@ -999,9 +1210,12 @@ def __doc_DeviceImpl():
         :rtype: DevState
 
         :raises DevFailed: If it is necessary to read attribute(s) and a problem occurs during the reading
-    """)
+    """,
+    )
 
-    document_method("dev_status", """
+    document_method(
+        "dev_status",
+        """
     dev_status(self) -> str
 
         Get device status.
@@ -1015,9 +1229,12 @@ def __doc_DeviceImpl():
         :rtype: str
 
         :raises DevFailed: If it is necessary to read attribute(s) and a problem occurs during the reading
-    """)
+    """,
+    )
 
-    document_method("set_change_event", """
+    document_method(
+        "set_change_event",
+        """
     set_change_event(self, attr_name, implemented, detect=True)
 
         Set an implemented flag for the attribute to indicate that the server fires
@@ -1034,9 +1251,12 @@ def __doc_DeviceImpl():
         :param detect: Triggers the verification of the change event properties
                        when set to true. Default value is true.
         :type detect: bool
-    """)
+    """,
+    )
 
-    document_method("set_archive_event", """
+    document_method(
+        "set_archive_event",
+        """
     set_archive_event(self, attr_name, implemented, detect=True)
 
         Set an implemented flag for the attribute to indicate that the server fires
@@ -1053,9 +1273,12 @@ def __doc_DeviceImpl():
         :param detect: Triggers the verification of the change event properties
                        when set to true. Default value is true.
         :type detect: bool
-    """)
+    """,
+    )
 
-    document_method("push_change_event", """
+    document_method(
+        "push_change_event",
+        """
     push_change_event(self, attr_name)
 
         .. function:: push_change_event(self, attr_name, except)
@@ -1090,9 +1313,12 @@ def __doc_DeviceImpl():
         :type quality: AttrQuality
 
         :raises DevFailed: If the attribute data type is not coherent.
-    """)
+    """,
+    )
 
-    document_method("push_archive_event", """
+    document_method(
+        "push_archive_event",
+        """
     push_archive_event(self, attr_name)
 
         .. function:: push_archive_event(self, attr_name, except)
@@ -1127,9 +1353,12 @@ def __doc_DeviceImpl():
         :type quality: AttrQuality
 
         :raises DevFailed: If the attribute data type is not coherent.
-    """)
+    """,
+    )
 
-    document_method("push_event", """
+    document_method(
+        "push_event",
+        """
     push_event(self, attr_name, filt_names, filt_vals)
 
         .. function:: push_event(self, attr_name, filt_names, filt_vals, data, dim_x = 1, dim_y = 0)
@@ -1165,9 +1394,12 @@ def __doc_DeviceImpl():
         :type quality: AttrQuality
 
         :raises DevFailed: If the attribute data type is not coherent.
-    """)
+    """,
+    )
 
-    document_method("set_data_ready_event", """
+    document_method(
+        "set_data_ready_event",
+        """
     set_data_ready_event(self, attr_name, implemented)
 
         Set an implemented flag for the attribute to indicate that the server fires
@@ -1177,9 +1409,12 @@ def __doc_DeviceImpl():
         :type attr_name: str
         :param implemented: True when the server fires change events manually.
         :type implemented: bool
-    """)
+    """,
+    )
 
-    document_method("push_data_ready_event", """
+    document_method(
+        "push_data_ready_event",
+        """
     push_data_ready_event(self, attr_name, counter = 0)
 
         Push a data ready event for the given attribute name.
@@ -1195,9 +1430,12 @@ def __doc_DeviceImpl():
         :type counter: int
 
         :raises DevFailed: If the attribute name is unknown.
-    """)
+    """,
+    )
 
-    document_method("push_pipe_event", """
+    document_method(
+        "push_pipe_event",
+        """
     push_pipe_event(self, pipe_name, except)
 
         .. function:: push_pipe_event(self, pipe_name, blob, reuse_it)
@@ -1214,36 +1452,51 @@ def __doc_DeviceImpl():
         :raises DevFailed: If the pipe name is unknown.
 
         New in PyTango 9.2.2
-    """)
+    """,
+    )
 
-    document_method("get_logger", """
+    document_method(
+        "get_logger",
+        """
     get_logger(self) -> Logger
 
         Returns the Logger object for this device
 
         :returns: the Logger object for this device
         :rtype: Logger
-    """)
+    """,
+    )
 
-    document_method("init_logger", """
+    document_method(
+        "init_logger",
+        """
     init_logger(self) -> None
 
         Setups logger for the device.  Called automatically when device starts.
-    """)
+    """,
+    )
 
-    document_method("start_logging", """
+    document_method(
+        "start_logging",
+        """
     start_logging(self) -> None
 
         Starts logging
-    """)
+    """,
+    )
 
-    document_method("stop_logging", """
+    document_method(
+        "stop_logging",
+        """
     stop_logging(self) -> None
 
         Stops logging
-    """)
+    """,
+    )
 
-    document_method("get_exported_flag", """
+    document_method(
+        "get_exported_flag",
+        """
     get_exported_flag(self) -> bool
 
         Returns the state of the exported flag
@@ -1252,9 +1505,12 @@ def __doc_DeviceImpl():
         :rtype: bool
 
         New in PyTango 7.1.2
-    """)
+    """,
+    )
 
-    document_method("is_attribute_polled", """
+    document_method(
+        "is_attribute_polled",
+        """
     is_attribute_polled(self, attr_name) -> bool
 
         True if the attribute is polled.
@@ -1263,9 +1519,12 @@ def __doc_DeviceImpl():
         
         :return: True if the attribute is polled
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("is_command_polled", """
+    document_method(
+        "is_command_polled",
+        """
     is_command_polled(self, cmd_name) -> bool
 
         True if the command is polled.
@@ -1274,9 +1533,12 @@ def __doc_DeviceImpl():
         
         :return: True if the command is polled
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("poll_attribute", """
+    document_method(
+        "poll_attribute",
+        """
     poll_attribute(self, attr_name, period) -> None
 
         Add an attribute to the list of polled attributes.
@@ -1287,9 +1549,12 @@ def __doc_DeviceImpl():
 
         :return: None
         :rtype: None
-    """)
+    """,
+    )
 
-    document_method("poll_command", """
+    document_method(
+        "poll_command",
+        """
     poll_command(self, cmd_name, period) -> None
 
         Add a command to the list of polled commands.
@@ -1300,9 +1565,12 @@ def __doc_DeviceImpl():
 
         :return: None
         :rtype: None
-    """)
+    """,
+    )
 
-    document_method("stop_poll_attribute", """
+    document_method(
+        "stop_poll_attribute",
+        """
     stop_poll_attribute(self, attr_name) -> None
 
         Remove an attribute from the list of polled attributes.
@@ -1311,9 +1579,12 @@ def __doc_DeviceImpl():
 
         :return: None
         :rtype: None
-    """)
+    """,
+    )
 
-    document_method("stop_poll_command", """
+    document_method(
+        "stop_poll_command",
+        """
     stop_poll_command(self, cmd_name) -> None
 
         Remove a command from the list of polled commands.
@@ -1322,9 +1593,12 @@ def __doc_DeviceImpl():
 
         :return: None
         :rtype: None
-    """)
+    """,
+    )
 
-    document_method("get_poll_ring_depth", """
+    document_method(
+        "get_poll_ring_depth",
+        """
     get_poll_ring_depth(self) -> int
 
         Returns the poll ring depth
@@ -1333,9 +1607,12 @@ def __doc_DeviceImpl():
         :rtype: int
 
         New in PyTango 7.1.2
-    """)
+    """,
+    )
 
-    document_method("get_poll_old_factor", """
+    document_method(
+        "get_poll_old_factor",
+        """
     get_poll_old_factor(self) -> int
 
         Returns the poll old factor
@@ -1344,9 +1621,12 @@ def __doc_DeviceImpl():
         :rtype: int
 
         New in PyTango 7.1.2
-    """)
+    """,
+    )
 
-    document_method("is_polled", """
+    document_method(
+        "is_polled",
+        """
     is_polled(self) -> bool
 
         Returns if it is polled
@@ -1355,9 +1635,12 @@ def __doc_DeviceImpl():
         :rtype: bool
 
         New in PyTango 7.1.2
-    """)
+    """,
+    )
 
-    document_method("get_polled_cmd", """
+    document_method(
+        "get_polled_cmd",
+        """
     get_polled_cmd(self) -> Sequence[str]
 
         Returns a COPY of the list of polled commands
@@ -1366,9 +1649,12 @@ def __doc_DeviceImpl():
         :rtype: Sequence[str]
 
         New in PyTango 7.1.2
-    """)
+    """,
+    )
 
-    document_method("get_polled_attr", """
+    document_method(
+        "get_polled_attr",
+        """
     get_polled_attr(self) -> Sequence[str]
 
         Returns a COPY of the list of polled attributes
@@ -1377,9 +1663,12 @@ def __doc_DeviceImpl():
         :rtype: Sequence[str]
 
         New in PyTango 7.1.2
-    """)
+    """,
+    )
 
-    document_method("get_non_auto_polled_cmd", """
+    document_method(
+        "get_non_auto_polled_cmd",
+        """
     get_non_auto_polled_cmd(self) -> Sequence[str]
 
         Returns a COPY of the list of non automatic polled commands
@@ -1388,9 +1677,12 @@ def __doc_DeviceImpl():
         :rtype: Sequence[str]
 
         New in PyTango 7.1.2
-    """)
+    """,
+    )
 
-    document_method("get_non_auto_polled_attr", """
+    document_method(
+        "get_non_auto_polled_attr",
+        """
     get_non_auto_polled_attr(self) -> Sequence[str]
 
         Returns a COPY of the list of non automatic polled attributes
@@ -1399,9 +1691,12 @@ def __doc_DeviceImpl():
         :rtype: Sequence[str]
 
         New in PyTango 7.1.2
-    """)
+    """,
+    )
 
-    document_method("stop_polling", """
+    document_method(
+        "stop_polling",
+        """
     stop_polling(self)
 
         .. function:: stop_polling(self, with_db_upd)
@@ -1414,9 +1709,12 @@ def __doc_DeviceImpl():
         :type with_db_upd: bool
 
         New in PyTango 7.1.2
-    """)
+    """,
+    )
 
-    document_method("get_attribute_poll_period", """
+    document_method(
+        "get_attribute_poll_period",
+        """
     get_attribute_poll_period(self, attr_name) -> int
 
         Returns the attribute polling period (ms) or 0 if the attribute
@@ -1429,9 +1727,12 @@ def __doc_DeviceImpl():
         :rtype: int
 
         New in PyTango 8.0.0
-    """)
+    """,
+    )
 
-    document_method("get_attribute_config", """
+    document_method(
+        "get_attribute_config",
+        """
     get_attribute_config(self, attr_names) -> list[DeviceAttributeConfig]
 
         Returns the list of AttributeConfig for the requested names
@@ -1441,9 +1742,12 @@ def __doc_DeviceImpl():
 
         :returns: :class:`tango.DeviceAttributeConfig` for each requested attribute name
         :rtype: list[:class:`tango.DeviceAttributeConfig`]
-    """)
+    """,
+    )
 
-    document_method("get_command_poll_period", """
+    document_method(
+        "get_command_poll_period",
+        """
     get_command_poll_period(self, cmd_name) -> int
 
         Returns the command polling period (ms) or 0 if the command
@@ -1456,9 +1760,12 @@ def __doc_DeviceImpl():
         :rtype: int
 
         New in PyTango 8.0.0
-    """)
+    """,
+    )
 
-    document_method("check_command_exists", """
+    document_method(
+        "check_command_exists",
+        """
     check_command_exists(self)
 
         Check that a command is supported by the device and
@@ -1475,9 +1782,12 @@ def __doc_DeviceImpl():
         :raises API_CommandNotFound:
 
         New in PyTango 7.1.2
-    """)
+    """,
+    )
 
-    document_method("get_dev_idl_version", """
+    document_method(
+        "get_dev_idl_version",
+        """
     get_dev_idl_version(self) -> int
 
         Returns the IDL version.
@@ -1486,9 +1796,12 @@ def __doc_DeviceImpl():
         :rtype: int
 
         New in PyTango 7.1.2
-    """)
+    """,
+    )
 
-    document_method("get_cmd_poll_ring_depth", """
+    document_method(
+        "get_cmd_poll_ring_depth",
+        """
     get_cmd_poll_ring_depth(self, cmd_name) -> int
 
         Returns the command poll ring depth.
@@ -1500,9 +1813,12 @@ def __doc_DeviceImpl():
         :rtype: int
 
         New in PyTango 7.1.2
-    """)
+    """,
+    )
 
-    document_method("get_attr_poll_ring_depth", """
+    document_method(
+        "get_attr_poll_ring_depth",
+        """
     get_attr_poll_ring_depth(self, attr_name) -> int
 
         Returns the attribute poll ring depth.
@@ -1514,9 +1830,12 @@ def __doc_DeviceImpl():
         :rtype: int
 
         New in PyTango 7.1.2
-    """)
+    """,
+    )
 
-    document_method("is_device_locked", """
+    document_method(
+        "is_device_locked",
+        """
     is_device_locked(self) -> bool
 
         Returns if this device is locked by a client.
@@ -1525,9 +1844,12 @@ def __doc_DeviceImpl():
         :rtype: bool
 
         New in PyTango 7.1.2
-    """)
+    """,
+    )
 
-    document_method("get_min_poll_period", """
+    document_method(
+        "get_min_poll_period",
+        """
     get_min_poll_period(self) -> int
 
         Returns the min poll period.
@@ -1536,9 +1858,12 @@ def __doc_DeviceImpl():
         :rtype: int
 
         New in PyTango 7.2.0
-    """)
+    """,
+    )
 
-    document_method("get_cmd_min_poll_period", """
+    document_method(
+        "get_cmd_min_poll_period",
+        """
     get_cmd_min_poll_period(self) -> Sequence[str]
 
         Returns the min command poll period.
@@ -1547,9 +1872,12 @@ def __doc_DeviceImpl():
         :rtype: Sequence[str]
 
         New in PyTango 7.2.0
-    """)
+    """,
+    )
 
-    document_method("get_attr_min_poll_period", """
+    document_method(
+        "get_attr_min_poll_period",
+        """
     get_attr_min_poll_period(self) -> Sequence[str]
 
         Returns the min attribute poll period
@@ -1558,9 +1886,12 @@ def __doc_DeviceImpl():
         :rtype: Sequence[str]
 
         New in PyTango 7.2.0
-    """)
+    """,
+    )
 
-    document_method("push_att_conf_event", """
+    document_method(
+        "push_att_conf_event",
+        """
     push_att_conf_event(self, attr)
 
         Push an attribute configuration event.
@@ -1570,9 +1901,12 @@ def __doc_DeviceImpl():
         :type attr: Attribute
 
         New in PyTango 7.2.1
-    """)
+    """,
+    )
 
-    document_method("push_pipe_event", """
+    document_method(
+        "push_pipe_event",
+        """
     push_pipe_event(self, blob)
 
         Push an pipe event.
@@ -1580,9 +1914,12 @@ def __doc_DeviceImpl():
         :param blob: the blob which pipe event will be send.
 
         New in PyTango 9.2.2
-    """)
+    """,
+    )
 
-    document_method("is_there_subscriber", """
+    document_method(
+        "is_there_subscriber",
+        """
     is_there_subscriber(self, att_name, event_type) -> bool
 
         Check if there is subscriber(s) listening for the event.
@@ -1602,20 +1939,26 @@ def __doc_DeviceImpl():
 
         :returns: True if there is at least one listener or False otherwise
         :rtype: bool
-    """)
+    """,
+    )
 
 
 def __doc_extra_DeviceImpl(cls):
     def document_method(method_name, desc, append=True):
         return __document_method(cls, method_name, desc, append)
 
-    document_method("delete_device", """
+    document_method(
+        "delete_device",
+        """
     delete_device(self)
 
         Delete the device.
-    """)
+    """,
+    )
 
-    document_method("always_executed_hook", """
+    document_method(
+        "always_executed_hook",
+        """
     always_executed_hook(self)
 
         Hook method.
@@ -1625,9 +1968,12 @@ def __doc_extra_DeviceImpl(cls):
         in case of the default behaviour does not fullfill the needs
 
         :raises DevFailed: This method does not throw exception but a redefined method can.
-    """)
+    """,
+    )
 
-    document_method("read_attr_hardware", """
+    document_method(
+        "read_attr_hardware",
+        """
     read_attr_hardware(self, attr_list)
 
         Read the hardware to return attribute value(s).
@@ -1641,9 +1987,12 @@ def __doc_extra_DeviceImpl(cls):
         :type attr_list: Sequence[int]
 
         :raises DevFailed: This method does not throw exception but a redefined method can.
-    """)
+    """,
+    )
 
-    document_method("write_attr_hardware", """
+    document_method(
+        "write_attr_hardware",
+        """
     write_attr_hardware(self)
 
         Write the hardware for attributes.
@@ -1657,9 +2006,12 @@ def __doc_extra_DeviceImpl(cls):
         :type attr_list: Sequence[int]
 
         :raises DevFailed: This method does not throw exception but a redefined method can.
-    """)
+    """,
+    )
 
-    document_method("signal_handler", """
+    document_method(
+        "signal_handler",
+        """
     signal_handler(self, signo)
 
         Signal handler.
@@ -1672,9 +2024,12 @@ def __doc_extra_DeviceImpl(cls):
         :type signo: int
 
         :raises DevFailed: This method does not throw exception but a redefined method can.
-    """)
+    """,
+    )
 
-    document_method("get_attribute_config_2", """
+    document_method(
+        "get_attribute_config_2",
+        """
     get_attribute_config_2(self, attr_names) -> list[AttributeConfig_2]
 
         Returns the list of AttributeConfig_2 for the requested names
@@ -1684,9 +2039,12 @@ def __doc_extra_DeviceImpl(cls):
 
         :returns: list of :class:`tango.AttributeConfig_2` for each requested attribute name
         :rtype: list[:class:`tango.AttributeConfig_2`]
-    """)
+    """,
+    )
 
-    document_method("get_attribute_config_3", """
+    document_method(
+        "get_attribute_config_3",
+        """
     get_attribute_config_3(self, attr_name) -> list[AttributeConfig_3]
 
         Returns the list of AttributeConfig_3 for the requested names
@@ -1696,9 +2054,12 @@ def __doc_extra_DeviceImpl(cls):
 
         :returns: list of :class:`tango.AttributeConfig_3` for each requested attribute name
         :rtype: list[:class:`tango.AttributeConfig_3`]
-    """)
+    """,
+    )
 
-    document_method("set_attribute_config_3", """
+    document_method(
+        "set_attribute_config_3",
+        """
     set_attribute_config_3(self, new_conf) -> None
 
         Sets attribute configuration locally and in the Tango database
@@ -1708,7 +2069,8 @@ def __doc_extra_DeviceImpl(cls):
 
         :returns: None
         :rtype: None
-    """)
+    """,
+    )
 
     copy_doc(cls, "dev_state")
     copy_doc(cls, "dev_status")
@@ -1722,70 +2084,93 @@ def __doc_Attribute():
     This class represents a Tango attribute.
     """
 
-    document_method("is_write_associated", """
+    document_method(
+        "is_write_associated",
+        """
     is_write_associated(self) -> bool
 
         Check if the attribute has an associated writable attribute.
 
         :returns: True if there is an associated writable attribute
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("is_min_alarm", """
+    document_method(
+        "is_min_alarm",
+        """
     is_min_alarm(self) -> bool
 
         Check if the attribute is in minimum alarm condition.
 
         :returns: true if the attribute is in alarm condition (read value below the min. alarm).
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("is_max_alarm", """
+    document_method(
+        "is_max_alarm",
+        """
     is_max_alarm(self) -> bool
 
         Check if the attribute is in maximum alarm condition.
 
         :returns: true if the attribute is in alarm condition (read value above the max. alarm).
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("is_min_warning", """
+    document_method(
+        "is_min_warning",
+        """
     is_min_warning(self) -> bool
 
         Check if the attribute is in minimum warning condition.
 
         :returns: true if the attribute is in warning condition (read value below the min. warning).
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("is_max_warning", """
+    document_method(
+        "is_max_warning",
+        """
     is_max_warning(self) -> bool
 
         Check if the attribute is in maximum warning condition.
 
         :returns: true if the attribute is in warning condition (read value above the max. warning).
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("is_rds_alarm", """
+    document_method(
+        "is_rds_alarm",
+        """
     is_rds_alarm(self) -> bool
 
         Check if the attribute is in RDS alarm condition.
 
         :returns: true if the attribute is in RDS condition (Read Different than Set).
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("is_polled", """
+    document_method(
+        "is_polled",
+        """
     is_polled(self) -> bool
 
         Check if the attribute is polled.
 
         :returns: true if the attribute is polled.
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("check_alarm", """
+    document_method(
+        "check_alarm",
+        """
     check_alarm(self) -> bool
 
         Check if the attribute read value is below/above the alarm level.
@@ -1794,108 +2179,144 @@ def __doc_Attribute():
         :rtype: bool
 
         :raises DevFailed: If no alarm level is defined.
-    """)
+    """,
+    )
 
-    document_method("get_writable", """
+    document_method(
+        "get_writable",
+        """
     get_writable(self) -> AttrWriteType
 
         Get the attribute writable type (RO/WO/RW).
 
         :returns: The attribute write type.
         :rtype: AttrWriteType
-    """)
+    """,
+    )
 
-    document_method("get_name", """
+    document_method(
+        "get_name",
+        """
     get_name(self) -> str
 
         Get attribute name.
 
         :returns: The attribute name
         :rtype: str
-    """)
+    """,
+    )
 
-    document_method("get_data_type", """
+    document_method(
+        "get_data_type",
+        """
     get_data_type(self) -> int
 
         Get attribute data type.
 
         :returns: the attribute data type
         :rtype: int
-    """)
+    """,
+    )
 
-    document_method("get_data_format", """
+    document_method(
+        "get_data_format",
+        """
     get_data_format(self) -> AttrDataFormat
 
         Get attribute data format.
 
         :returns: the attribute data format
         :rtype: AttrDataFormat
-    """)
+    """,
+    )
 
-    document_method("get_assoc_name", """
+    document_method(
+        "get_assoc_name",
+        """
     get_assoc_name(self) -> str
 
         Get name of the associated writable attribute.
 
         :returns: the associated writable attribute name
         :rtype: str
-    """)
+    """,
+    )
 
-    document_method("get_assoc_ind", """
+    document_method(
+        "get_assoc_ind",
+        """
     get_assoc_ind(self) -> int
 
         Get index of the associated writable attribute.
 
         :returns: the index in the main attribute vector of the associated writable attribute
         :rtype: int
-    """)
+    """,
+    )
 
-    document_method("set_assoc_ind", """
+    document_method(
+        "set_assoc_ind",
+        """
     set_assoc_ind(self, index)
 
         Set index of the associated writable attribute.
 
         :param index: The new index in the main attribute vector of the associated writable attribute
         :type index: int
-    """)
+    """,
+    )
 
-    document_method("get_date", """
+    document_method(
+        "get_date",
+        """
     get_date(self) -> TimeVal
 
         Get a COPY of the attribute date.
 
         :returns: the attribute date
         :rtype: TimeVal
-    """)
+    """,
+    )
 
-    document_method("set_date", """
+    document_method(
+        "set_date",
+        """
     set_date(self, new_date)
 
         Set attribute date.
 
         :param new_date: the attribute date
         :type new_date: TimeVal
-    """)
+    """,
+    )
 
-    document_method("get_label", """
+    document_method(
+        "get_label",
+        """
     get_label(self, ) -> str
 
         Get attribute label property.
 
         :returns: the attribute label
         :rtype: str
-    """)
+    """,
+    )
 
-    document_method("get_quality", """
+    document_method(
+        "get_quality",
+        """
     get_quality(self) -> AttrQuality
 
         Get a COPY of the attribute data quality.
 
         :returns: the attribute data quality
         :rtype: AttrQuality
-    """)
+    """,
+    )
 
-    document_method("set_quality", """
+    document_method(
+        "set_quality",
+        """
     set_quality(self, quality, send_event=False)
 
         Set attribute data quality.
@@ -1904,63 +2325,84 @@ def __doc_Attribute():
         :type quality: AttrQuality
         :param send_event: true if a change event should be sent. Default is false.
         :type send_event: bool
-    """)
+    """,
+    )
 
-    document_method("get_data_size", """
+    document_method(
+        "get_data_size",
+        """
     get_data_size(self)
 
         Get attribute data size.
 
         :returns: the attribute data size
         :rtype: int
-    """)
+    """,
+    )
 
-    document_method("get_x", """
+    document_method(
+        "get_x",
+        """
     get_x(self) -> int
 
         Get attribute data size in x dimension.
 
         :returns: the attribute data size in x dimension. Set to 1 for scalar attribute
         :rtype: int
-    """)
+    """,
+    )
 
-    document_method("get_max_dim_x", """
+    document_method(
+        "get_max_dim_x",
+        """
     get_max_dim_x(self) -> int
 
         Get attribute maximum data size in x dimension.
 
         :returns: the attribute maximum data size in x dimension. Set to 1 for scalar attribute
         :rtype: int
-    """)
+    """,
+    )
 
-    document_method("get_y", """
+    document_method(
+        "get_y",
+        """
     get_y(self) -> int
 
         Get attribute data size in y dimension.
 
         :returns: the attribute data size in y dimension. Set to 0 for scalar attribute
         :rtype: int
-    """)
+    """,
+    )
 
-    document_method("get_max_dim_y", """
+    document_method(
+        "get_max_dim_y",
+        """
     get_max_dim_y(self) -> int
 
         Get attribute maximum data size in y dimension.
 
         :returns: the attribute maximum data size in y dimension. Set to 0 for scalar attribute
         :rtype: int
-    """)
+    """,
+    )
 
-    document_method("get_polling_period", """
+    document_method(
+        "get_polling_period",
+        """
     get_polling_period(self) -> int
 
         Get attribute polling period.
 
         :returns: The attribute polling period in mS. Set to 0 when the attribute is not polled
         :rtype: int
-    """)
+    """,
+    )
 
-    document_method("set_attr_serial_model", """
+    document_method(
+        "set_attr_serial_model",
+        """
     set_attr_serial_model(self, ser_model) -> void
 
         Set attribute serialization model.
@@ -1973,9 +2415,12 @@ def __doc_Attribute():
         :type ser_model: AttrSerialModel
 
         New in PyTango 7.1.0
-    """)
+    """,
+    )
 
-    document_method("get_attr_serial_model", """
+    document_method(
+        "get_attr_serial_model",
+        """
     get_attr_serial_model(self) -> AttrSerialModel
 
         Get attribute serialization model.
@@ -1984,9 +2429,12 @@ def __doc_Attribute():
         :rtype: AttrSerialModel
 
         New in PyTango 7.1.0
-    """)
+    """,
+    )
 
-    document_method("set_value", """
+    document_method(
+        "set_value",
+        """
     set_value(self, data, dim_x = 1, dim_y = 0) <= DEPRECATED
 
         .. function:: set_value(self, data)
@@ -2015,9 +2463,12 @@ def __doc_Attribute():
         :type dim_x: int
         :param dim_y: [DEPRECATED] the attribute y length. Default value is 0
         :type dim_y: int
-    """)
+    """,
+    )
 
-    document_method("set_value_date_quality", """
+    document_method(
+        "set_value_date_quality",
+        """
     set_value_date_quality(self, data, time_stamp, quality, dim_x = 1, dim_y = 0) <= DEPRECATED
 
         .. function:: set_value_date_quality(self, data, time_stamp, quality)
@@ -2049,9 +2500,12 @@ def __doc_Attribute():
         :type time_stamp: double
         :param quality: the attribute quality factor
         :type quality: AttrQuality
-    """)
+    """,
+    )
 
-    document_method("set_change_event", """
+    document_method(
+        "set_change_event",
+        """
     set_change_event(self, implemented, detect = True)
 
         Set a flag to indicate that the server fires change events manually,
@@ -2069,9 +2523,12 @@ def __doc_Attribute():
         :type detect: bool
 
         New in PyTango 7.1.0
-    """)
+    """,
+    )
 
-    document_method("set_archive_event", """
+    document_method(
+        "set_archive_event",
+        """
     set_archive_event(self, implemented, detect = True)
 
         Set a flag to indicate that the server fires archive events manually,
@@ -2088,9 +2545,12 @@ def __doc_Attribute():
         :type detect: bool
 
         New in PyTango 7.1.0
-    """)
+    """,
+    )
 
-    document_method("is_change_event", """
+    document_method(
+        "is_change_event",
+        """
     is_change_event(self) -> bool
 
         Check if the change event is fired manually (without polling) for this attribute.
@@ -2099,9 +2559,12 @@ def __doc_Attribute():
         :rtype: bool
 
         New in PyTango 7.1.0
-    """)
+    """,
+    )
 
-    document_method("is_check_change_criteria", """
+    document_method(
+        "is_check_change_criteria",
+        """
     is_check_change_criteria(self) -> bool
 
         Check if the change event criteria should be checked when firing the
@@ -2111,9 +2574,12 @@ def __doc_Attribute():
         :rtype: bool
 
         New in PyTango 7.1.0
-    """)
+    """,
+    )
 
-    document_method("is_archive_event", """
+    document_method(
+        "is_archive_event",
+        """
     is_archive_event(self) -> bool
 
         Check if the archive event is fired manually (without polling) for this attribute.
@@ -2122,9 +2588,12 @@ def __doc_Attribute():
         :rtype: bool
 
         New in PyTango 7.1.0
-    """)
+    """,
+    )
 
-    document_method("is_check_archive_criteria", """
+    document_method(
+        "is_check_archive_criteria",
+        """
     is_check_archive_criteria(self) -> bool
 
         Check if the archive event criteria should be checked when firing the
@@ -2134,9 +2603,12 @@ def __doc_Attribute():
         :rtype: bool
 
         New in PyTango 7.1.0
-    """)
+    """,
+    )
 
-    document_method("set_data_ready_event", """
+    document_method(
+        "set_data_ready_event",
+        """
     set_data_ready_event(self, implemented)
 
         Set a flag to indicate that the server fires data ready events.
@@ -2145,9 +2617,12 @@ def __doc_Attribute():
         :type implemented: bool
 
         New in PyTango 7.2.0
-    """)
+    """,
+    )
 
-    document_method("is_data_ready_event", """
+    document_method(
+        "is_data_ready_event",
+        """
     is_data_ready_event(self) -> bool
 
         Check if the data ready event is fired manually (without polling)
@@ -2157,9 +2632,12 @@ def __doc_Attribute():
         :rtype: bool
 
         New in PyTango 7.2.0
-    """)
+    """,
+    )
 
-    document_method("remove_configuration", """
+    document_method(
+        "remove_configuration",
+        """
     remove_configuration(self)
 
         Remove the attribute configuration from the database.
@@ -2172,7 +2650,8 @@ def __doc_Attribute():
         the attribute from the list of polled attributes.
 
         New in PyTango 7.1.0
-    """)
+    """,
+    )
 
 
 def __doc_WAttribute():
@@ -2183,7 +2662,9 @@ def __doc_WAttribute():
     This class represents a Tango writable attribute.
     """
 
-    document_method("get_min_value", """
+    document_method(
+        "get_min_value",
+        """
     get_min_value(self) -> obj
 
         Get attribute minimum value or throws an exception if the
@@ -2191,9 +2672,12 @@ def __doc_WAttribute():
 
         :returns: an object with the python minimum value
         :rtype: obj
-    """)
+    """,
+    )
 
-    document_method("get_max_value", """
+    document_method(
+        "get_max_value",
+        """
     get_max_value(self) -> obj
 
         Get attribute maximum value or throws an exception if the
@@ -2201,54 +2685,72 @@ def __doc_WAttribute():
 
         :returns: an object with the python maximum value
         :rtype: obj
-    """)
+    """,
+    )
 
-    document_method("set_min_value", """
+    document_method(
+        "set_min_value",
+        """
     set_min_value(self, data)
 
         Set attribute minimum value.
 
         :param data: the attribute minimum value. python data type must be compatible
                      with the attribute data format and type.
-    """)
+    """,
+    )
 
-    document_method("set_max_value", """
+    document_method(
+        "set_max_value",
+        """
     set_max_value(self, data)
 
         Set attribute maximum value.
 
         :param data: the attribute maximum value. python data type must be compatible
                      with the attribute data format and type.
-    """)
+    """,
+    )
 
-    document_method("is_min_value", """
+    document_method(
+        "is_min_value",
+        """
     is_min_value(self) -> bool
 
         Check if the attribute has a minimum value.
 
         :returns: true if the attribute has a minimum value defined
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("is_max_value", """
+    document_method(
+        "is_max_value",
+        """
     is_max_value(self, ) -> bool
 
         Check if the attribute has a maximum value.
 
         :returns: true if the attribute has a maximum value defined
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("get_write_value_length", """
+    document_method(
+        "get_write_value_length",
+        """
     get_write_value_length(self) -> int
 
         Retrieve the new value length (data number) for writable attribute.
 
         :returns: the new value data length
         :rtype: int
-    """)
+    """,
+    )
 
-    document_method("set_write_value", """
+    document_method(
+        "set_write_value",
+        """
     set_write_value(self, data, dim_x = 1, dim_y = 0)
     
        Set the writable attribute value.
@@ -2260,9 +2762,12 @@ def __doc_WAttribute():
        :type dim_x: int
        :param dim_y: optional, the attribute set value y length
        :type dim_y: int
-    """)
+    """,
+    )
 
-    document_method("get_write_value", """
+    document_method(
+        "get_write_value",
+        """
     get_write_value(self, lst)  <= DEPRECATED
 
         .. function:: get_write_value(self, extract_as=ExtractAs.Numpy) -> obj
@@ -2277,7 +2782,8 @@ def __doc_WAttribute():
 
         :returns: the attribute write value.
         :rtype: obj
-    """)
+    """,
+    )
 
 
 def __doc_MultiClassAttribute():
@@ -2292,7 +2798,9 @@ def __doc_MultiClassAttribute():
 
     New in PyTango 7.2.1"""
 
-    document_method("get_attr", """
+    document_method(
+        "get_attr",
+        """
     get_attr(self, attr_name) -> Attr
 
         Get the :class:`~tango.Attr` object for the attribute with
@@ -2307,9 +2815,12 @@ def __doc_MultiClassAttribute():
         :raises DevFailed: If the attribute is not defined.
 
         New in PyTango 7.2.1
-    """)
+    """,
+    )
 
-    document_method("remove_attr", """
+    document_method(
+        "remove_attr",
+        """
     remove_attr(self, attr_name, cl_name)
 
         Remove the :class:`~tango.Attr` object for the attribute with
@@ -2323,9 +2834,12 @@ def __doc_MultiClassAttribute():
         :type cl_name: str
 
         New in PyTango 7.2.1
-    """)
+    """,
+    )
 
-    document_method("get_attr_list", """
+    document_method(
+        "get_attr_list",
+        """
     get_attr_list(self) -> Sequence[Attr]
 
         Get the list of :class:`~tango.Attr` for this device class.
@@ -2334,7 +2848,8 @@ def __doc_MultiClassAttribute():
         :rtype: Sequence[Attr]
 
         New in PyTango 7.2.1
-    """)
+    """,
+    )
 
 
 def __doc_MultiAttribute():
@@ -2347,7 +2862,9 @@ def __doc_MultiAttribute():
     :class:`~tango.WAttribute` objects. It eases management of multiple
     attributes"""
 
-    document_method("get_attr_by_name", """
+    document_method(
+        "get_attr_by_name",
+        """
     get_attr_by_name(self, attr_name) -> Attribute
 
         Get :class:`~tango.Attribute` object from its name.
@@ -2363,9 +2880,12 @@ def __doc_MultiAttribute():
         :rtype: Attribute
 
         :raises DevFailed: If the attribute is not defined.
-    """)
+    """,
+    )
 
-    document_method("get_attr_by_ind", """
+    document_method(
+        "get_attr_by_ind",
+        """
     get_attr_by_ind(self, ind) -> Attribute
 
         Get :class:`~tango.Attribute` object from its index.
@@ -2378,9 +2898,12 @@ def __doc_MultiAttribute():
 
         :returns: the attribute object
         :rtype: Attribute
-    """)
+    """,
+    )
 
-    document_method("get_w_attr_by_name", """
+    document_method(
+        "get_w_attr_by_name",
+        """
     get_w_attr_by_name(self, attr_name) -> WAttribute
 
         Get a writable attribute object from its name.
@@ -2396,9 +2919,12 @@ def __doc_MultiAttribute():
         :rtype: WAttribute
 
         :raises DevFailed: If the attribute is not defined.
-    """)
+    """,
+    )
 
-    document_method("get_w_attr_by_ind", """
+    document_method(
+        "get_w_attr_by_ind",
+        """
     get_w_attr_by_ind(self, ind) -> WAttribute
 
         Get a writable attribute object from its index.
@@ -2411,9 +2937,12 @@ def __doc_MultiAttribute():
 
         :returns: the attribute object
         :rtype: WAttribute
-    """)
+    """,
+    )
 
-    document_method("get_attr_ind_by_name", """
+    document_method(
+        "get_attr_ind_by_name",
+        """
     get_attr_ind_by_name(self, attr_name) -> int
 
         Get Attribute index into the main attribute vector from its name.
@@ -2431,9 +2960,12 @@ def __doc_MultiAttribute():
         :raises DevFailed: If the attribute is not found in the vector.
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("get_attr_nb", """
+    document_method(
+        "get_attr_nb",
+        """
     get_attr_nb(self) -> int
 
         Get attribute number.
@@ -2442,9 +2974,12 @@ def __doc_MultiAttribute():
         :rtype: int
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("check_alarm", """
+    document_method(
+        "check_alarm",
+        """
     check_alarm(self) -> bool
 
         .. function:: check_alarm(self, attr_name) -> bool
@@ -2468,9 +3003,12 @@ def __doc_MultiAttribute():
         :raises DevFailed: If at least one attribute does not have any alarm level defined
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("read_alarm", """
+    document_method(
+        "read_alarm",
+        """
     read_alarm(self, status)
 
         Add alarm message to device status.
@@ -2482,9 +3020,12 @@ def __doc_MultiAttribute():
         :type status: str
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("get_attribute_list", """
+    document_method(
+        "get_attribute_list",
+        """
     get_attribute_list(self) -> Sequence[Attribute]
 
         Get the list of attribute objects.
@@ -2493,7 +3034,8 @@ def __doc_MultiAttribute():
         :rtype: Sequence[Attribute]
 
         New in PyTango 7.2.1
-    """)
+    """,
+    )
 
 
 def __doc_Attr():
@@ -2504,15 +3046,20 @@ def __doc_Attr():
     This class represents a Tango writable attribute.
     """
 
-    document_method("check_type", """
+    document_method(
+        "check_type",
+        """
     check_type(self)
 
         This method checks data type and throws an exception in case of unsupported data type
 
         :raises: :class:`DevFailed`: If the data type is unsupported.
-    """)
+    """,
+    )
 
-    document_method("is_allowed", """
+    document_method(
+        "is_allowed",
+        """
     is_allowed(self, device, request_type) -> bool
 
         Returns whether the request_type is allowed for the specified device
@@ -2525,7 +3072,8 @@ def __doc_Attr():
 
         :returns: True if request_type is allowed for the specified device
         :rtype: bool
-    """)
+    """,
+    )
 
     # TODO finish description
     # document_method("read", """
@@ -2551,35 +3099,45 @@ def __doc_Attr():
     #     :type device: Device
     # """)
 
-
-    document_method("set_default_properties", """
+    document_method(
+        "set_default_properties",
+        """
     set_default_properties(self)
 
         Set default attribute properties.
 
         :param attr_prop: the user default property class
         :type attr_prop: UserDefaultAttrProp
-    """)
+    """,
+    )
 
-    document_method("set_disp_level", """
+    document_method(
+        "set_disp_level",
+        """
     set_disp_level(self, disp_lelel)
 
         Set the attribute display level.
 
         :param disp_level: the new display level
         :type disp_level: DispLevel
-    """)
+    """,
+    )
 
-    document_method("set_polling_period", """
+    document_method(
+        "set_polling_period",
+        """
     set_polling_period(self, period)
 
         Set the attribute polling update period.
 
         :param period: the attribute polling period (in mS)
         :type period: int
-    """)
+    """,
+    )
 
-    document_method("set_memorized", """
+    document_method(
+        "set_memorized",
+        """
     set_memorized(self)
 
         Set the attribute as memorized in database (only for scalar
@@ -2587,9 +3145,12 @@ def __doc_Attr():
 
         With no argument the setpoint will be
         written to the attribute during initialisation!
-    """)
+    """,
+    )
 
-    document_method("set_memorized_init", """
+    document_method(
+        "set_memorized_init",
+        """
     set_memorized_init(self, write_on_init)
 
         Set the initialisation flag for memorized attributes.
@@ -2602,9 +3163,12 @@ def __doc_Attr():
         :param write_on_init: if true the setpoint value will be written
                               to the attribute on initialisation
         :type write_on_init: bool
-    """)
+    """,
+    )
 
-    document_method("set_change_event", """
+    document_method(
+        "set_change_event",
+        """
     set_change_event(self, implemented, detect)
 
         Set a flag to indicate that the server fires change events manually
@@ -2621,27 +3185,36 @@ def __doc_Attr():
         :param detect: Triggers the verification of the change event properties
                        when set to true.
         :type detect: bool
-    """)
+    """,
+    )
 
-    document_method("is_change_event", """
+    document_method(
+        "is_change_event",
+        """
     is_change_event(self) -> bool
 
         Check if the change event is fired manually for this attribute.
 
         :returns: true if a manual fire change event is implemented.
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("is_check_change_criteria", """
+    document_method(
+        "is_check_change_criteria",
+        """
     is_check_change_criteria(self) -> bool
 
         Check if the change event criteria should be checked when firing the event manually.
 
         :returns: true if a change event criteria will be checked.
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("set_archive_event", """
+    document_method(
+        "set_archive_event",
+        """
     set_archive_event(self)
 
         Set a flag to indicate that the server fires archive events manually
@@ -2658,27 +3231,36 @@ def __doc_Attr():
         :param detect: Triggers the verification of the archive event properties
                        when set to true.
         :type detect: bool
-    """)
+    """,
+    )
 
-    document_method("is_archive_event", """
+    document_method(
+        "is_archive_event",
+        """
     is_archive_event(self) -> bool
 
         Check if the archive event is fired manually for this attribute.
 
         :returns: true if a manual fire archive event is implemented.
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("is_check_archive_criteria", """
+    document_method(
+        "is_check_archive_criteria",
+        """
     is_check_archive_criteria(self) -> bool
 
         Check if the archive event criteria should be checked when firing the event manually.
 
         :returns: true if a archive event criteria will be checked.
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("set_data_ready_event", """
+    document_method(
+        "set_data_ready_event",
+        """
     set_data_ready_event(self, implemented)
 
         Set a flag to indicate that the server fires data ready events.
@@ -2687,9 +3269,12 @@ def __doc_Attr():
         :type implemented: bool
 
         New in PyTango 7.2.0
-    """)
+    """,
+    )
 
-    document_method("is_data_ready_event", """
+    document_method(
+        "is_data_ready_event",
+        """
     is_data_ready_event(self) -> bool
 
         Check if the data ready event is fired for this attribute.
@@ -2698,72 +3283,96 @@ def __doc_Attr():
         :rtype: bool
 
         New in PyTango 7.2.0
-    """)
+    """,
+    )
 
-    document_method("get_name", """
+    document_method(
+        "get_name",
+        """
     get_name(self) -> str
 
         Get the attribute name.
 
         :returns: the attribute name
         :rtype: str
-    """)
+    """,
+    )
 
-    document_method("get_format", """
+    document_method(
+        "get_format",
+        """
     get_format(self) -> AttrDataFormat
 
         Get the attribute format.
 
         :returns: the attribute format
         :rtype: AttrDataFormat
-    """)
+    """,
+    )
 
-    document_method("get_writable", """
+    document_method(
+        "get_writable",
+        """
     get_writable(self) -> AttrWriteType
 
         Get the attribute write type.
 
         :returns: the attribute write type
         :rtype: AttrWriteType
-    """)
+    """,
+    )
 
-    document_method("get_type", """
+    document_method(
+        "get_type",
+        """
     get_type(self) -> int
 
         Get the attribute data type.
 
         :returns: the attribute data type
         :rtype: int
-    """)
+    """,
+    )
 
-    document_method("get_disp_level", """
+    document_method(
+        "get_disp_level",
+        """
     get_disp_level(self) -> DispLevel
 
         Get the attribute display level.
 
         :returns: the attribute display level
         :rtype: DispLevel
-    """)
+    """,
+    )
 
-    document_method("get_polling_period", """
+    document_method(
+        "get_polling_period",
+        """
     get_polling_period(self) -> int
 
         Get the polling period (mS).
 
         :returns: the polling period (mS)
         :rtype: int
-    """)
+    """,
+    )
 
-    document_method("get_memorized", """
+    document_method(
+        "get_memorized",
+        """
     get_memorized(self) -> bool
 
         Determine if the attribute is memorized or not.
 
         :returns: True if the attribute is memorized
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("get_memorized_init", """
+    document_method(
+        "get_memorized_init",
+        """
     get_memorized_init(self) -> bool
 
         Determine if the attribute is written at startup from the memorized
@@ -2771,27 +3380,36 @@ def __doc_Attr():
 
         :returns: True if initialized with memorized value or not
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("get_assoc", """
+    document_method(
+        "get_assoc",
+        """
     get_assoc(self) -> str
 
         Get the associated name.
 
         :returns: the associated name
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("is_assoc", """
+    document_method(
+        "is_assoc",
+        """
     is_assoc(self) -> bool
 
         Determine if it is assoc.
 
         :returns: if it is assoc
         :rtype: bool
-    """)
+    """,
+    )
 
-    document_method("get_cl_name", """
+    document_method(
+        "get_cl_name",
+        """
     get_cl_name(self) -> str
 
         Returns the class name.
@@ -2800,9 +3418,12 @@ def __doc_Attr():
         :rtype: str
 
         New in PyTango 7.2.0
-    """)
+    """,
+    )
 
-    document_method("set_cl_name", """
+    document_method(
+        "set_cl_name",
+        """
     set_cl_name(self, cl)
 
         Sets the class name.
@@ -2811,34 +3432,44 @@ def __doc_Attr():
         :type cl: str
 
         New in PyTango 7.2.0
-    """)
+    """,
+    )
 
-    document_method("get_class_properties", """
+    document_method(
+        "get_class_properties",
+        """
     get_class_properties(self) -> Sequence[AttrProperty]
 
         Get the class level attribute properties.
 
         :returns: the class attribute properties
         :rtype: Sequence[AttrProperty]
-    """)
+    """,
+    )
 
-    document_method("get_user_default_properties", """
+    document_method(
+        "get_user_default_properties",
+        """
     get_user_default_properties(self) -> Sequence[AttrProperty]
 
         Get the user default attribute properties.
 
         :returns: the user default attribute properties
         :rtype: Sequence[AttrProperty]
-    """)
+    """,
+    )
 
-    document_method("set_class_properties", """
+    document_method(
+        "set_class_properties",
+        """
     set_class_properties(self, props)
 
         Set the class level attribute properties.
 
         :param props: new class level attribute properties
         :type props: StdAttrPropertyVector
-    """)
+    """,
+    )
 
 
 def __doc_UserDefaultAttrProp():
@@ -2855,133 +3486,177 @@ def __doc_UserDefaultAttrProp():
     a Tango library default value.
     """
 
-    document_method("set_label", """
+    document_method(
+        "set_label",
+        """
     set_label(self, def_label)
 
         Set default label property.
 
         :param def_label: the user default label property
         :type def_label: str
-    """)
+    """,
+    )
 
-    document_method("set_description", """
+    document_method(
+        "set_description",
+        """
     set_description(self, def_description)
 
         Set default description property.
 
         :param def_description: the user default description property
         :type def_description: str
-    """)
+    """,
+    )
 
-    document_method("set_format", """
+    document_method(
+        "set_format",
+        """
     set_format(self, def_format)
 
         Set default format property.
 
         :param def_format: the user default format property
         :type def_format: str
-    """)
+    """,
+    )
 
-    document_method("set_unit", """
+    document_method(
+        "set_unit",
+        """
     set_unit(self, def_unit)
 
         Set default unit property.
 
         :param def_unit: te user default unit property
         :type def_unit: str
-    """)
+    """,
+    )
 
-    document_method("set_standard_unit", """
+    document_method(
+        "set_standard_unit",
+        """
     set_standard_unit(self, def_standard_unit)
 
         Set default standard unit property.
 
         :param def_standard_unit: the user default standard unit property
         :type def_standard_unit: str
-    """)
+    """,
+    )
 
-    document_method("set_display_unit", """
+    document_method(
+        "set_display_unit",
+        """
     set_display_unit(self, def_display_unit)
 
         Set default display unit property.
 
         :param def_display_unit: the user default display unit property
         :type def_display_unit: str
-    """)
+    """,
+    )
 
-    document_method("set_min_value", """
+    document_method(
+        "set_min_value",
+        """
     set_min_value(self, def_min_value)
 
         Set default min_value property.
 
         :param def_min_value: the user default min_value property
         :type def_min_value: str
-    """)
+    """,
+    )
 
-    document_method("set_max_value", """
+    document_method(
+        "set_max_value",
+        """
     set_max_value(self, def_max_value)
 
         Set default max_value property.
 
         :param def_max_value: the user default max_value property
         :type def_max_value: str
-    """)
+    """,
+    )
 
-    document_method("set_min_alarm", """
+    document_method(
+        "set_min_alarm",
+        """
     set_min_alarm(self, def_min_alarm)
 
         Set default min_alarm property.
 
         :param def_min_alarm: the user default min_alarm property
         :type def_min_alarm: str
-    """)
+    """,
+    )
 
-    document_method("set_max_alarm", """
+    document_method(
+        "set_max_alarm",
+        """
     set_max_alarm(self, def_max_alarm)
 
         Set default max_alarm property.
 
         :param def_max_alarm: the user default max_alarm property
         :type def_max_alarm: str
-    """)
+    """,
+    )
 
-    document_method("set_min_warning", """
+    document_method(
+        "set_min_warning",
+        """
     set_min_warning(self, def_min_warning)
 
         Set default min_warning property.
 
         :param def_min_warning: the user default min_warning property
         :type def_min_warning: str
-    """)
+    """,
+    )
 
-    document_method("set_max_warning", """
+    document_method(
+        "set_max_warning",
+        """
     set_max_warning(self, def_max_warning)
 
         Set default max_warning property.
 
         :param def_max_warning: the user default max_warning property
         :type def_max_warning: str
-    """)
+    """,
+    )
 
-    document_method("set_delta_t", """
+    document_method(
+        "set_delta_t",
+        """
     set_delta_t(self, def_delta_t)
 
         Set default RDS alarm delta_t property.
 
         :param def_delta_t: the user default RDS alarm delta_t property
         :type def_delta_t: str
-    """)
+    """,
+    )
 
-    document_method("set_delta_val", """
+    document_method(
+        "set_delta_val",
+        """
     set_delta_val(self, def_delta_val)
 
         Set default RDS alarm delta_val property.
 
         :param def_delta_val: the user default RDS alarm delta_val property
         :type def_delta_val: str
-    """)
+    """,
+    )
 
-    document_method("set_abs_change", """
+    document_method(
+        "set_abs_change",
+        """
     set_abs_change(self, def_abs_change) <= DEPRECATED
 
         Set default change event abs_change property.
@@ -2990,9 +3665,12 @@ def __doc_UserDefaultAttrProp():
         :type def_abs_change: str
 
         Deprecated since PyTango 8.0. Please use set_event_abs_change instead.
-    """)
+    """,
+    )
 
-    document_method("set_event_abs_change", """
+    document_method(
+        "set_event_abs_change",
+        """
     set_event_abs_change(self, def_abs_change)
 
         Set default change event abs_change property.
@@ -3001,9 +3679,12 @@ def __doc_UserDefaultAttrProp():
         :type def_abs_change: str
 
         New in PyTango 8.0
-    """)
+    """,
+    )
 
-    document_method("set_rel_change", """
+    document_method(
+        "set_rel_change",
+        """
     set_rel_change(self, def_rel_change) <= DEPRECATED
 
         Set default change event rel_change property.
@@ -3012,9 +3693,12 @@ def __doc_UserDefaultAttrProp():
         :type def_rel_change: str
 
         Deprecated since PyTango 8.0. Please use set_event_rel_change instead.
-    """)
+    """,
+    )
 
-    document_method("set_event_rel_change", """
+    document_method(
+        "set_event_rel_change",
+        """
     set_event_rel_change(self, def_rel_change)
 
         Set default change event rel_change property.
@@ -3023,9 +3707,12 @@ def __doc_UserDefaultAttrProp():
         :type def_rel_change: str
 
         New in PyTango 8.0
-    """)
+    """,
+    )
 
-    document_method("set_period", """
+    document_method(
+        "set_period",
+        """
     set_period(self, def_period) <= DEPRECATED
 
         Set default periodic event period property.
@@ -3034,9 +3721,12 @@ def __doc_UserDefaultAttrProp():
         :type def_period: str
 
         Deprecated since PyTango 8.0. Please use set_event_period instead.
-    """)
+    """,
+    )
 
-    document_method("set_event_period", """
+    document_method(
+        "set_event_period",
+        """
     set_event_period(self, def_period)
 
         Set default periodic event period property.
@@ -3045,9 +3735,12 @@ def __doc_UserDefaultAttrProp():
         :type def_period: str
 
         New in PyTango 8.0
-    """)
+    """,
+    )
 
-    document_method("set_archive_abs_change", """
+    document_method(
+        "set_archive_abs_change",
+        """
     set_archive_abs_change(self, def_archive_abs_change) <= DEPRECATED
 
         Set default archive event abs_change property.
@@ -3056,9 +3749,12 @@ def __doc_UserDefaultAttrProp():
         :type def_archive_abs_change: str
 
         Deprecated since PyTango 8.0. Please use set_archive_event_abs_change instead.
-    """)
+    """,
+    )
 
-    document_method("set_archive_event_abs_change", """
+    document_method(
+        "set_archive_event_abs_change",
+        """
     set_archive_event_abs_change(self, def_archive_abs_change)
 
         Set default archive event abs_change property.
@@ -3067,9 +3763,12 @@ def __doc_UserDefaultAttrProp():
         :type def_archive_abs_change: str
 
         New in PyTango 8.0
-    """)
+    """,
+    )
 
-    document_method("set_archive_rel_change", """
+    document_method(
+        "set_archive_rel_change",
+        """
     set_archive_rel_change(self, def_archive_rel_change) <= DEPRECATED
 
         Set default archive event rel_change property.
@@ -3078,9 +3777,12 @@ def __doc_UserDefaultAttrProp():
         :type def_archive_rel_change: str
 
         Deprecated since PyTango 8.0. Please use set_archive_event_rel_change instead.
-    """)
+    """,
+    )
 
-    document_method("set_archive_event_rel_change", """
+    document_method(
+        "set_archive_event_rel_change",
+        """
     set_archive_event_rel_change(self, def_archive_rel_change)
 
         Set default archive event rel_change property.
@@ -3089,9 +3791,12 @@ def __doc_UserDefaultAttrProp():
         :type def_archive_rel_change: str
 
         New in PyTango 8.0
-    """)
+    """,
+    )
 
-    document_method("set_archive_period", """
+    document_method(
+        "set_archive_period",
+        """
     set_archive_period(self, def_archive_period) <= DEPRECATED
 
         Set default archive event period property.
@@ -3100,9 +3805,12 @@ def __doc_UserDefaultAttrProp():
         :type def_archive_period: str
 
         Deprecated since PyTango 8.0. Please use set_archive_event_period instead.
-    """)
+    """,
+    )
 
-    document_method("set_archive_event_period", """
+    document_method(
+        "set_archive_event_period",
+        """
     set_archive_event_period(self, def_archive_period)
 
         Set default archive event period property.
@@ -3111,7 +3819,8 @@ def __doc_UserDefaultAttrProp():
         :type def_archive_period: str
 
         New in PyTango 8.0
-    """)
+    """,
+    )
 
 
 def device_server_init(doc=True):
@@ -3131,4 +3840,3 @@ def device_server_init(doc=True):
         __doc_MultiClassAttribute()
         __doc_UserDefaultAttrProp()
         __doc_Attr()
-

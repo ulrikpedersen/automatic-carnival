@@ -28,7 +28,7 @@ from .server import Device, _to_classes, _add_classes
 from .device_server import get_worker, set_worker
 from .green import get_executor
 
-__all__ = ('Server',)
+__all__ = ("Server",)
 
 _CLEAN_UP_TEMPLATE = """
 import sys
@@ -42,9 +42,9 @@ try:
         db.delete_device(device)
         try:
             db.delete_device_alias(db.get_alias(device))
-        except:
+        except Exception:
             pass
-except:
+except Exception:
     print ('Failed to cleanup!')
 """
 
@@ -64,11 +64,11 @@ def __to_tango_type_fmt(value):
             shape_l = len(value.shape)
             if shape_l == 1:
                 dfmt = AttrDataFormat.SPECTRUM
-                max_dim_x = max(2 ** 16, value.shape[0])
+                max_dim_x = max(2**16, value.shape[0])
             elif shape_l == 2:
                 dfmt = AttrDataFormat.IMAGE
-                max_dim_x = max(2 ** 16, value.shape[0])
-                max_dim_y = max(2 ** 16, value.shape[1])
+                max_dim_x = max(2**16, value.shape[0])
+                max_dim_y = max(2**16, value.shape[1])
         else:
             dtype = CmdArgType.DevEncoded
     return dtype, dfmt, max_dim_x, max_dim_y
@@ -85,7 +85,6 @@ def create_tango_class(server, obj, tango_class_name=None, member_filter=None):
         tango_class_name = obj_klass_name
 
     class DeviceDispatcher(Device):
-
         TangoClassName = tango_class_name
 
         def __init__(self, tango_class_obj, name):
@@ -115,14 +114,12 @@ def create_tango_class(server, obj, tango_class_name=None, member_filter=None):
         log.debug("inspecting %s.%s", obj_klass_name, name)
         try:
             member = getattr(obj, name)
-        except:
-            log.info(
-                "failed to inspect member '%s.%s'", obj_klass_name, name)
+        except Exception:
+            log.info("failed to inspect member '%s.%s'", obj_klass_name, name)
             log.debug("Details:", exc_info=1)
         if inspect.isclass(member) or inspect.ismodule(member):
             continue
-        if member_filter and not member_filter(obj, tango_class_name,
-                                               name, member):
+        if member_filter and not member_filter(obj, tango_class_name, name, member):
             log.debug("filtered out %s from %s", name, tango_class_name)
             continue
         if inspect.isroutine(member):
@@ -137,18 +134,22 @@ def create_tango_class(server, obj, tango_class_name=None, member_filter=None):
                 pass
 
             if in_type == CmdArgType.DevVoid:
+
                 def _command(dev, func_name=None):
                     obj = dev._object
                     f = getattr(obj, func_name)
                     result = server.worker.execute(f)
                     return server.dumps(result)
+
             else:
+
                 def _command(dev, param, func_name=None):
                     obj = dev._object
                     args, kwargs = loads(*param)
                     f = getattr(obj, func_name)
                     result = server.worker.execute(f, *args, **kwargs)
                     return server.dumps(result)
+
             cmd = functools.partial(_command, func_name=name)
             cmd.__name__ = name
             doc = member.__doc__
@@ -156,8 +157,7 @@ def create_tango_class(server, obj, tango_class_name=None, member_filter=None):
                 doc = ""
             cmd.__doc__ = doc
             setattr(DeviceDispatcher, name, cmd)
-            DeviceDispatcherClass.cmd_list[name] = \
-                [[in_type, doc], [out_type, ""]]
+            DeviceDispatcherClass.cmd_list[name] = [[in_type, doc], [out_type, ""]]
         else:
             read_only = False
             if hasattr(obj_klass, name):
@@ -183,6 +183,7 @@ def create_tango_class(server, obj, tango_class_name=None, member_filter=None):
                     value = attr.get_write_value()
                     value = loads(*value)
                     server.worker.execute(setattr, dev._object, name, value)
+
             else:
 
                 def read(dev, attr):
@@ -194,14 +195,16 @@ def create_tango_class(server, obj, tango_class_name=None, member_filter=None):
                     name = attr.get_name()
                     value = attr.get_write_value()
                     server.worker.execute(setattr, dev._object, name, value)
+
             read.__name__ = "_read_" + name
             setattr(DeviceDispatcher, read.__name__, read)
 
-            pars = dict(name=name, dtype=dtype, dformat=fmt,
-                        max_dim_x=x, max_dim_y=y, fget=read)
+            pars = dict(
+                name=name, dtype=dtype, dformat=fmt, max_dim_x=x, max_dim_y=y, fget=read
+            )
             if not read_only:
                 write.__name__ = "_write_" + name
-                pars['fset'] = write
+                pars["fset"] = write
                 setattr(DeviceDispatcher, write.__name__, write)
             attr_data = AttrData.from_dict(pars)
             DeviceDispatcherClass.attr_list[name] = attr_data
@@ -218,9 +221,7 @@ class Server:
     PostInitPhase = Phase2
 
     class TangoObjectAdapter:
-
-        def __init__(self, server, obj, full_name, alias=None,
-                     tango_class_name=None):
+        def __init__(self, server, obj, full_name, alias=None, tango_class_name=None):
             self.__server = weakref.ref(server)
             self.full_name = full_name
             self.alias = alias
@@ -233,8 +234,7 @@ class Server:
         def __onObjectDeleted(self, object_weak):
             self.__object = None
             server = self._server
-            server.log.info("object deleted %s(%s)", self.class_name,
-                            self.full_name)
+            server.log.info("object deleted %s(%s)", self.class_name, self.full_name)
             server.unregister_object(self.full_name)
 
         @property
@@ -248,10 +248,18 @@ class Server:
                 return None
             return obj()
 
-    def __init__(self, server_name, server_type=None, port=None,
-                 event_loop_callback=None, init_callbacks=None,
-                 auto_clean=False, green_mode=None, tango_classes=None,
-                 protocol="pickle"):
+    def __init__(
+        self,
+        server_name,
+        server_type=None,
+        port=None,
+        event_loop_callback=None,
+        init_callbacks=None,
+        auto_clean=False,
+        green_mode=None,
+        tango_classes=None,
+        protocol="pickle",
+    ):
         if server_name is None:
             raise ValueError("Must give a valid server name")
         self.__server_name = server_name
@@ -280,8 +288,7 @@ class Server:
     def __build_args(self):
         args = [self.server_type, self.__server_name]
         if self.__port is not None:
-            args.extend(["-ORBendPoint",
-                         f"giop:tcp::{self.__port}"])
+            args.extend(["-ORBendPoint", f"giop:tcp:0.0.0.0:{self.__port}"])
         return args
 
     def __exec_cb(self, cb):
@@ -309,13 +316,13 @@ class Server:
             dserver_name = f"dserver/{server_instance}"
             if db.import_device(dserver_name).exported:
                 import tango
+
                 dserver = tango.DeviceProxy(dserver_name)
                 try:
                     dserver.ping()
                     raise Exception("Server already running")
-                except:
-                    self.log.info("Last time server was not properly "
-                                  "shutdown!")
+                except Exception:
+                    self.log.info("Last time server was not properly shutdown!")
             _, db_device_map = self.get_devices()
         else:
             db_device_map = {}
@@ -340,7 +347,7 @@ class Server:
             db.delete_device(device)
             try:
                 db.delete_device_alias(db.get_alias(device))
-            except:
+            except Exception:
                 pass
 
         # register devices in database
@@ -371,9 +378,9 @@ class Server:
     def __clean_up_process(self):
         if not self.__auto_clean:
             return
-        clean_up = _CLEAN_UP_TEMPLATE.format(
-            server_instance=self.server_instance)
+        clean_up = _CLEAN_UP_TEMPLATE.format(server_instance=self.server_instance)
         import subprocess
+
         res = subprocess.call([sys.executable, "-c", clean_up])
         if res:
             self.log.error("Failed to cleanup")
@@ -388,8 +395,7 @@ class Server:
 
         if async_mode:
             if event_loop:
-                event_loop = functools.partial(self.worker.execute,
-                                               event_loop)
+                event_loop = functools.partial(self.worker.execute, event_loop)
         if event_loop:
             u_instance.server_set_event_loop(event_loop)
 
@@ -436,6 +442,7 @@ class Server:
     def tango_util(self):
         if self.__util is None:
             import tango
+
             self.__util = tango.Util(self.__build_args())
             self._phase = Server.Phase1
         return self.__util
@@ -445,6 +452,7 @@ class Server:
         gm = self.__green_mode
         if gm is None:
             from tango import get_green_mode
+
             gm = get_green_mode()
         return gm
 
@@ -453,8 +461,7 @@ class Server:
         if gm == self.__green_mode:
             return
         if self.__running:
-            raise RuntimeError("Cannot change green mode while "
-                               "server is running")
+            raise RuntimeError("Cannot change green mode while server is running")
         self.__green_mode = gm
 
     @property
@@ -480,6 +487,7 @@ class Server:
         """
         if self.__util is None:
             import tango
+
             db = tango.Database()
         else:
             db = self.__util.get_database()
@@ -515,20 +523,21 @@ class Server:
 
     def register_tango_class(self, klass):
         if self._phase > Server.Phase1:
-            raise RuntimeError("Cannot add new class after phase 1 "
-                               "(i.e. after server_init)")
+            raise RuntimeError(
+                "Cannot add new class after phase 1 (i.e. after server_init)"
+            )
         self.__tango_classes.append(klass)
 
     def unregister_object(self, name):
         tango_object = self.__objects.pop(name.lower())
         if self._phase > Server.Phase1:
             import tango
+
             util = tango.Util.instance()
             if not util.is_svr_shutting_down():
                 util.delete_device(tango_object.tango_class_name, name)
 
-    def register_object(self, obj, name, tango_class_name=None,
-                        member_filter=None):
+    def register_object(self, obj, name, tango_class_name=None, member_filter=None):
         """
         :param member_filter:
             callable(obj, tango_class_name, member_name, member) -> bool
@@ -547,15 +556,18 @@ class Server:
         tango_class = self.get_tango_class(class_name)
 
         if tango_class is None:
-            tango_class = create_tango_class(self, obj, class_name,
-                                             member_filter=member_filter)
+            tango_class = create_tango_class(
+                self, obj, class_name, member_filter=member_filter
+            )
             self.register_tango_class(tango_class)
 
-        tango_object = self.TangoObjectAdapter(self, obj, full_name, alias,
-                                               tango_class_name=class_name)
+        tango_object = self.TangoObjectAdapter(
+            self, obj, full_name, alias, tango_class_name=class_name
+        )
         self.__objects[full_name.lower()] = tango_object
         if self._phase > Server.Phase1:
             import tango
+
             util = tango.Util.instance()
             util.create_device(class_name, name)
         return tango_object

@@ -3,7 +3,6 @@ from PyTango.server import Device, attribute, command
 
 
 class Clock(Device):
-
     @attribute
     def time(self):
         return time.time()

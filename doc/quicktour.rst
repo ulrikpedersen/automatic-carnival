@@ -22,8 +22,8 @@ An attribute is identified by a name in a device. It has a value that can
 be read. Some attributes can also be changed (read-write attributes). Each
 attribute has a well known, fixed data type.
 
-A pipe is a kind of attribute. Unlike attributes, the pipe data type is strucured
-(in the sence of C struct) and it is dynamic.
+A pipe is a kind of attribute. Unlike attributes, the pipe data type is structured
+(in the sense of C struct) and it is dynamic.
 
 A property is identified by a name in a device. Usually, devices properties are
 used to provide a way to configure a device.

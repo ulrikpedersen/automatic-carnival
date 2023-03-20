@@ -1,13 +1,13 @@
-version: 9.4.0rc2.{build}
+version: 9.4.2.dev0.{build}
 
 image: Visual Studio 2022
 
 environment:
   BOOST_DOWNLOAD_BASE: https://github.com/tango-controls/boost-ci/releases/download/
   BOOST_VERSION: 1.73.0
-  CPPTANGO_VERSION: 9.4.0 # from: https://gitlab.com/tango-controls/cppTango/-/releases/9.4.0.windows1
-  CPPTANGO_WIN32_DOWNLOAD_LINK: https://gitlab.com/tango-controls/cppTango/-/package_files/60775943/download
-  CPPTANGO_WIN64_DOWNLOAD_LINK: https://gitlab.com/tango-controls/cppTango/-/package_files/60773874/download
+  CPPTANGO_VERSION: 9.4.1 # from: https://gitlab.com/tango-controls/cppTango/-/releases/9.4.1
+  CPPTANGO_WIN32_DOWNLOAD_LINK: https://gitlab.com/tango-controls/cppTango/-/package_files/67361143/download
+  CPPTANGO_WIN64_DOWNLOAD_LINK: https://gitlab.com/tango-controls/cppTango/-/package_files/67360212/download
   TANGO_TEST_VERSION: 3.6
   TANGO_TEST_WIN32_DOWNLOAD_LINK: https://gitlab.com/tango-controls/TangoTest/-/package_files/45776380/download
   TANGO_TEST_WIN64_DOWNLOAD_LINK: https://gitlab.com/tango-controls/TangoTest/-/package_files/45776372/download
@@ -127,7 +127,7 @@ build_script:
   - cmake --build ./ -j 4 --config Release -v
 
 test_script:
-  - "%PYTHON_ROOT%/Scripts/pip.exe install \"gevent!=1.5a1\" psutil \"numpy>=1.1\""
+  - "%PYTHON_ROOT%/Scripts/pip.exe install \"gevent!=1.5a1\" packaging psutil \"numpy>=1.1\""
   - cmd: if %PYTHON_VER% LSS 37 "%PYTHON_ROOT%/Scripts/pip.exe" install "pytest<7.1" "tomli<2.0" "typing-extensions<4.0"
   - cmd: if %PYTHON_VER% GEQ 37 "%PYTHON_ROOT%/Scripts/pip.exe" install pytest
   - cmd: cd "C:\projects\pytango\tests"

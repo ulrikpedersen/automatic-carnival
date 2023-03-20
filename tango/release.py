@@ -44,22 +44,22 @@ class Release:
         - keywords: (seq<str>) list of keywords
         - license: (str) the license
     """
-    name = 'pytango'
-    version_info = (9, 4, 0, 'rc', 2)
-    version = '.'.join(map(str, version_info[:3]))
-    release = ''.join(map(str, version_info[3:]))
-    separator = '.' if 'dev' in release or 'post' in release else ''
+
+    name = "pytango"
+    version_info = (9, 4, 2, "dev", 0)
+    version = ".".join(map(str, version_info[:3]))
+    release = "".join(map(str, version_info[3:]))
+    separator = "." if "dev" in release or "post" in release else ""
     version_long = version + separator + release
 
-    version_description = 'This version implements the C++ Tango 9.4 API.'
-    version_number = int(version.replace('.', ''))
-    description = 'A python binding for the Tango control system'
-    long_description = 'This module implements the Python Tango Device API ' \
-                       'mapping.'
-    license = 'LGPL'
-    authors = {'Coutinho': ('Tiago Coutinho', 'coutinho@esrf.fr')}
+    version_description = "This version implements the C++ Tango 9.4 API."
+    version_number = int(version.replace(".", ""))
+    description = "A python binding for the Tango control system"
+    long_description = "This module implements the Python Tango Device API mapping."
+    license = "LGPL"
+    authors = {"Coutinho": ("Tiago Coutinho", "coutinho@esrf.fr")}
     author_lines = "\n".join([f"{x[0]} <{x[1]}>" for x in authors.values()])
-    url = 'http://gitlab.com/tango-controls/pytango'
-    download_url = 'http://pypi.python.org/pypi/pytango'
-    platform = ['Linux', 'Windows XP/Vista/7/8/10']
-    keywords = ['Tango', 'CORBA', 'binding']
+    url = "http://gitlab.com/tango-controls/pytango"
+    download_url = "http://pypi.python.org/pypi/pytango"
+    platform = ["Linux", "Windows XP/Vista/7/8/10"]
+    keywords = ["Tango", "CORBA", "binding"]

@@ -21,7 +21,7 @@ Contents
     How to test <testing>
     FAQ <faq>
     TEP <tep>
-    History of changes <revision>
+    What's new? <news>
     indexes
     
 **Last update:** |today|

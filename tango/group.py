@@ -84,7 +84,9 @@ class Group:
             patterns = seq_2_StdStringVector(patterns_or_group)
             return self.__group._add(patterns, timeout_ms)
         else:
-            raise TypeError('Parameter patterns_or_group: Should be Group, str or a sequence of strings.')
+            raise TypeError(
+                "Parameter patterns_or_group: Should be Group, str or a sequence of strings."
+            )
 
     def remove(self, patterns, forward=True):
         if isinstance(patterns, str):
@@ -93,7 +95,7 @@ class Group:
             std_patterns = seq_2_StdStringVector(patterns)
             return self.__group._remove(std_patterns, forward)
         else:
-            raise TypeError('Parameter patterns: Should be a str or a sequence of str.')
+            raise TypeError("Parameter patterns: Should be a str or a sequence of str.")
 
     def get_device(self, name_or_index):
         proxy = self.__group.get_device(name_or_index)
@@ -124,7 +126,9 @@ class Group:
         if param is None:
             idx = self.command_inout_asynch(cmd_name, forget=False, forward=forward)
         else:
-            idx = self.command_inout_asynch(cmd_name, param, forget=False, forward=forward)
+            idx = self.command_inout_asynch(
+                cmd_name, param, forget=False, forward=forward
+            )
         return self.command_inout_reply(idx)
 
     def read_attribute(self, attr_name, forward=True):
@@ -136,36 +140,39 @@ class Group:
         return self.__group.read_attributes_reply(idx)
 
     def write_attribute(self, attr_name, value, forward=True, multi=False):
-        idx = self.__group.write_attribute_asynch(attr_name, value, forward=forward, multi=multi)
+        idx = self.__group.write_attribute_asynch(
+            attr_name, value, forward=forward, multi=multi
+        )
         return self.__group.write_attribute_reply(idx)
 
 
 def __init_proxy_Group():
     proxy_methods = [
         # 'add',  # Needs to be adapted
-        'command_inout_asynch',
-        'command_inout_reply',
-        'contains',
-        'disable',
-        'enable',
+        "command_inout_asynch",
+        "command_inout_reply",
+        "contains",
+        "disable",
+        "enable",
         # 'get_device',  # Needs to be adapted
-        'get_device_list',
-        'get_fully_qualified_name',
+        "get_device_list",
+        "get_fully_qualified_name",
         # 'get_group',   # Needs to be adapted
-        'get_name',
-        'get_size',
-        'is_enabled',
-        'name_equals',
-        'name_matches',
-        'ping',
-        'read_attribute_asynch',
-        'read_attribute_reply',
-        'read_attributes_asynch',
-        'read_attributes_reply',
-        'remove_all',
-        'set_timeout_millis',
-        'write_attribute_asynch',
-        'write_attribute_reply']
+        "get_name",
+        "get_size",
+        "is_enabled",
+        "name_equals",
+        "name_matches",
+        "ping",
+        "read_attribute_asynch",
+        "read_attribute_reply",
+        "read_attributes_asynch",
+        "read_attributes_reply",
+        "remove_all",
+        "set_timeout_millis",
+        "write_attribute_asynch",
+        "write_attribute_reply",
+    ]
 
     def proxy_call_define(fname):
         def fn(self, *args, **kwds):
@@ -186,7 +193,9 @@ def __doc_Group():
     def document_method(method_name, desc, append=True):
         return __document_method(_RealGroup, method_name, desc, append)
 
-    document_method("_add", """
+    document_method(
+        "_add",
+        """
     add(self, patterns, timeout_ms=-1) -> None
 
             Attaches any device which name matches one of the specified patterns.
@@ -211,9 +220,12 @@ def __doc_Group():
         Return     : None
 
         Throws     : TypeError, ArgumentError
-    """)
+    """,
+    )
 
-    document_method("_remove", """
+    document_method(
+        "_remove",
+        """
     remove(self, patterns, forward=True) -> None
 
             Removes any group or device which name matches the specified pattern.
@@ -261,15 +273,21 @@ def __doc_Group():
         Return     : None
 
         Throws     :
-    """)
+    """,
+    )
 
-    document_method("remove_all", """
+    document_method(
+        "remove_all",
+        """
     remove_all(self) -> None
 
         Removes all elements in the _RealGroup. After such a call, the _RealGroup is empty.
-    """)
+    """,
+    )
 
-    document_method("contains", """
+    document_method(
+        "contains",
+        """
     contains(self, pattern, forward=True) -> bool
 
         Parameters :
@@ -284,9 +302,12 @@ def __doc_Group():
                      false otherwise.
 
         Throws     :
-    """)
+    """,
+    )
 
-    document_method("get_device", """
+    document_method(
+        "get_device",
+        """
     get_device(self, dev_name) -> DeviceProxy
     get_device(self, idx) -> DeviceProxy
 
@@ -333,9 +354,12 @@ def __doc_Group():
                         dp.subscribe_events('attr', callback)
 
         Throws     : DevFailed
-    """)
+    """,
+    )
 
-    document_method("get_device_list", """
+    document_method(
+        "get_device_list",
+        """
     get_device_list(self, forward=True) -> sequence<str>
 
             Considering the following hierarchy:
@@ -394,9 +418,12 @@ def __doc_Group():
         Return     : (sequence<str>) The list of devices currently in the hierarchy.
 
         Throws     :
-    """)
+    """,
+    )
 
-    document_method("get_group", """
+    document_method(
+        "get_group",
+        """
     get_group(self, group_name ) -> Group
 
             Returns a reference to the specified group or None if there is no group
@@ -438,10 +465,13 @@ def __doc_Group():
         Throws     :
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
     # Tango methods (~ DeviceProxy interface)
-    document_method("ping", """
+    document_method(
+        "ping",
+        """
     ping(self, forward=True) -> bool
 
             Ping all devices in a group.
@@ -455,9 +485,12 @@ def __doc_Group():
                      the group are alive, false otherwise.
 
         Throws     :
-    """)
+    """,
+    )
 
-    document_method("set_timeout_millis", """
+    document_method(
+        "set_timeout_millis",
+        """
     set_timeout_millis(self, timeout_ms) -> bool
 
             Set client side timeout for all devices composing the group in
@@ -472,9 +505,12 @@ def __doc_Group():
         Throws     : (errors are ignored)
 
         New in PyTango 7.0.0
-    """)
+    """,
+    )
 
-    document_method("command_inout_asynch", """
+    document_method(
+        "command_inout_asynch",
+        """
     command_inout_asynch(self, cmd_name, forget=False, forward=True, reserved=-1 ) -> int
     command_inout_asynch(self, cmd_name, param, forget=False, forward=True, reserved=-1 ) -> int
     command_inout_asynch(self, cmd_name, param_list, forget=False, forward=True, reserved=-1 ) -> int
@@ -502,9 +538,12 @@ def __doc_Group():
                     Group.command_inout_reply() to obtain the results.
 
         Throws     :
-    """)
+    """,
+    )
 
-    document_method("command_inout_reply", """
+    document_method(
+        "command_inout_reply",
+        """
     command_inout_reply(self, req_id, timeout_ms=0) -> sequence<GroupCmdReply>
 
             Returns the results of an asynchronous command.
@@ -522,9 +561,12 @@ def __doc_Group():
         Return     : (sequence<GroupCmdReply>)
 
         Throws     :
-    """)
+    """,
+    )
 
-    document_method("read_attribute_asynch", """
+    document_method(
+        "read_attribute_asynch",
+        """
     read_attribute_asynch(self, attr_name, forward=True, reserved=-1 ) -> int
 
             Reads an attribute on each device in the group asynchronously.
@@ -542,9 +584,12 @@ def __doc_Group():
                     Group.read_attribute_reply() to obtain the results.
 
         Throws     :
-    """)
+    """,
+    )
 
-    document_method("read_attributes_asynch", """
+    document_method(
+        "read_attributes_asynch",
+        """
     read_attributes_asynch(self, attr_names, forward=True, reserved=-1 ) -> int
 
             Reads the attributes on each device in the group asynchronously.
@@ -562,9 +607,12 @@ def __doc_Group():
                     Group.read_attributes_reply() to obtain the results.
 
         Throws     :
-    """)
+    """,
+    )
 
-    document_method("read_attribute_reply", """
+    document_method(
+        "read_attribute_reply",
+        """
     read_attribute_reply(self, req_id, timeout_ms=0 ) -> sequence<GroupAttrReply>
 
             Returns the results of an asynchronous attribute reading.
@@ -581,9 +629,12 @@ def __doc_Group():
         Return     : (sequence<GroupAttrReply>)
 
         Throws     :
-    """)
+    """,
+    )
 
-    document_method("read_attributes_reply", """
+    document_method(
+        "read_attributes_reply",
+        """
     read_attributes_reply(self, req_id, timeout_ms=0 ) -> sequence<GroupAttrReply>
 
             Returns the results of an asynchronous attribute reading.
@@ -600,9 +651,12 @@ def __doc_Group():
         Return     : (sequence<GroupAttrReply>)
 
         Throws     :
-    """)
+    """,
+    )
 
-    document_method("write_attribute_asynch", """
+    document_method(
+        "write_attribute_asynch",
+        """
     write_attribute_asynch(self, attr_name, value, forward=True, multi=False ) -> int
 
             Writes an attribute on each device in the group asynchronously.
@@ -625,9 +679,12 @@ def __doc_Group():
                     Group.write_attribute_reply() to obtain the acknowledgements.
 
         Throws     :
-    """)
+    """,
+    )
 
-    document_method("write_attribute_reply", """
+    document_method(
+        "write_attribute_reply",
+        """
     write_attribute_reply(self, req_id, timeout_ms=0 ) -> sequence<GroupReply>
 
             Returns the acknowledgements of an asynchronous attribute writing.
@@ -644,21 +701,30 @@ def __doc_Group():
         Return     : (sequence<GroupReply>)
 
         Throws     :
-    """)
+    """,
+    )
 
-    document_method("get_name", """
+    document_method(
+        "get_name",
+        """
         Get the name of the group. Eg: Group('name').get_name() == 'name'
-    """)
-    document_method("get_fully_qualified_name", """
+    """,
+    )
+    document_method(
+        "get_fully_qualified_name",
+        """
         Get the complete (dpt-separated) name of the group. This takes into
         consideration the name of the group and its parents.
-    """)
+    """,
+    )
     document_method("enable", "Enables a group or a device element in a group.")
     document_method("disable", "Disables a group or a device element in a group.")
     document_method("is_enabled", "Check if a group is enabled.\nNew in PyTango 7.0.0")
     document_method("name_equals", "New in PyTango 7.0.0")
     document_method("name_matches", "New in PyTango 7.0.0")
-    document_method("get_size", """
+    document_method(
+        "get_size",
+        """
     get_size(self, forward=True) -> int
 
         Parameters :
@@ -668,13 +734,16 @@ def __doc_Group():
         Return     : (int) The number of the devices in the hierarchy
 
         Throws     :
-    """)
+    """,
+    )
 
     def document_group_method(method_name, desc, append=True):
         return __document_method(Group, method_name, desc, append)
 
     document_group_method("add", _RealGroup._add.__doc__, False)
-    document_group_method("add", """
+    document_group_method(
+        "add",
+        """
     add(self, subgroup, timeout_ms=-1) -> None
 
             Attaches a (sub)_RealGroup.
@@ -691,9 +760,12 @@ def __doc_Group():
         Return     : None
 
         Throws     : TypeError, ArgumentError
-    """)
+    """,
+    )
 
-    document_group_method("command_inout", """
+    document_group_method(
+        "command_inout",
+        """
     command_inout(self, cmd_name, forward=True) -> sequence<GroupCmdReply>
     command_inout(self, cmd_name, param, forward=True) -> sequence<GroupCmdReply>
     command_inout(self, cmd_name, param_list, forward=True) -> sequence<GroupCmdReply>
@@ -711,28 +783,38 @@ def __doc_Group():
                             to the local set of devices.
 
         Return : (sequence<GroupCmdReply>)
-    """)
+    """,
+    )
 
-    document_group_method("read_attribute", """
+    document_group_method(
+        "read_attribute",
+        """
     read_attribute(self, attr_name, forward=True) -> sequence<GroupAttrReply>
 
             Just a shortcut to do:
                 self.read_attribute_reply(self.read_attribute_asynch(...))
-    """)
+    """,
+    )
 
-    document_group_method("read_attributes", """
+    document_group_method(
+        "read_attributes",
+        """
     read_attributes(self, attr_names, forward=True) -> sequence<GroupAttrReply>
 
             Just a shortcut to do:
                 self.read_attributes_reply(self.read_attributes_asynch(...))
-    """)
+    """,
+    )
 
-    document_group_method("write_attribute", """
+    document_group_method(
+        "write_attribute",
+        """
     write_attribute(self, attr_name, value, forward=True, multi=False) -> sequence<GroupReply>
 
             Just a shortcut to do:
                 self.write_attribute_reply(self.write_attribute_asynch(...))
-    """)
+    """,
+    )
 
 
 def group_init(doc=True):

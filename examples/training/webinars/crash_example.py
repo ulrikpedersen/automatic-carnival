@@ -16,7 +16,7 @@ with DeviceTestContext(Device1, process=True) as proxy:
     sleep = 12  # sleep >~11 ==> SIGSEGV ; sleep<10 ==> exit OK
     for i in range(sleep):
         time.sleep(1)
-        print(i+1, end=', ')
+        print(i + 1, end=", ")
     print("\nbefore unsubscribe")
     proxy.unsubscribe_event(eid)  # <-- SEGFAULT here
     print("after unsubscribe")

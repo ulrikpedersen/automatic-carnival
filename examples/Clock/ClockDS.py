@@ -31,7 +31,6 @@ class DisplayType(IntEnum):
 
 
 class Clock(Device):
-
     display_type = DisplayType(0)
 
     @attribute(dtype=float)

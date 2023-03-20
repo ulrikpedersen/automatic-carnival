@@ -1,7 +1,7 @@
 .. currentmodule:: tango
 
 .. highlight:: python
-   :linenothreshold: 3
+   :linenothreshold: 10
 
 .. _pytango-howto:
 
@@ -52,7 +52,7 @@ and the Tango C++ library version that PyTango was compiled with::
 
     >>> import tango
     >>> tango.constants.TgLibVers
-    '9.4.0'
+    '9.4.1'
 
 
 Start server from command line
@@ -485,6 +485,8 @@ instance of :class:`~tango.EnsureOmniThread`.  However, calling the
 :meth:`~tango.EnsureOmniThread.__exit__()` method on the corresponding
 object at shutdown is a problem.  Maybe it could be submitted as work.
 
+.. _howto_write_a_server:
+
 Write a server
 --------------
 
@@ -563,6 +565,8 @@ using the high level API. The example contains:
 
 #. a read-only double scalar attribute called *voltage*
 #. a read/write double scalar expert attribute *current*
+#. a read/write float scalar attribute *range*, defined with pythonic-style decorators, which can be always read, but conditionally written
+#. a read/write float scalar attribute *compliance*, defined with alternative decorators
 #. a read-only double image attribute called *noise*
 #. a *ramp* command
 #. a *host* device property
@@ -574,12 +578,16 @@ using the high level API. The example contains:
     from time import time
     from numpy.random import random_sample
 
-    from tango import AttrQuality, AttrWriteType, DispLevel
+    from tango import AttrQuality, AttrWriteType, DispLevel, AttReqType
     from tango.server import Device, attribute, command
     from tango.server import class_property, device_property
 
 
     class PowerSupply(Device):
+
+        _my_range = 0
+        _my_compliance = 0.
+        _output_on = False
 
         current = attribute(label="Current", dtype=float,
                             display_level=DispLevel.EXPERT,
@@ -612,10 +620,35 @@ using the high level API. The example contains:
         def get_noise(self):
             return random_sample((1024, 1024))
 
-        @command(dtype_in=float)
-        def ramp(self, value):
-            print("Ramping up...")
+        range = attribute(label="Range", dtype=float)
 
+        @range.setter
+        def range(self, new_range):
+            self._my_range = new_range
+
+        @range.getter
+        def current_range(self):
+            return self._my_range
+
+        @range.is_allowed
+        def can_range_be_changed(self, req_type):
+            if req_type == AttReqType.WRITE_REQ:
+                return not self._output_on
+            return True
+
+        compliance = attribute(label="Compliance", dtype=float)
+
+        @compliance.read
+        def compliance(self):
+            return self._my_compliance
+
+        @compliance.write
+        def new_compliance(self, new_compliance):
+            self._my_compliance = new_compliance
+
+        @command(dtype_in=bool)
+        def output_on_off(self, on_off):
+            self._output_on = on_off
 
     if __name__ == "__main__":
         PowerSupply.run_server()
@@ -814,6 +847,8 @@ device server than before but with one C++ Tango class called SerialLine::
 :Line 6: The C++ class is registered in the device server
 :Line 7 and 8: The two Python classes are registered in the device server
 
+.. _dynamic-attributes-howto:
+
 Create attributes dynamically
 -----------------------------
 
@@ -837,15 +872,15 @@ then you can use the generic device_factory's call to the
 It is simply necessary to re-define this method within your <Device>Class and to create
 the dynamic attributes within this method.
 
-Internally, the high-level API re-defines dyn_attr() to call initialize_dynamic_attributes()
-for each device.
+Internally, the high-level API re-defines :meth:`~tango.DeviceClass.dyn_attr` to call
+:meth:`~tango.server.Device.initialize_dynamic_attributes` for each device.
 
-.. note:: The dyn_attr() (and initialize_dynamic_attributes() for high-level API) methods
-          are only called once when the device server starts, since the Python device_factory
-          method is only called once. Within the device_factory method, init_device() is
-          called for all devices and only after that is dyn_attr() called for all devices.
-          If the Init command is executed on a device it will not call the dyn_attr() method
-          again.
+.. note:: The ``dyn_attr()`` (and ``initialize_dynamic_attributes()`` for high-level API) methods
+          are only called **once** when the device server starts, since the Python device_factory
+          method is only called once. Within the device_factory method, ``init_device()`` is
+          called for all devices and only after that is ``dyn_attr()`` called for all devices.
+          If the ``Init`` command is executed on a device it will not call the ``dyn_attr()`` method
+          again (and will not call ``initialize_dynamic_attributes()`` either).
 
 There is another point to be noted regarding dynamic attributes within a Python
 device server. The Tango Python device server core checks that for each
@@ -864,13 +899,29 @@ when the attribute is written and fisallowed is the method to be executed
 to implement the attribute state machine.  This :class:`tango.server.attribute` object
 is then passed to the :meth:`~tango.server.Device.add_attribute` method.
 
-.. note:: The methods used for fget, fset and fisallowed must be methods that exist
-          on your Device class.  They cannot be plain functions, nor belong to a
-          different class.  You can pass a reference to the bound or unbound method,
-          but during execution the bound method will be used.
+.. note:: If the fget (fread), fset (fwrite) and fisallowed are given as str(name) they must be methods
+          that exist on your Device class. If you want to use plain functions, or functions belonging to a
+          different class, you should pass a callable.
 
 Which arguments you have to provide depends on the type of the attribute.  For example,
 a WRITE attribute does not need a read method.
+
+.. note:: Starting from PyTango 9.4.0 the read methods for dynamic attributes
+          can also be implemented with the high-level API.  Prior to that, only the low-level
+          API was available.
+
+For the read function it is possible to use one of the following signatures::
+
+    def low_level_read(self, attr):
+        attr.set_value(self.attr_value)
+
+    def high_level_read(self, attr):
+        return self.attr_value
+
+For the write function there is only one signature::
+
+    def low_level_write(self, attr):
+        self.attr_value = attr.get_write_value()
 
 Here is an example of a device which creates a dynamic attribute on startup::
 
@@ -892,17 +943,18 @@ Here is an example of a device which creates a dynamic attribute on startup::
             self.add_attribute(attr)
 
         def generic_read(self, attr):
-            value = self._values[attr.get_name()]
-            # unlike a normal static attribute read, we have to modify the value
-            # inside this attr object, rather than just returning the value
-            attr.set_value(value)
+            attr_name = attr.get_name()
+            value = self._values[attr_name]
+            return value
 
         def generic_write(self, attr):
-            self._values[attr.get_name()] = attr.get_write_value()
+            attr_name = attr.get_name()
+            value = attr.get_write_value()
+            self._values[attr_name] = value
 
-        def generic_is_allowed(self, req_type):
+        def generic_is_allowed(self, request_type):
             # note: we don't know which attribute is being read!
-            # req_type will be either AttReqType.READ_REQ or AttReqType.WRITE_REQ
+            # request_type will be either AttReqType.READ_REQ or AttReqType.WRITE_REQ
             return True
 
 
@@ -940,13 +992,16 @@ point attribute with the specified name::
                 raise ValueError(f"Already have an attribute called {repr(attr_name)}")
 
         def generic_read(self, attr):
-            self.info_stream("Reading attribute %s", attr.get_name())
+            attr_name = attr.get_name()
+            self.info_stream("Reading attribute %s", attr_name)
             value = self._values[attr.get_name()]
             attr.set_value(value)
 
         def generic_write(self, attr):
-            self.info_stream("Writing attribute %s - value %s", attr.get_name(), attr.get_write_value())
-            self._values[attr.get_name()] = attr.get_write_value()
+            attr_name = attr.get_name()
+            value = attr.get_write_value()
+            self.info_stream("Writing attribute %s - value %s", attr_name, value)
+            self._values[attr.get_name()] = value
 
 An approach more in line with the low-level API is also possible, but not recommended for
 new devices. The Device_3Impl::add_attribute() method has the following

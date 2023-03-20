@@ -24,24 +24,24 @@ from ._tango import Except, DevError, ErrSeverity
 def __to_dev_failed(exc_type=None, exc_value=None, traceback=None):
     """to_dev_failed(exc_type, exc_value, traceback) -> tango.DevFailed
 
-            Generate a TANGO DevFailed exception.
-            The exception is created with a single :class:`~tango.DevError`
-            object. A default value *tango.ErrSeverity.ERR* is defined for
-            the :class:`~tango.DevError` severity field.
+        Generate a TANGO DevFailed exception.
+        The exception is created with a single :class:`~tango.DevError`
+        object. A default value *tango.ErrSeverity.ERR* is defined for
+        the :class:`~tango.DevError` severity field.
 
-            The parameters are the same as the ones generates by a call to
-            :func:`sys.exc_info`.
+        The parameters are the same as the ones generates by a call to
+        :func:`sys.exc_info`.
 
-        Parameters :
-            - type : (class)  the exception type of the exception being handled
-            - value : (object) exception parameter (its associated value or the
-                      second argument to raise, which is always a class instance
-                      if the exception type is a class object)
-            - traceback : (traceback) traceback object
+    Parameters :
+        - type : (class)  the exception type of the exception being handled
+        - value : (object) exception parameter (its associated value or the
+                  second argument to raise, which is always a class instance
+                  if the exception type is a class object)
+        - traceback : (traceback) traceback object
 
-        Return     : (tango.DevFailed) a tango exception object
+    Return     : (tango.DevFailed) a tango exception object
 
-        New in PyTango 7.2.1"""
+    New in PyTango 7.2.1"""
     try:
         Except.throw_python_exception(exc_type, exc_value, traceback)
     except Exception as e:
@@ -51,6 +51,7 @@ def __to_dev_failed(exc_type=None, exc_value=None, traceback=None):
 # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~
 # DevError pickle
 # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~
+
 
 def __DevError__getinitargs__(self):
     return ()
@@ -89,7 +90,9 @@ def __doc_Except():
         - print_exception
         - compare_exception"""
 
-    document_static_method("throw_exception", """
+    document_static_method(
+        "throw_exception",
+        """
     throw_exception(reason, desc, origin, sever=tango.ErrSeverity.ERR) -> None
 
             Generate and throw a TANGO DevFailed exception.
@@ -104,9 +107,12 @@ def __doc_Except():
             - sever  : (tango.ErrSeverity) The exception DevError object severity field
 
         Throws     : DevFailed
-    """)
+    """,
+    )
 
-    document_static_method("re_throw_exception", """
+    document_static_method(
+        "re_throw_exception",
+        """
     re_throw_exception(ex, reason, desc, origin, sever=tango.ErrSeverity.ERR) -> None
 
             Re-throw a TANGO :class:`~tango.DevFailed` exception with one more error.
@@ -122,27 +128,36 @@ def __doc_Except():
             - sever  : (tango.ErrSeverity) The exception DevError object severity field
 
         Throws     : DevFailed
-    """)
+    """,
+    )
 
-    document_static_method("print_error_stack", """
+    document_static_method(
+        "print_error_stack",
+        """
     print_error_stack(ex) -> None
 
             Print all the details of a TANGO error stack.
 
         Parameters :
             - ex     : (tango.DevErrorList) The error stack reference
-    """)
+    """,
+    )
 
-    document_static_method("print_exception", """
+    document_static_method(
+        "print_exception",
+        """
     print_exception(ex) -> None
 
             Print all the details of a TANGO exception.
 
         Parameters :
             - ex     : (tango.DevFailed) The :class:`~tango.DevFailed` exception
-    """)
+    """,
+    )
 
-    document_static_method("throw_python_exception", """
+    document_static_method(
+        "throw_python_exception",
+        """
     throw_python_exception(type, value, traceback) -> None
 
             Generate and throw a TANGO DevFailed exception.
@@ -163,7 +178,8 @@ def __doc_Except():
         Throws     : DevFailed
 
         New in PyTango 7.2.1
-    """)
+    """,
+    )
 
 
 def __doc_DevError():

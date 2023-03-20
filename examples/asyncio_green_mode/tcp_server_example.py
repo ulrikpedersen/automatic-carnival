@@ -29,7 +29,7 @@ from tango.asyncio import AttributeProxy
 
 async def handle_echo(reader, writer):
     # Write the cursor
-    writer.write(b'>>> ')
+    writer.write(b">>> ")
     # Loop over client request
     async for line in reader:
         request = line.decode().strip()
@@ -42,14 +42,14 @@ async def handle_echo(reader, writer):
         except Exception as exc:
             reply = str(exc)
         # Reply to client
-        writer.write(reply.encode() + b'\n' + b'>>> ')
+        writer.write(reply.encode() + b"\n" + b">>> ")
     # Close communication
     writer.close()
 
 
 async def start_serving():
-    server = await asyncio.start_server(handle_echo, '0.0.0.0', 8888)
-    print('Serving on {} port {}'.format(*server.sockets[0].getsockname()))
+    server = await asyncio.start_server(handle_echo, "0.0.0.0", 8888)
+    print("Serving on {} port {}".format(*server.sockets[0].getsockname()))
     return server
 
 
@@ -72,5 +72,5 @@ def main():
     loop.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

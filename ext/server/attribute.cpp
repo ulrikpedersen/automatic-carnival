@@ -130,17 +130,17 @@ namespace PyAttribute
             throw_wrong_python_data_type(att.get_name(), "set_value()");
         }
 
-	PyObject* data_ptr = data.ptr();
-	Py_buffer view;
-	
-	if (PyObject_GetBuffer(data_ptr, &view, PyBUF_FULL_RO) < 0)
-	{
-	    throw_wrong_python_data_type(att.get_name(), "set_value()");
-	}
+        PyObject* data_ptr = data.ptr();
+        Py_buffer view;
 
-	Tango::DevString val_str_real = val_str;
-        att.set_value(&val_str_real, (Tango::DevUChar*)view.buf, (long)view.len);	
-	PyBuffer_Release(&view);
+        if (PyObject_GetBuffer(data_ptr, &view, PyBUF_FULL_RO) < 0)
+        {
+            throw_wrong_python_data_type(att.get_name(), "set_value()");
+        }
+
+        Tango::DevString val_str_real = val_str;
+            att.set_value(&val_str_real, (Tango::DevUChar*)view.buf, (long)view.len);
+        PyBuffer_Release(&view);
     }
 
     /**

@@ -12,6 +12,6 @@ dt = time() - start
 print(f"Took {dt}s to create {N} objects (avg {dt/N}s/object)")
 
 start = time()
-res = [ obj.func3(1,2) for obj in objs ]
+res = [obj.func3(1, 2) for obj in objs]
 dt = time() - start
 print(f"Took {dt}s to call func3 on {N} objects (avg {dt/N}s/object)")

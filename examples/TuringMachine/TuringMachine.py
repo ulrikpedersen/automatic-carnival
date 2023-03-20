@@ -5,7 +5,6 @@ from PyTango.server import attribute, command, device_property
 
 
 class TuringMachine(Device):
-
     blank_symbol = device_property(dtype=str, default_value=" ")
     initial_state = device_property(dtype=str, default_value="init")
 

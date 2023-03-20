@@ -21,7 +21,7 @@ import gevent.monkey
 import gevent.threadpool
 
 # Bypass gevent monkey patching
-ThreadSafeEvent = gevent.monkey.get_original('threading', 'Event')
+ThreadSafeEvent = gevent.monkey.get_original("threading", "Event")
 
 # Tango imports
 from .green import AbstractExecutor
@@ -54,7 +54,7 @@ def get_global_threadpool():
     return _THREAD_POOL
 
 
-ExceptionInfo = namedtuple('ExceptionInfo', 'type value traceback')
+ExceptionInfo = namedtuple("ExceptionInfo", "type value traceback")
 
 
 def wrap_error(func):
@@ -62,7 +62,7 @@ def wrap_error(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except:
+        except Exception:
             return ExceptionInfo(*sys.exc_info())
 
     return wrapper
@@ -74,8 +74,7 @@ def unwrap_error(source):
     def link(source):
         if isinstance(source.value, ExceptionInfo):
             try:
-                destination.set_exception(
-                    source.value.value, exc_info=source.value)
+                destination.set_exception(source.value.value, exc_info=source.value)
             # Gevent 1.0 compatibility
             except TypeError:
                 destination.set_exception(source.value.value)
@@ -87,7 +86,6 @@ def unwrap_error(source):
 
 
 class ThreadPool(gevent.threadpool.ThreadPool):
-
     def spawn(self, fn, *args, **kwargs):
         wrapped = wrap_error(fn)
         raw = super().spawn(wrapped, *args, **kwargs)
@@ -95,6 +93,7 @@ class ThreadPool(gevent.threadpool.ThreadPool):
 
 
 # Gevent task and event loop
+
 
 class GeventTask:
     def __init__(self, func, *args, **kwargs):
@@ -110,7 +109,7 @@ class GeventTask:
         self.started.set()
         try:
             self.value = self.func(*self.args, **self.kwargs)
-        except:
+        except Exception:
             self.exception = sys.exc_info()
         finally:
             self.done.set()
@@ -126,6 +125,7 @@ class GeventTask:
 
 
 # Gevent executor
+
 
 class GeventExecutor(AbstractExecutor):
     """Gevent tango executor"""
@@ -154,7 +154,7 @@ class GeventExecutor(AbstractExecutor):
         try:
             return self.loop.async_()
         except AttributeError:
-            return getattr(self.loop, 'async')()
+            return getattr(self.loop, "async")()
 
     def submit(self, fn, *args, **kwargs):
         task = GeventTask(fn, *args, **kwargs)

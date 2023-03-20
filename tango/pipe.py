@@ -9,13 +9,26 @@
 # See LICENSE.txt for more info.
 # ------------------------------------------------------------------------------
 
-__all__ = ('PipeConfig',)
+__all__ = ("PipeConfig",)
 
-from ._tango import Pipe, PipeWriteType, UserDefaultPipeProp, \
-    CmdArgType, DevState, DispLevel, constants
+from ._tango import (
+    Pipe,
+    PipeWriteType,
+    UserDefaultPipeProp,
+    CmdArgType,
+    DevState,
+    DispLevel,
+    constants,
+)
 
-from .utils import scalar_to_array_type, TO_TANGO_TYPE, \
-    is_non_str_seq, is_pure_str, is_integer, is_number
+from .utils import (
+    scalar_to_array_type,
+    TO_TANGO_TYPE,
+    is_non_str_seq,
+    is_pure_str,
+    is_integer,
+    is_number,
+)
 from .utils import document_method as __document_method
 
 
@@ -25,9 +38,9 @@ class PipeConfig:
     object PipeConfig."""
 
     def __init__(self):
-        self.name = ''
-        self.description = ''
-        self.label = ''
+        self.name = ""
+        self.description = ""
+        self.label = ""
         self.level = DispLevel.OPERATOR
         self.writable = PipeWriteType.PIPE_READ
         self.extensions = []
@@ -35,9 +48,11 @@ class PipeConfig:
 
 def __get_pipe_type_simple(obj):
     if is_non_str_seq(obj):
-        if len(obj) == 2 and \
-                is_pure_str(obj[0]) and \
-                (is_non_str_seq(obj[1]) or isinstance(obj[1], dict)):
+        if (
+            len(obj) == 2
+            and is_pure_str(obj[0])
+            and (is_non_str_seq(obj[1]) or isinstance(obj[1], dict))
+        ):
             tg_type = CmdArgType.DevPipeBlob
         else:
             tg_type = __get_pipe_type(obj[0])
@@ -53,7 +68,7 @@ def __get_pipe_type_simple(obj):
     elif is_number(obj):
         tg_type = CmdArgType.DevDouble
     else:
-        raise ValueError('Cannot determine object tango type')
+        raise ValueError("Cannot determine object tango type")
     return tg_type
 
 
@@ -63,8 +78,9 @@ def __get_pipe_type_numpy_support(obj):
     except AttributeError:
         return __get_pipe_type_simple(obj)
     if ndim > 1:
-        raise TypeError(f'cannot translate numpy array with {obj.ndim} '
-                        f'dimensions to tango type')
+        raise TypeError(
+            f"cannot translate numpy array with {obj.ndim} " f"dimensions to tango type"
+        )
     tg_type = TO_TANGO_TYPE[dtype]
     if ndim > 0:
         tg_type = scalar_to_array_type(dtype)
@@ -96,10 +112,10 @@ def __sanatize_pipe_element(elem):
         result = dict(elem)
     else:
         result = dict(name=elem[0], value=elem[1])
-    result['value'] = value = result.get('value', result.pop('blob', None))
-    result['dtype'] = dtype = __get_pipe_type(value, dtype=result.get('dtype'))
+    result["value"] = value = result.get("value", result.pop("blob", None))
+    result["dtype"] = dtype = __get_pipe_type(value, dtype=result.get("dtype"))
     if dtype == CmdArgType.DevPipeBlob:
-        result['value'] = value[0], __sanatize_pipe_blob(value[1])
+        result["value"] = value[0], __sanatize_pipe_blob(value[1])
     return result
 
 
@@ -142,7 +158,9 @@ def __doc_UserDefaultPipeProp():
     a Tango library default value
     """
 
-    document_method("set_label", """
+    document_method(
+        "set_label",
+        """
     set_label(self, def_label) -> None
 
             Set default label property.
@@ -150,9 +168,12 @@ def __doc_UserDefaultPipeProp():
         Parameters :
             - def_label : (str) the user default label property
         Return     : None
-    """)
+    """,
+    )
 
-    document_method("set_description", """
+    document_method(
+        "set_description",
+        """
     set_description(self, def_description) -> None
 
             Set default description property.
@@ -160,7 +181,8 @@ def __doc_UserDefaultPipeProp():
         Parameters :
             - def_description : (str) the user default description property
         Return     : None
-    """)
+    """,
+    )
 
 
 def pipe_init(doc=True):

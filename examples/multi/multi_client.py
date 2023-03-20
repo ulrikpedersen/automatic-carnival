@@ -12,7 +12,7 @@ print(f"my_object.func1() = {r1}")
 r2 = my_object.func2(96.44)
 print(f"my_object.func2(96.44) = {r2}")
 
-r3 = my_object.func3(45.86, 'hello', d=False, c='world')
+r3 = my_object.func3(45.86, "hello", d=False, c="world")
 print(f"my_object.func3(45.86, 'hello', d=False, c='world') = {r3}")
 
 another_object = PyTango.client.Object("multi_another_object")

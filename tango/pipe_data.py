@@ -50,18 +50,18 @@ class PipeData:
     @classmethod
     def from_dict(cls, pipe_dict):
         pipe_dict = dict(pipe_dict)
-        name = pipe_dict.pop('name', None)
-        class_name = pipe_dict.pop('class_name', None)
+        name = pipe_dict.pop("name", None)
+        class_name = pipe_dict.pop("class_name", None)
         self = cls(name, class_name)
         self.build_from_dict(pipe_dict)
         return self
 
     def build_from_dict(self, pipe_dict):
-        self.display_level = pipe_dict.pop('display_level', DispLevel.OPERATOR)
+        self.display_level = pipe_dict.pop("display_level", DispLevel.OPERATOR)
 
         is_access_explicit = "access" in pipe_dict
         if is_access_explicit:
-            self.pipe_write = pipe_dict.pop('access')
+            self.pipe_write = pipe_dict.pop("access")
         else:
             # access is defined by which methods were defined
             r_explicit = "fread" in pipe_dict or "fget" in pipe_dict
@@ -71,19 +71,19 @@ class PipeData:
             else:
                 self.pipe_write = PipeWriteType.PIPE_READ
 
-        fread = pipe_dict.pop('fget', pipe_dict.pop('fread', None))
+        fread = pipe_dict.pop("fget", pipe_dict.pop("fread", None))
         if fread is not None:
             if is_pure_str(fread):
                 self.read_method_name = fread
             elif inspect.isroutine(fread):
                 self.read_method_name = fread.__name__
-        fwrite = pipe_dict.pop('fset', pipe_dict.pop('fwrite', None))
+        fwrite = pipe_dict.pop("fset", pipe_dict.pop("fwrite", None))
         if fwrite is not None:
             if is_pure_str(fwrite):
                 self.write_method_name = fwrite
             elif inspect.isroutine(fwrite):
                 self.write_method_name = fwrite.__name__
-        fisallowed = pipe_dict.pop('fisallowed', None)
+        fisallowed = pipe_dict.pop("fisallowed", None)
         if fisallowed is not None:
             if is_pure_str(fisallowed):
                 self.is_allowed_name = fisallowed
@@ -114,9 +114,9 @@ class PipeData:
         """for internal usage only"""
         p = UserDefaultPipeProp()
 
-        doc = extra_info.pop('doc', None)
+        doc = extra_info.pop("doc", None)
         if doc is not None:
-            extra_info['description'] = doc
+            extra_info["description"] = doc
 
         for k, v in extra_info.items():
             k_lower = k.lower()
@@ -125,11 +125,14 @@ class PipeData:
                 method = getattr(p, method_name)
                 method(str(v))
             else:
-                msg = f"Wrong definition of pipe. " \
-                      f"The object extra information '{k}' " \
-                      f"is not recognized!"
-                Except.throw_exception("PyDs_WrongPipeDefinition", msg,
-                                       "create_user_default_pipe_prop()")
+                msg = (
+                    f"Wrong definition of pipe. "
+                    f"The object extra information '{k}' "
+                    f"is not recognized!"
+                )
+                Except.throw_exception(
+                    "PyDs_WrongPipeDefinition", msg, "create_user_default_pipe_prop()"
+                )
         return p
 
     def from_pipe_info(self, pipe_info):
@@ -140,12 +143,16 @@ class PipeData:
 
         # check parameter
         if not is_non_str_seq(pipe_info):
-            throw_ex(f"Wrong data type for value for describing pipe {pipe_name} in "
-                     f"class {name}\nMust be a sequence with 1 or 2 elements")
+            throw_ex(
+                f"Wrong data type for value for describing pipe {pipe_name} in "
+                f"class {name}\nMust be a sequence with 1 or 2 elements"
+            )
 
         if len(pipe_info) < 1 or len(pipe_info) > 2:
-            throw_ex(f"Wrong number of argument for describing pipe {pipe_name} in "
-                     f"class {name}\nMust be a sequence with 1 or 2 elements")
+            throw_ex(
+                f"Wrong number of argument for describing pipe {pipe_name} in "
+                f"class {name}\nMust be a sequence with 1 or 2 elements"
+            )
 
         extra_info = {}
         if len(pipe_info) == 2:
@@ -159,17 +166,22 @@ class PipeData:
         # get write type
         try:
             self.pipe_write = PipeWriteType(pipe_info)
-        except:
-            throw_ex(f"Wrong data write type in pipe argument for "
-                     f"pipe {pipe_name} in class {name}\nPipe write type must be a "
-                     f"tango.PipeWriteType")
+        except Exception:
+            throw_ex(
+                f"Wrong data write type in pipe argument for "
+                f"pipe {pipe_name} in class {name}\nPipe write type must be a "
+                f"tango.PipeWriteType"
+            )
         try:
-            self.display_level = DispLevel(extra_info.get("display level",
-                                                          DispLevel.OPERATOR))
-        except:
-            throw_ex(f"Wrong display level in pipe information for "
-                     f"pipe {pipe_name} in class {name}\nPipe information for "
-                     f"display level is not a tango.DispLevel")
+            self.display_level = DispLevel(
+                extra_info.get("display level", DispLevel.OPERATOR)
+            )
+        except Exception:
+            throw_ex(
+                f"Wrong display level in pipe information for "
+                f"pipe {pipe_name} in class {name}\nPipe information for "
+                f"display level is not a tango.DispLevel"
+            )
 
         self.pipe_class = extra_info.get("klass", Pipe)
         self.pipe_args.extend((self.pipe_name, self.display_level, self.pipe_write))

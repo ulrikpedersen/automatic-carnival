@@ -30,39 +30,6 @@ static const char* type_attr_name = "type";
 static const char* is_empty_attr_name = "is_empty";
 static const char* has_failed_attr_name = "has_failed";
 
-template<long tangoTypeConst>
-struct python_tangocpp
-{
-    typedef typename TANGO_const2type(tangoTypeConst) TangoScalarType;
-
-    static inline void to_cpp(const bopy::object & py_value, TangoScalarType & result)
-    {
-        result = bopy::extract<TangoScalarType>(py_value);
-    }
-
-    static inline bopy::object to_python(const TangoScalarType & value)
-    {
-        return bopy::object(value);
-    }
-};
-
-template<>
-struct python_tangocpp<Tango::DEV_STRING>
-{
-    static const long tangoTypeConst = Tango::DEV_STRING;
-    typedef TANGO_const2type(tangoTypeConst) TangoScalarType;
-
-    static inline void to_cpp(const bopy::object & py_value, TangoScalarType & result)
-    {
-        result = from_str_to_char(py_value.ptr());
-    }
-
-    static inline bopy::object to_python(const TangoScalarType & value)
-    {
-	return from_char_to_boost_str(value);
-    }
-};
-
 #include "device_attribute_numpy.hpp"
 
 #define EXTRACT_VALUE(self, value_ptr) \
@@ -77,55 +44,65 @@ try { \
 namespace PyDeviceAttribute
 {
     template<long tangoTypeConst> static inline void
-    _update_value_as_bin(Tango::DeviceAttribute &self,
-                         bopy::object py_value, bool read_only)
+    _update_value_as_bin(Tango::DeviceAttribute &self, bopy::object py_value, bool read_only)
     {
         typedef typename TANGO_const2type(tangoTypeConst) TangoScalarType;
         typedef typename TANGO_const2arraytype(tangoTypeConst) TangoArrayType;
+
+        const int read_length = self.get_nb_read();
+        const int written_length = self.get_nb_written();
 
         // Extract the actual data from Tango::DeviceAttribute (self)
         TangoArrayType* value_ptr = 0;
         EXTRACT_VALUE(self, value_ptr)
         unique_pointer<TangoArrayType> guard_value_ptr(value_ptr);
 
-        py_value.attr(w_value_attr_name) = bopy::object();
-
-        if (value_ptr == 0)
-        {
-            if (read_only)
-            {
-                py_value.attr(value_attr_name) =
-                    bopy::object(bopy::handle<>(_PyObject_New(&PyBytes_Type)));
-            }
-            else
-            {
-                py_value.attr(value_attr_name) =
-                    bopy::object(bopy::handle<>(_PyObject_New(&PyByteArray_Type)));
-            }
-            return;
+        TangoArrayType empty;
+        if (value_ptr == 0){
+            // Empty device attribute
+            value_ptr = &empty;
         }
 
         TangoScalarType* buffer = value_ptr->get_buffer();
 
         const char *ch_ptr = reinterpret_cast<char *>(buffer);
-        Py_ssize_t nb_bytes = (Py_ssize_t)value_ptr->length() * sizeof(TangoScalarType);
 
-        PyObject* data_ptr = NULL;
+        Py_ssize_t nb_bytes_read = read_length * sizeof(TangoScalarType);
+        Py_ssize_t nb_bytes_written = written_length * sizeof(TangoScalarType);
+
+        PyObject* read_data_ptr = NULL;
         if (read_only)
         {
-            data_ptr = PyBytes_FromStringAndSize(ch_ptr, nb_bytes);
+            read_data_ptr = PyBytes_FromStringAndSize(ch_ptr, nb_bytes_read);
         }
         else
         {
-            data_ptr = PyByteArray_FromStringAndSize(ch_ptr, nb_bytes);
+            read_data_ptr = PyByteArray_FromStringAndSize(ch_ptr, nb_bytes_read);
         }
-        py_value.attr(value_attr_name) = bopy::object(bopy::handle<>(data_ptr));
+
+        py_value.attr(value_attr_name) = bopy::object(bopy::handle<>(read_data_ptr));
+
+        PyObject* written_data_ptr = NULL;
+        if (read_only)
+        {
+            written_data_ptr = PyBytes_FromStringAndSize(ch_ptr+nb_bytes_read, nb_bytes_written);
+        }
+        else
+        {
+            written_data_ptr = PyByteArray_FromStringAndSize(ch_ptr+nb_bytes_read, nb_bytes_written);
+        }
+
+        py_value.attr(w_value_attr_name) = bopy::object(bopy::handle<>(written_data_ptr));
     }
 
     template<> inline void
-    _update_value_as_bin<Tango::DEV_ENCODED>(Tango::DeviceAttribute &self,
-                                             bopy::object py_value,
-                                             bool read_only)
+    _update_value_as_bin<Tango::DEV_STRING>(Tango::DeviceAttribute &self, bopy::object py_value, bool read_only)
+    {
+        assert(false);
+    }
+
+    template<> inline void
+    _update_value_as_bin<Tango::DEV_ENCODED>(Tango::DeviceAttribute &self, bopy::object py_value, bool read_only)
     {
         Tango::DevVarEncodedArray* value_ptr;
         EXTRACT_VALUE(self, value_ptr)
@@ -201,31 +178,39 @@ namespace PyDeviceAttribute
     }
 
     template<long tangoTypeConst> static inline void
-    _update_value_as_string(Tango::DeviceAttribute &self,
-                            bopy::object py_value)
+    _update_value_as_string(Tango::DeviceAttribute &self, bopy::object py_value)
     {
         typedef typename TANGO_const2type(tangoTypeConst) TangoScalarType;
         typedef typename TANGO_const2arraytype(tangoTypeConst) TangoArrayType;
+
+        const int read_length = self.get_nb_read();
+        const int written_length = self.get_nb_written();
 
         // Extract the actual data from Tango::DeviceAttribute (self)
         TangoArrayType* value_ptr = 0;
         EXTRACT_VALUE(self, value_ptr)
         unique_pointer<TangoArrayType> guard_value_ptr(value_ptr);
 
-        if (value_ptr == 0)
-        {
-            py_value.attr(value_attr_name) = bopy::str();
-            py_value.attr(w_value_attr_name) = bopy::object();
-            return;
+        TangoArrayType empty;
+        if (value_ptr == 0) {
+            // Empty device attribute
+            value_ptr = &empty;
         }
 
         TangoScalarType* buffer = value_ptr->get_buffer();
 
         const char* ch_ptr = reinterpret_cast<char *>(buffer);
-        size_t nb_bytes = value_ptr->length() * sizeof(TangoScalarType);
+        size_t nb_bytes_read = read_length * sizeof(TangoScalarType);
+        size_t nb_bytes_written = written_length * sizeof(TangoScalarType);
 
-        py_value.attr(value_attr_name) = bopy::str(ch_ptr, (size_t)nb_bytes);
-        py_value.attr(w_value_attr_name) = bopy::object();
+        py_value.attr(value_attr_name) = bopy::str(ch_ptr, (size_t)nb_bytes_read);
+        py_value.attr(w_value_attr_name) = bopy::str(ch_ptr+nb_bytes_read, (size_t)nb_bytes_written);
+    }
+
+    template<> inline void
+    _update_value_as_string<Tango::DEV_STRING>(Tango::DeviceAttribute &self, bopy::object py_value)
+    {
+        assert(false);
     }
 
     template<> inline void
@@ -284,8 +269,7 @@ namespace PyDeviceAttribute
     }
 
     template<> inline void
-    _update_value_as_string<Tango::DEV_PIPE_BLOB>(Tango::DeviceAttribute &self,
-						  bopy::object py_value)
+    _update_value_as_string<Tango::DEV_PIPE_BLOB>(Tango::DeviceAttribute &self, bopy::object py_value)
     {
 	assert(false);
     }
@@ -366,7 +350,7 @@ namespace PyDeviceAttribute
         if (value_ptr == 0) {
             // Empty device attribute
             py_value.attr(value_attr_name) = bopy::list();
-            py_value.attr(w_value_attr_name) = object();
+            py_value.attr(w_value_attr_name) = bopy::list();
             return;
         }
 
@@ -437,7 +421,7 @@ namespace PyDeviceAttribute
         if (value_ptr == 0) {
             // Empty device attribute
             py_value.attr(value_attr_name) = bopy::tuple();
-            py_value.attr(w_value_attr_name) = object();
+            py_value.attr(w_value_attr_name) = bopy::tuple();
             return;
         }
 
@@ -521,18 +505,23 @@ namespace PyDeviceAttribute
         // We do not want is_empty to launch an exception!!
         self.reset_exceptions(Tango::DeviceAttribute::isempty_flag);
 
-        // self.get_type() already does self.is_empty()
-        const int data_type = self.get_type();
-        const bool is_empty = ((data_type < 0) || (data_type == Tango::DATA_TYPE_UNKNOWN));
         const bool has_failed = self.has_failed();
-        Tango::AttrDataFormat data_format = self.get_data_format();
-
-        py_value.attr(is_empty_attr_name) = object(is_empty);
         py_value.attr(has_failed_attr_name) = object(has_failed);
+
+        const bool is_empty = self.is_empty();
+        py_value.attr(is_empty_attr_name) = object(is_empty);
+
+        const int quality = self.get_quality();
+        const bool is_invalid = quality == Tango::ATTR_INVALID;
+
+        const int data_type = self.get_type();
+        const bool failed_data_type = ((data_type < 0) || (data_type == Tango::DATA_TYPE_UNKNOWN));
+
+        Tango::AttrDataFormat data_format = self.get_data_format();
         py_value.attr(type_attr_name) = object(static_cast<Tango::CmdArgType>(data_type));
 
-        if (has_failed || is_empty) {
-            // In none of this cases 'data_type' is valid so we cannot extract
+        if (failed_data_type || has_failed || is_invalid) {
+            // In these cases we cannot/should not (to maintain backward compatibility) extract data
             py_value.attr(value_attr_name) = object();
             py_value.attr(w_value_attr_name) = object();
             return;

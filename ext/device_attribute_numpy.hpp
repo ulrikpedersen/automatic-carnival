@@ -67,15 +67,11 @@ namespace PyDeviceAttribute {
 
         if (value_ptr == 0) {
             // Empty device attribute
-            PyObject* value = PyArray_SimpleNew(0, 0, typenum);
-            if (!value)
-                throw_error_already_set();
-            py_value.attr(value_attr_name) = object(handle<>(value));
-            py_value.attr(w_value_attr_name) = object();
-            return;
+            value_ptr = new TangoArrayType ();
         }
 
-        TangoScalarType* buffer = value_ptr->get_buffer();
+        TangoScalarType *buffer = value_ptr->get_buffer();
+        char* ch_ptr = reinterpret_cast<char *>(buffer);
 
         npy_intp dims[2];
         int nd = 1;
@@ -93,8 +89,6 @@ namespace PyDeviceAttribute {
 
         // Create a new numpy.ndarray() object. It uses ch_ptr as the data,
         // so no costy memory copies when handling big images.
-        char *ch_ptr = reinterpret_cast<char *>(buffer);
-
         PyObject* array = PyArray_SimpleNewFromData(nd, dims, typenum, ch_ptr);
         if (!array) {
             delete value_ptr;
@@ -103,23 +97,26 @@ namespace PyDeviceAttribute {
 
         // Create the numpy array for the write part. It will be stored in
         // another place.
-        PyObject* warray = 0;
+        char* w_ch_ptr = 0;
+
         if (self.get_written_dim_x() != 0) {
-            if (isImage) {
-                nd = 2;
-                dims[1] = self.get_written_dim_x();
-                dims[0] = self.get_written_dim_y();
-            } else {
-                nd = 1;
-                dims[0] = self.get_written_dim_x();
-            }
-            char* w_ch_ptr = reinterpret_cast<char *>( buffer + write_part_offset );
-            warray = PyArray_SimpleNewFromData(nd, dims, typenum, w_ch_ptr);
-            if (!warray) {
-                Py_XDECREF(array);
-                delete value_ptr;
-                throw_error_already_set();
-            }
+            w_ch_ptr = reinterpret_cast<char *>(buffer + write_part_offset);
+        }
+
+        if (isImage) {
+            nd = 2;
+            dims[1] = self.get_written_dim_x();
+            dims[0] = self.get_written_dim_y();
+        } else {
+            nd = 1;
+            dims[0] = self.get_written_dim_x();
+        }
+
+        PyObject* warray = PyArray_SimpleNewFromData(nd, dims, typenum, w_ch_ptr);
+        if (!warray) {
+            Py_XDECREF(array);
+            delete value_ptr;
+            throw_error_already_set();
         }
 
         // numpy.ndarray() does not own it's memory, so we need to manage it.
@@ -128,17 +125,17 @@ namespace PyDeviceAttribute {
         // PyCObject is intended for that kind of things. It's seen as a
         // black box object from python. We assign him a function to be called
         // when it is deleted -> the function deletes the data.
-        PyObject* guard = PyCapsule_New(
-                static_cast<void*>(value_ptr),
+        PyObject *guard = PyCapsule_New(
+                static_cast<void *>(value_ptr),
                 NULL,
                 _dev_var_x_array_deleter<tangoTypeConst>);
-        if (!guard ) {
+        if (!guard) {
             Py_XDECREF(array);
             Py_XDECREF(warray);
             delete value_ptr;
             throw_error_already_set();
         }
-        
+
         PyArray_BASE(array) = guard;
         py_value.attr(value_attr_name) = boost::python::object(boost::python::handle<>(array));
 
@@ -244,7 +241,7 @@ namespace PyDeviceAttribute {
                     PyObject* dataObj = PyArray_GETITEM(array, iter->dataptr);
                     const object py_data = object( handle<>( dataObj ) );
 
-                    buffer[y*ndim_x + x] = extract<TangoScalarType>(py_data);
+                    python_tangocpp<tangoTypeConst>::to_cpp(py_data, buffer[y*ndim_x + x]);
                 }
             }
         } else {
@@ -252,7 +249,7 @@ namespace PyDeviceAttribute {
                 PyObject* dataObj = PyArray_GETITEM(array, iter->dataptr);
                 const object py_data = object( handle<>( dataObj ) );
 
-                buffer[x] = extract<TangoScalarType>(py_data);
+                python_tangocpp<tangoTypeConst>::to_cpp(py_data, buffer[x]);
 
                 PyArray_ITER_NEXT(iter);
             }

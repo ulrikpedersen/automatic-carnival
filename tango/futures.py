@@ -20,8 +20,6 @@ from tango import GreenMode
 from tango.device_proxy import get_device_proxy
 from tango.attribute_proxy import get_attribute_proxy
 
-import concurrent.futures
-
 
 DeviceProxy = partial(get_device_proxy, green_mode=GreenMode.Futures)
 DeviceProxy.__doc__ = """

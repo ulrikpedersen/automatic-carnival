@@ -29,46 +29,53 @@ def main():
     winsetup_dir = osp.dirname(osp.abspath(__file__))
     os.chdir(winsetup_dir)
     setup_name = "setup.py"
-    bitmap = osp.join(winsetup_dir, 'doc', 'logo-medium.bmp')
+    bitmap = osp.join(winsetup_dir, "doc", "logo-medium.bmp")
     ver = ".".join(map(str, sys.version_info[:2]))
 
-    print("winsetup: invoked with: " + ' '.join(sys.argv))
+    print("winsetup: invoked with: " + " ".join(sys.argv))
     if len(sys.argv) < 6:
-        print("winsetup: need to supply build directory, distribution directory, temporary binary install directory, configuration name and platform name")
+        print(
+            "winsetup: need to supply build directory, distribution directory, temporary binary install directory, configuration name and platform name"
+        )
         return 1
 
     build_dir, dist_dir, bdist_dir = map(osp.abspath, sys.argv[1:4])
     config_name, plat_name = sys.argv[4:6]
     # Pypi is picky about platform name. Make sure we obey his/her majesty
     plat_name = plat_name.lower()
-#    temp_base_dir = osp.abspath(os.environ["TEMP"])
-#    temp_dir = osp.join(temp_base_dir, "PyTango", config_name)
-    if plat_name == 'x64':
-        plat_name = 'win-amd64'
+    #    temp_base_dir = osp.abspath(os.environ["TEMP"])
+    #    temp_dir = osp.join(temp_base_dir, "PyTango", config_name)
+    if plat_name == "x64":
+        plat_name = "win-amd64"
 
     try:
-        cmd_line = f'{executable} {setup_name} '
-        cmd_line += f'build_py --force --no-compile --build-lib={build_dir} '
-        cmd_line += 'build_scripts --force '
-        cmd_line += f'install_lib --skip-build --no-compile --build-dir={build_dir} '
-#        cmd_line += 'bdist_msi --skip-build --target-version=%s ' \
-#                    '--bdist-dir=%s ' \
-#                    '--dist-dir=%s ' \
-#                    '--plat-name=%s ' % (ver, bdist_dir, dist_dir, plat_name)
-        cmd_line += f'bdist_wininst --skip-build --target-version={ver} ' \
-                    f'--bdist-dir={bdist_dir} ' \
-                    f'--dist-dir={dist_dir} ' \
-                    f'--title="PyTango 9" ' \
-                    f'--bitmap="{bitmap}" ' \
-                    f'--plat-name={plat_name} '
-        cmd_line += f'bdist_wheel --skip-build ' \
-                    f'--bdist-dir={bdist_dir} ' \
-                    f'--dist-dir={dist_dir} ' \
-                    f'--plat-name={plat_name} '
+        cmd_line = f"{executable} {setup_name} "
+        cmd_line += f"build_py --force --no-compile --build-lib={build_dir} "
+        cmd_line += "build_scripts --force "
+        cmd_line += f"install_lib --skip-build --no-compile --build-dir={build_dir} "
+        #        cmd_line += 'bdist_msi --skip-build --target-version=%s ' \
+        #                    '--bdist-dir=%s ' \
+        #                    '--dist-dir=%s ' \
+        #                    '--plat-name=%s ' % (ver, bdist_dir, dist_dir, plat_name)
+        cmd_line += (
+            f"bdist_wininst --skip-build --target-version={ver} "
+            f"--bdist-dir={bdist_dir} "
+            f"--dist-dir={dist_dir} "
+            f'--title="PyTango 9" '
+            f'--bitmap="{bitmap}" '
+            f"--plat-name={plat_name} "
+        )
+        cmd_line += (
+            f"bdist_wheel --skip-build "
+            f"--bdist-dir={bdist_dir} "
+            f"--dist-dir={dist_dir} "
+            f"--plat-name={plat_name} "
+        )
         os.system(cmd_line)
-    except:
+    except Exception:
         print("Failed:")
         import traceback
+
         traceback.print_exc()
         return 2
     finally:

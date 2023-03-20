@@ -11,6 +11,7 @@ import tempfile
 import traceback
 import collections
 from functools import partial
+import psutil
 
 # Concurrency imports
 import threading
@@ -25,41 +26,47 @@ from argparse import ArgumentParser, ArgumentTypeError
 # Local imports
 from .server import run
 from .utils import is_non_str_seq
-from . import DeviceProxy, Database, Util
+from . import Database, DeviceProxy, DevFailed, Util
 
-__all__ = ("MultiDeviceTestContext", "DeviceTestContext", "run_device_test_context")
+__all__ = (
+    "MultiDeviceTestContext",
+    "DeviceTestContext",
+    "run_device_test_context",
+    "get_server_port_via_pid",
+)
 
 # Helpers
 
 _WINDOWS = "nt" in os.name
 if not _WINDOWS:
-    _DEFAULT_THREAD_TIMEOUT = 3.
-    _DEFAULT_PROCESS_TIMEOUT = 5.
+    _DEFAULT_THREAD_TIMEOUT = 3.0
+    _DEFAULT_PROCESS_TIMEOUT = 5.0
 else:
-    _DEFAULT_THREAD_TIMEOUT = 5.
-    _DEFAULT_PROCESS_TIMEOUT = 7.
+    _DEFAULT_THREAD_TIMEOUT = 5.0
+    _DEFAULT_PROCESS_TIMEOUT = 7.0
 
 
 IOR = collections.namedtuple(
-    'IOR',
-    'first dtype_length dtype nb_profile tag '
-    'length major minor wtf host_length host port body')
+    "IOR",
+    "first dtype_length dtype nb_profile tag "
+    "length major minor wtf host_length host port body",
+)
 
 
 def ascii_to_bytes(s):
     convert = lambda x: bytes((int(x, 16),))
-    return b''.join(convert(s[i:i + 2]) for i in range(0, len(s), 2))
+    return b"".join(convert(s[i : i + 2]) for i in range(0, len(s), 2))
 
 
 def parse_ior(encoded_ior):
-    assert encoded_ior[:4] == 'IOR:'
+    assert encoded_ior[:4] == "IOR:"
     ior = ascii_to_bytes(encoded_ior[4:])
-    dtype_length = struct.unpack_from('II', ior)[-1]
-    form = f'II{dtype_length:d}sIIIBBHI'
+    dtype_length = struct.unpack_from("II", ior)[-1]
+    form = f"II{dtype_length:d}sIIIBBHI"
     host_length = struct.unpack_from(form, ior)[-1]
-    form = f'II{dtype_length:d}sIIIBBHI{host_length:d}sH0I'
+    form = f"II{dtype_length:d}sIIIBBHI{host_length:d}sH0I"
     values = struct.unpack_from(form, ior)
-    values += (ior[struct.calcsize(form):],)
+    values += (ior[struct.calcsize(form) :],)
     strip = lambda x: x[:-1] if isinstance(x, bytes) else x
     return IOR(*map(strip, values))
 
@@ -72,6 +79,101 @@ def get_server_host_port():
     return ior.host.decode(), ior.port
 
 
+def get_server_port_via_pid(pid, host):
+    """Return the TCP port that a device server process is listening on (GIOP).
+
+    This checks TCP sockets open on the process with the given PID, and attempts
+    to find the one that accepts GIOP traffic.  A connection will be made to each
+    listening socket, and data may be sent to them.
+
+    General Inter-ORB Protocol (GIOP) is the message protocol which object
+    request brokers (ORBs) communicate in CORBA.  This port is the one that is
+    used when connecting a DeviceProxy.  These are not the port(s) used for ZMQ
+    event traffic.
+
+    :param pid: operating system process identifier
+    :type pid: int
+    :param host: hostname/IP that device server is listening on.  E.g., 127.0.0.1,
+    IP address of a non-loopback network interface, etc.  Note that starting a device
+    server on "localhost" may fail if OmniORB creates an IPv6-only socket.
+    :type pid: str
+
+    :returns: TCP port number
+    :rtype: int
+
+    :raises RuntimeError: If the GIOP port couldn't be identified
+
+    .. versionadded:: 9.4.0
+    """
+    ports = _get_listening_tcp_ports(pid)
+    return _get_giop_port(host, ports)
+
+
+def _get_listening_tcp_ports(pid):
+    p = psutil.Process(pid)
+    conns = p.connections(kind="tcp")
+    return [c.laddr[1] for c in conns]
+
+
+def _get_giop_port(host, ports):
+    protocols = _try_get_protocols_on_ports(host, ports)
+    for port, protocol in protocols.items():
+        if protocol == "GIOP":
+            return port
+    raise RuntimeError(
+        f"None of ports {ports} appear to have GIOP protocol. "
+        f"Guessed protocols: {protocols}."
+    )
+
+
+def _try_get_protocols_on_ports(host, ports):
+    """Return a dict with port to protocol mapping.
+
+    This attempts to establish a TCP socket connection to the host
+    for each port, and then determine the protocol it supports.
+
+    ZMQ client sockets receive an unsolicited version check message on connection.
+    CORBA GIOP client sockets don't receive an unsolicited message, so we send
+    a requested to disconnect, and expect an empty message back.
+    """
+    zmq_response = (
+        b"\xff\x00\x00\x00\x00\x00\x00\x00\x01\x7f"  # signature + version check
+    )
+    giop_send = b"GIOP\x01\x02\x01\x05\x00\x00\x00\x00"  # request disconnect
+    giop_response = b""  # graceful disconnect
+    max_bytes_expected = len(zmq_response)
+
+    protocols = dict.fromkeys(ports, "Unknown")
+    for port in ports:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            sock.settimeout(0.001)
+            server_address = (host, port)
+            sock.connect(server_address)
+
+            try:
+                data = sock.recv(max_bytes_expected)
+                if data == zmq_response:
+                    protocols[port] = "ZMQ"
+                    continue
+            except OSError:
+                pass
+
+            try:
+                sock.sendall(giop_send)
+                data = sock.recv(max_bytes_expected)
+                if data == giop_response:
+                    protocols[port] = "GIOP"
+                    continue
+            except OSError:
+                pass
+        except OSError:
+            pass
+        finally:
+            sock.close()
+    return protocols
+
+
 def literal_dict(arg):
     return dict(literal_eval(arg))
 
@@ -82,8 +184,10 @@ def device(path):
     try:
         module = import_module(module_name)
     except Exception:
-        raise ArgumentTypeError(f"Error importing {module_name}.{device_name}:\n"
-                                f"{traceback.format_exc()}")
+        raise ArgumentTypeError(
+            f"Error importing {module_name}.{device_name}:\n"
+            f"{traceback.format_exc()}"
+        )
     return getattr(module, device_name)
 
 
@@ -99,7 +203,7 @@ def get_host_ip():
     # Note:  For some reason Python3 on macOS does not accept 0 as a port but
     # returns with an errno 49 instead. Therefore just use port 80 which just
     # works as well.
-    s.connect(('8.8.8.8', 80))
+    s.connect(("8.8.8.8", 80))
     # Get ip address
     ip = s.getsockname()[0]
     return ip
@@ -257,15 +361,27 @@ class MultiDeviceTestContext:
     :type green_mode:
       :obj:`~tango.GreenMode`
     """
+
     nodb = "dbase=no"
     command = "{0} {1} -ORBendPoint giop:tcp:{2}:{3} -file={4}"
 
     thread_timeout = _DEFAULT_THREAD_TIMEOUT
     process_timeout = _DEFAULT_PROCESS_TIMEOUT
 
-    def __init__(self, devices_info, server_name=None, instance_name=None,
-                 db=None, host=None, port=0, debug=3,
-                 process=False, daemon=False, timeout=None, green_mode=None):
+    def __init__(
+        self,
+        devices_info,
+        server_name=None,
+        instance_name=None,
+        db=None,
+        host=None,
+        port=0,
+        debug=3,
+        process=False,
+        daemon=False,
+        timeout=None,
+        green_mode=None,
+    ):
         if not server_name:
             _, first_device = _device_class_from_field(devices_info[0]["class"])
             server_name = first_device.__name__
@@ -283,7 +399,7 @@ class MultiDeviceTestContext:
             timeout = self.process_timeout if process else self.thread_timeout
         # Patch bug #819
         if process:
-            os.environ['ORBscanGranularity'] = '0'
+            os.environ["ORBscanGranularity"] = "0"
         # Attributes
         self.db = db
         self.host = host
@@ -294,8 +410,7 @@ class MultiDeviceTestContext:
         self._devices = {}
 
         # Command args
-        string = self.command.format(
-            server_name, instance_name, host, port, db)
+        string = self.command.format(server_name, instance_name, host, port, db)
         string += f" -v{debug}" if debug else ""
         cmd_args = string.split()
 
@@ -307,12 +422,15 @@ class MultiDeviceTestContext:
             tangoclass = device.__name__
             if tangoclass in tangoclass_list:
                 self.delete_db()
-                raise ValueError("multiple entries in devices_info pointing "
-                                 "to the same Tango class")
+                raise ValueError(
+                    "multiple entries in devices_info pointing "
+                    "to the same Tango class"
+                )
             tangoclass_list.append(tangoclass)
             # File
-            self.append_db_file(server_name, instance_name, tangoclass,
-                                device_info["devices"])
+            self.append_db_file(
+                server_name, instance_name, tangoclass, device_info["devices"]
+            )
             if device_cls:
                 class_list.append((device_cls, device, tangoclass))
             else:
@@ -321,8 +439,9 @@ class MultiDeviceTestContext:
         # Target and arguments
         if class_list and device_list:
             self.delete_db()
-            raise ValueError("mixing HLAPI and classical API in devices_info "
-                             "is not supported")
+            raise ValueError(
+                "mixing HLAPI and classical API in devices_info is not supported"
+            )
         if class_list:
             runserver = partial(run, class_list, cmd_args, green_mode=green_mode)
         elif len(device_list) == 1 and hasattr(device_list[0], "run_server"):
@@ -363,13 +482,11 @@ class MultiDeviceTestContext:
             self.queue.put((None, exc, None))
         finally:
             # Put something in the queue just in case
-            exc = RuntimeError(
-                "The post_init routine failed to report anything")
+            exc = RuntimeError("The post_init routine failed to report anything")
             self.queue.put((None, exc, None))
 
     def append_db_file(self, server, instance, tangoclass, device_prop_info):
-        """Generate a database file corresponding to the given arguments.
-        """
+        """Generate a database file corresponding to the given arguments."""
         device_names = [info["name"] for info in device_prop_info]
         # Open the file
         with open(self.db, "a") as f:
@@ -384,32 +501,43 @@ class MultiDeviceTestContext:
             device_name = info["name"]
             properties = info.get("properties", {})
             # Patch the property dict to avoid a PyTango bug
-            patched = {key: value if value != '' else ' '
-                           for key, value in properties.items()}
+            patched = {
+                key: value if value != "" else " " for key, value in properties.items()
+            }
             db.put_device_property(device_name, patched)
 
             memorized = info.get("memorized", {})
             munged = {
-                attribute_name: {
-                    "__value": memorized_value
-                } for (attribute_name, memorized_value) in memorized.items()
+                attribute_name: {"__value": memorized_value}
+                for (attribute_name, memorized_value) in memorized.items()
             }
             db.put_device_attribute_property(device_name, munged)
-        return db
+        try:
+            validated_db = Database(self.db)
+        except DevFailed:
+            with open(self.db, "r") as f:
+                content = f.read()
+            raise RuntimeError(
+                f"Invalid FileDatabase file was created.\n"
+                f"Check device properties (empty list or str?): "
+                f"{device_prop_info}.\n"
+                f"Problematic file has content:\n{content}"
+            )
+        return validated_db
 
     def delete_db(self):
-        """ delete temporary database file only if it was created by this class """
+        """delete temporary database file only if it was created by this class"""
         if self.handle is not None:
             os.close(self.handle)
             os.unlink(self.db)
 
     def get_server_access(self):
         """Return the full server name."""
-        return f'tango://{self.host}:{self.port}/{self.server_name}#{self.nodb}'
+        return f"tango://{self.host}:{self.port}/{self.server_name}#{self.nodb}"
 
     def get_device_access(self, device_name):
         """Return the full device name."""
-        return f'tango://{self.host}:{self.port}/{device_name}#{self.nodb}'
+        return f"tango://{self.host}:{self.port}/{device_name}#{self.nodb}"
 
     def get_device(self, device_name):
         """Return the device proxy corresponding to the given device name.
@@ -434,22 +562,25 @@ class MultiDeviceTestContext:
         except queue.Empty:
             if self.thread.is_alive():
                 raise RuntimeError(
-                    'The server appears to be stuck at initialization. '
-                    'Check stdout/stderr for more information.')
-            elif hasattr(self.thread, 'exitcode'):
+                    "The server appears to be stuck at initialization. "
+                    "Check stdout/stderr for more information."
+                )
+            elif hasattr(self.thread, "exitcode"):
                 raise RuntimeError(
-                    f'The server process stopped with exitcode {self.thread.exitcode}. '
-                    f'Check stdout/stderr for more information.')
+                    f"The server process stopped with exitcode {self.thread.exitcode}. "
+                    f"Check stdout/stderr for more information."
+                )
             else:
                 raise RuntimeError(
-                    'The server stopped without reporting. '
-                    'Check stdout/stderr for more information.')
+                    "The server stopped without reporting. "
+                    "Check stdout/stderr for more information."
+                )
         try:
             self.host, self.port = args
         except ValueError as e:
             # Warning: an assumption made here - if the args don't contain the
-            #          expected (host, port) items then we assume the args contain
-            #          exception info.
+            #          expected (host, port) items then we assume the args contain
+            #          exception info.
             if len(args) == 3:
                 exc_type, exc_value, exc_traceback = args
                 raise exc_value
@@ -463,7 +594,7 @@ class MultiDeviceTestContext:
         """Kill the server."""
         try:
             if self.server:
-                self.server.command_inout('Kill')
+                self.server.command_inout("Kill")
             self.join(self.timeout)
         finally:
             self.delete_db()
@@ -534,19 +665,33 @@ class DeviceTestContext(MultiDeviceTestContext):
 
      The rest of the parameters are described in
      :class:`~tango.test_context.MultiDeviceTestContext`.
-     """
+    """
 
-    def __init__(self, device, device_cls=None, server_name=None,
-                 instance_name=None, device_name=None, properties=None,
-                 db=None, host=None, port=0, debug=3, process=False,
-                 daemon=False, timeout=None, memorized=None, green_mode=None):
+    def __init__(
+        self,
+        device,
+        device_cls=None,
+        server_name=None,
+        instance_name=None,
+        device_name=None,
+        properties=None,
+        db=None,
+        host=None,
+        port=0,
+        debug=3,
+        process=False,
+        daemon=False,
+        timeout=None,
+        memorized=None,
+        green_mode=None,
+    ):
         # Argument
         if not server_name:
             server_name = device.__name__
         if not instance_name:
             instance_name = server_name.lower()
         if not device_name:
-            device_name = 'test/nodb/' + server_name.lower()
+            device_name = "test/nodb/" + server_name.lower()
         if properties is None:
             properties = {}
         if memorized is None:
@@ -562,19 +707,24 @@ class DeviceTestContext(MultiDeviceTestContext):
                     {
                         "name": device_name,
                         "properties": properties,
-                        "memorized": memorized},
-                )
+                        "memorized": memorized,
+                    },
+                ),
             },
         )
-        super().__init__(devices_info,
-                                                server_name=server_name,
-                                                instance_name=instance_name,
-                                                db=db, host=host,
-                                                port=port, debug=debug,
-                                                process=process,
-                                                daemon=daemon,
-                                                timeout=timeout,
-                                                green_mode=green_mode)
+        super().__init__(
+            devices_info,
+            server_name=server_name,
+            instance_name=instance_name,
+            db=db,
+            host=host,
+            port=port,
+            debug=debug,
+            process=process,
+            daemon=daemon,
+            timeout=timeout,
+            green_mode=green_mode,
+        )
 
         self.device_name = device_name
         self.device = self.server = None
@@ -583,8 +733,7 @@ class DeviceTestContext(MultiDeviceTestContext):
         """Return the full device name."""
         if device_name is None:
             device_name = self.device_name
-        return super().get_device_access(
-            device_name)
+        return super().get_device_access(device_name)
 
     def connect(self):
         super().connect()
@@ -607,41 +756,47 @@ class DeviceTestContext(MultiDeviceTestContext):
 
 # Command line interface
 
+
 def parse_command_line_args(args=None):
     """Parse arguments given in command line."""
     desc = "Run a given device on a given port."
     parser = ArgumentParser(description=desc)
     # Add arguments
-    msg = 'The device to run as a python path.'
-    parser.add_argument('device', metavar='DEVICE',
-                        type=device, help=msg)
+    msg = "The device to run as a python path."
+    parser.add_argument("device", metavar="DEVICE", type=device, help=msg)
     msg = "The hostname to use."
-    parser.add_argument('--host', metavar='HOST',
-                        type=str, help=msg, default=None)
+    parser.add_argument("--host", metavar="HOST", type=str, help=msg, default=None)
     msg = "The port to use."
-    parser.add_argument('--port', metavar='PORT',
-                        type=int, help=msg, default=8888)
+    parser.add_argument("--port", metavar="PORT", type=int, help=msg, default=8888)
     msg = "The debug level."
-    parser.add_argument('--debug', metavar='DEBUG',
-                        type=int, help=msg, default=3)
+    parser.add_argument("--debug", metavar="DEBUG", type=int, help=msg, default=3)
     msg = "The properties to set as python dict."
-    parser.add_argument('--prop', metavar='PROP',
-                        type=literal_dict, help=msg, default='{}')
+    parser.add_argument(
+        "--prop", metavar="PROP", type=literal_dict, help=msg, default="{}"
+    )
     # Parse arguments
     namespace = parser.parse_args(args)
-    return (namespace.device, namespace.host, namespace.port,
-            namespace.prop, namespace.debug)
+    return (
+        namespace.device,
+        namespace.host,
+        namespace.port,
+        namespace.prop,
+        namespace.debug,
+    )
 
 
 def run_device_test_context(args=None):
     device, host, port, properties, debug = parse_command_line_args(args)
     context = DeviceTestContext(
-        device, properties=properties, host=host, port=port, debug=debug)
+        device, properties=properties, host=host, port=port, debug=debug
+    )
     context.start()
-    msg = f'{device.__name__} started on port {context.port} with properties {properties}'
+    msg = (
+        f"{device.__name__} started on port {context.port} with properties {properties}"
+    )
     print(msg)
-    print(f'Device access: {context.get_device_access()}')
-    print(f'Server access: {context.get_server_access()}')
+    print(f"Device access: {context.get_device_access()}")
+    print(f"Server access: {context.get_server_access()}")
     context.join()
     print("Done")
 

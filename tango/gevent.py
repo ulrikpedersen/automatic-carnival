@@ -26,14 +26,18 @@ def check_requirements():
     try:
         import gevent
     except ImportError:
-        raise ImportError("No module named gevent. You need to install "
-                          "gevent module to have access to PyTango gevent "
-                          "green mode. Consider using the futures green mode "
-                          "instead")
+        raise ImportError(
+            "No module named gevent. You need to install "
+            "gevent module to have access to PyTango gevent "
+            "green mode. Consider using the futures green mode "
+            "instead"
+        )
 
     if Version(gevent.__version__) < Version("1.0"):
-        raise ImportError(f"You need gevent >= 1.0. You are using {gevent_version}. "
-                          f"Consider using the futures green mode instead")
+        raise ImportError(
+            f"You need gevent >= 1.0. You are using {gevent.__version__}. "
+            f"Consider using the futures green mode instead"
+        )
 
 
 check_requirements()

@@ -12,7 +12,9 @@ Using some command line overrides, images for various versions of Python and Tan
 From within the pytango root folder, run commands like the following:
 
 ```shell script
-docker build .devcontainer/ -t ubuntu2204-pytango-dev
+export PYTHON_VERSION=3.10
+export CPP_TANGO_VERSION=9.4.1
+docker build . --platform=linux/amd64 -t pytango-dev:py${PYTHON_VERSION}-tango${CPP_TANGO_VERSION} --build-arg PYTHON_VERSION --build-arg CPP_TANGO_VERSION
 ```
 
 Note: 
@@ -75,7 +77,7 @@ Add a new interpreter:
 
 - Open the _Add Interpreter..._ dialog
 - Select _Docker_
-- Pick the image to use, e.g., `ubuntu2204-pytango-dev`
+- Pick the image to use, e.g., `pytango-dev:py3.10-tango9.4.1`
 
 Running tests:
 

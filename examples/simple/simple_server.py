@@ -2,20 +2,20 @@ import numpy
 from PyTango.server import Server
 from common.roi import ROI
 
-class MyClass:
 
+class MyClass:
     def __init__(self):
         self.bla = 55.6
         self.ble = 11
         self.bli = False
-        self.array = numpy.ones((1000,1000))
-        self.buff = bytearray(100000*"Hello ")
+        self.array = numpy.ones((1000, 1000))
+        self.buff = bytearray(100000 * "Hello ")
 
     def func1(self):
         return "executed func1"
 
     def func2(self, v):
-        return 2*v
+        return 2 * v
 
     def func3(self, a, b, c=1, d=3):
         """Just some documentation"""
@@ -26,12 +26,14 @@ class MyClass:
         roi2 = ROI(0, 0, 1024, 768)
         return roi1.__dict__
 
-    def zeros(self, shape, dtype='float'):
+    def zeros(self, shape, dtype="float"):
         import numpy
+
         return numpy.zeros(shape, dtype=dtype)
 
     def func5(self, nap_time):
         import time
+
         time.sleep(nap_time)
         return f"Finished sleep for {nap_time}s"
 

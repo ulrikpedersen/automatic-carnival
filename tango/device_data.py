@@ -39,16 +39,21 @@ def __doc_DeviceData():
         insert() and extract() methods.
     """
 
-    document_method("extract", """
+    document_method(
+        "extract",
+        """
     extract(self) -> any
 
             Get the actual value stored in the DeviceData.
 
         Parameters : None
         Return     : Whatever is stored there, or None.
-    """)
+    """,
+    )
 
-    document_method("insert", """
+    document_method(
+        "insert",
+        """
     insert(self, data_type, value) -> None
 
             Inserts a value in the DeviceData.
@@ -57,9 +62,12 @@ def __doc_DeviceData():
                 - data_type :
                 - value     : (any) The value to insert
         Return     : Whatever is stored there, or None.
-    """)
+    """,
+    )
 
-    document_method("is_empty", """
+    document_method(
+        "is_empty",
+        """
     is_empty(self) -> bool
 
             It can be used to test whether the DeviceData object has been
@@ -68,9 +76,12 @@ def __doc_DeviceData():
         Parameters : None
         Return     : True or False depending on whether the DeviceData object
                     contains data or not.
-    """)
+    """,
+    )
 
-    document_method("get_type", """
+    document_method(
+        "get_type",
+        """
     get_type(self) -> CmdArgType
 
             This method returns the Tango data type of the data inside the
@@ -78,7 +89,8 @@ def __doc_DeviceData():
 
         Parameters : None
         Return     : The content arg type.
-    """)
+    """,
+    )
 
 
 def device_data_init(doc=True):

@@ -4,8 +4,8 @@
 
 from tango.server import Device, attribute
 
-class Motor(Device):
 
+class Motor(Device):
     def init_device(self):
         super().init_device()
         self.attr_position_read = 1.0

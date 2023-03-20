@@ -26,8 +26,7 @@ Example::
             attr.set_value(self._current)
 """
 
-__all__ = ("TangoStream", "LogIt", "DebugIt", "InfoIt", "WarnIt",
-           "ErrorIt", "FatalIt")
+__all__ = ("TangoStream", "LogIt", "DebugIt", "InfoIt", "WarnIt", "ErrorIt", "FatalIt")
 
 __docformat__ = "restructuredtext"
 
@@ -43,7 +42,7 @@ class TangoStream:
         self._accum += s
         # while there is no new line, just accumulate the buffer
         try:
-            if s[-1] == '\n' or s.index('\n') >= 0:
+            if s[-1] == "\n" or s.index("\n") >= 0:
                 self.flush()
         except ValueError:
             pass
@@ -53,7 +52,7 @@ class TangoStream:
         if b is None or len(self._accum) == 0:
             return
         # take the '\n' because the log adds it
-        if b[-1] == '\n':
+        if b[-1] == "\n":
             b = b[:-1]
         self._fn(b)
         self._accum = ""
@@ -85,9 +84,9 @@ class LogIt:
     def __init__(self, show_args=False, show_kwargs=False, show_ret=False):
         """Initializes de LogIt object.
 
-            :param show_args: (bool) show arguments in log message (default is False)
-            :param show_kwargs: (bool) show keyword arguments in log message (default is False)
-            :param show_ret: (bool) show return in log message (default is False)
+        :param show_args: (bool) show arguments in log message (default is False)
+        :param show_kwargs: (bool) show keyword arguments in log message (default is False)
+        :param show_ret: (bool) show return in log message (default is False)
         """
         self._show_args = show_args
         self._show_kwargs = show_kwargs
@@ -96,7 +95,7 @@ class LogIt:
     def __compact_elem(self, v, maxlen=25):
         v = repr(v)
         if len(v) > maxlen:
-            v = v[:maxlen - 6] + " [...]"
+            v = v[: maxlen - 6] + " [...]"
         return v
 
     def __compact_elems(self, elems):

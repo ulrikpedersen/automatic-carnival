@@ -13,7 +13,7 @@
 This is an internal PyTango module.
 """
 
-__all__ = ('init',)
+__all__ = ("init",)
 
 __docformat__ = "restructuredtext"
 
@@ -53,9 +53,16 @@ def init_constants():
     tg_ver_str = "0x%02d%02d%02d00" % (tg_ver[0], tg_ver[1], tg_ver[2])
     constants.TANGO_VERSION_HEX = int(tg_ver_str, 16)
 
-    BOOST_VERSION = ".".join(map(str, (constants.BOOST_MAJOR_VERSION,
-                                       constants.BOOST_MINOR_VERSION,
-                                       constants.BOOST_PATCH_VERSION)))
+    BOOST_VERSION = ".".join(
+        map(
+            str,
+            (
+                constants.BOOST_MAJOR_VERSION,
+                constants.BOOST_MINOR_VERSION,
+                constants.BOOST_PATCH_VERSION,
+            ),
+        )
+    )
     constants.BOOST_VERSION = BOOST_VERSION
 
     class Compile:
@@ -69,14 +76,14 @@ def init_constants():
     tg_rt_major_ver = tg_rt_ver_nb // 100
     tg_rt_minor_ver = tg_rt_ver_nb // 10 % 10
     tg_rt_patch_ver = tg_rt_ver_nb % 10
-    tg_rt_ver = ".".join(map(str, (tg_rt_major_ver, tg_rt_minor_ver,
-                                   tg_rt_patch_ver)))
+    tg_rt_ver = ".".join(map(str, (tg_rt_major_ver, tg_rt_minor_ver, tg_rt_patch_ver)))
 
     class Runtime:
         PY_VERSION = ".".join(map(str, sys.version_info[:3]))
         TANGO_VERSION = tg_rt_ver
         if constants.NUMPY_SUPPORT:
             import numpy
+
             NUMPY_VERSION = numpy.__version__
         else:
             NUMPY_VERSION = None

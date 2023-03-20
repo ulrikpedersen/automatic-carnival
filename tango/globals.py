@@ -13,10 +13,19 @@
 This is an internal PyTango module.
 """
 
-__all__ = ("get_class", "get_classes", "get_cpp_class", "get_cpp_classes",
-           "get_constructed_class", "get_constructed_classes",
-           "class_factory", "delete_class_list",
-           "class_list", "cpp_class_list", "constructed_class")
+__all__ = (
+    "get_class",
+    "get_classes",
+    "get_cpp_class",
+    "get_cpp_classes",
+    "get_constructed_class",
+    "get_constructed_classes",
+    "class_factory",
+    "delete_class_list",
+    "class_list",
+    "cpp_class_list",
+    "constructed_class",
+)
 
 __docformat__ = "restructuredtext"
 
@@ -84,24 +93,27 @@ def get_constructed_class_by_class(klass):
 # A method to delete Tango classes from Python
 #
 
+
 def delete_class_list():
     global constructed_class
     if len(constructed_class) != 0:
-        del (constructed_class[:])
+        del constructed_class[:]
 
 
 #
 # A generic class_factory method
 #
 
+
 def class_factory():
     local_class_list = get_classes()
     local_cpp_class_list = get_cpp_classes()
 
-    if ((len(local_class_list) + len(local_cpp_class_list)) == 0):
-        print('Oups, no Tango class defined within this device server !!!')
-        print('Sorry, but I exit')
+    if (len(local_class_list) + len(local_cpp_class_list)) == 0:
+        print("Oups, no Tango class defined within this device server !!!")
+        print("Sorry, but I exit")
         import sys
+
         sys.exit()
 
     # Call the delete_class_list function in order to clear the global

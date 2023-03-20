@@ -60,3 +60,26 @@ wheel.packages = ["tango", "tango.databaseds", "tango.databaseds.db_access"]
 # Can also be set as cmake cache variables through the CMAKE_ARGS environment variable:
 # e.g.: CMAKE_ARGS="-DTANGO_ROOT=/path/to/installed/cpptango" python3 -m build
 # TANGO_ROOT="/path/to/installed/tango.9.4"
+
+
+[tool.ruff]
+exclude = [
+    ".git",
+    "__pycache__",
+    ".eggs",
+    "*.egg",
+    "build",
+    "databaseds",
+    "examples",
+    "doc",
+]
+ignore = [
+    "E402",  # Module level import not at top of file
+    "E501",  # Line too long (> 79 characters)
+    "E731",  # Do not assign a lambda expression, use a def
+]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+]

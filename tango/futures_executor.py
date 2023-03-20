@@ -36,6 +36,7 @@ def set_global_executor(executor):
 
 # Futures executor
 
+
 class FuturesExecutor(AbstractExecutor):
     """Futures tango executor"""
 

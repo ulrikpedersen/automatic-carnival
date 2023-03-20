@@ -71,7 +71,9 @@ def __init_GroupReplyList():
     GroupCmdReplyList.__GroupReplyList_original_getitem = GroupCmdReplyList.__getitem__
     GroupCmdReplyList.__getitem__ = __GroupReplyList__getitem
 
-    GroupAttrReplyList.__GroupReplyList_original_getitem = GroupAttrReplyList.__getitem__
+    GroupAttrReplyList.__GroupReplyList_original_getitem = (
+        GroupAttrReplyList.__getitem__
+    )
     GroupAttrReplyList.__getitem__ = __GroupReplyList__getitem
 
     GroupReplyList.__iter__ = __GroupReplyList__iter

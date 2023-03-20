@@ -20,16 +20,17 @@ class FwdServer(Device):
         self._current = 0.0
         self.set_state(tango.DevState.ON)
 
-    voltage = attribute(name="voltage", label='Voltage', forwarded=True)
+    voltage = attribute(name="voltage", label="Voltage", forwarded=True)
 
-    @attribute(label='Current', dtype='float')
+    @attribute(label="Current", dtype="float")
     def current(self):
         return self._current
+
 
 # ----------
 # Run server
 # ----------
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     FwdServer.run_server()

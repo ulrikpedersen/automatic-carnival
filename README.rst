@@ -30,12 +30,14 @@ PyTango_ is compatible with python 3.6+.
 
 General dependencies:
 
--  libtango_ >= 9.4, and its dependencies: omniORB4 and libzmq
+-  libtango_ >= 9.4.1, and its dependencies: omniORB4 and libzmq
 -  `Boost.Python`_ >= 1.33
 
 Python dependencies:
 
 -  numpy_ >= 1.13.3
+-  packaging_
+-  psutil_
 
 Build dependencies:
 
@@ -55,8 +57,10 @@ Optional dependencies:
 Install
 -------
 
-PyTango_ is available on PyPI_ as ``pytango``::
+PyTango_ is available on PyPI_ as ``pytango``, with pre-built binaries for some platforms
+(you need pip>=19.3, so upgrade first if necessary)::
 
+    $ python -m pip install --upgrade pip
     $ python -m pip install pytango
 
 Alternatively, pre-built PyTango_ binaries can be installed from `Conda Forge_`::
@@ -64,17 +68,7 @@ Alternatively, pre-built PyTango_ binaries can be installed from `Conda Forge_`:
     $ conda install -c conda-forge pytango
 
 For the very latest code, or for development purposes, PyTango_ can be built and installed from the
-`sources`_::
-
-    $ python -m pip install .
-
-The installation may take a few minutes if the ``_tango`` boost
-extension has to compile.
-
-.. note::
-   For custom `Boost.Python`_ installation locations, environment variables can be used
-   to modify the default paths.  See the description of the ``BOOST_ROOT`` and related
-   variables in the ``setup.py`` file.
+`sources`_.  This is complicated by the dependencies - see the Getting Started section in the documentation_.
 
 Usage
 -----
@@ -87,13 +81,13 @@ To test the installation, import ``tango`` and check ``tango.utils.info()``::
     PyTango compiled with:
         Python : 3.10.6
         Numpy  : 1.23.4
-        Tango  : 9.4.0
+        Tango  : 9.4.1
         Boost  : 1.80.0
 
     PyTango runtime is:
         Python : 3.10.6
         Numpy  : 1.23.4
-        Tango  : 9.4.0
+        Tango  : 9.4.1
 
     PyTango running on:
     uname_result(system='Linux', node='624986bbd0fe', release='5.10.104-linuxkit', version='#1 SMP PREEMPT Thu Mar 17 17:05:54 UTC 2022', machine='x86_64', processor='x86_64')
@@ -149,6 +143,8 @@ All contributions,  `PR and bug reports`_ are welcome, please see: `How to Contr
 .. _libtango: http://tango-controls.org/downloads
 .. _Boost.Python: https://www.boost.org/doc/libs/release/libs/python/doc/html/index.html
 .. _numpy: http://pypi.python.org/pypi/numpy
+.. _packaging: http://pypi.python.org/pypi/packaging
+.. _psutil: http://pypi.python.org/pypi/psutil
 .. _setuptools: http://pypi.python.org/pypi/setuptools
 .. _gevent: http://pypi.python.org/pypi/gevent
 

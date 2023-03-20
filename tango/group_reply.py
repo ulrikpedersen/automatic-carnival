@@ -38,8 +38,10 @@ def __GroupAttrReply__get_data(self, extract_as=ExtractAs.Numpy):
         return data
 
     if extract_as != orig_extract_as:
-        raise Exception("Successive calls to get_data() must receive the same"
-                        " parameters as the first one.")
+        raise Exception(
+            "Successive calls to get_data() must receive the same"
+            " parameters as the first one."
+        )
     return data
 
 
@@ -66,7 +68,10 @@ def __doc_GroupReply():
             - get_err_stack(self) -> DevErrorList
     """
 
-    __document_method(GroupCmdReply, "get_data", """
+    __document_method(
+        GroupCmdReply,
+        "get_data",
+        """
     get_data(self) -> any
 
             Get the actual value stored in the GroupCmdRply, the command
@@ -75,9 +80,13 @@ def __doc_GroupReply():
 
         Parameters : None
         Return     : (any) Whatever is stored there, or None.
-    """)
+    """,
+    )
 
-    __document_method(GroupCmdReply, "get_data_raw", """
+    __document_method(
+        GroupCmdReply,
+        "get_data_raw",
+        """
     get_data_raw(self) -> any
 
             Get the DeviceData containing the output parameter
@@ -85,9 +94,13 @@ def __doc_GroupReply():
 
         Parameters : None
         Return     : (DeviceData) Whatever is stored there, or None.
-    """)
+    """,
+    )
 
-    __document_method(GroupAttrReply, "get_data", """
+    __document_method(
+        GroupAttrReply,
+        "get_data",
+        """
     get_data(self, extract_as=ExtractAs.Numpy) -> DeviceAttribute
 
             Get the DeviceAttribute.
@@ -96,7 +109,8 @@ def __doc_GroupReply():
             - extract_as : (ExtractAs)
 
         Return     : (DeviceAttribute) Whatever is stored there, or None.
-    """)
+    """,
+    )
 
 
 def group_reply_init(doc=True):
