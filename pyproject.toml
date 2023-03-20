@@ -10,7 +10,7 @@ changelog = "https://gitlab.com/tango-controls/pytango/-/releases"
 
 [project]
 name = "pytango"
-version = "9.4.0"
+version = "9.4.2"
 description = "Python bindings for the cppTango library; part of the Tango Distributed Control System toolkit"
 readme = "README.rst"
 requires-python = ">=3.8"
