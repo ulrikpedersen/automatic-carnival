@@ -47,10 +47,15 @@ cmake configuration options
 
 cmake can be used with all of its standard configuration options for different types of builds, etc.
 
-Specific to this project, the following cmake cache variables can be used to hint at where to find dependencies:
+Specific to this project, the following cmake cache variables can be used to hint at where to find dependencies, these can also defined and read from the environment although the cache (i.e. cmake `-D` option) will take precedence):
 
- * **TANGO_ROOT** - set this to the path where cppTango is installed IF not in a system path. This is handed as a hint to pkg-config.
- * **BOOST_PYTHON_SUFFIX** - by default is 3 and works for modern platforms. Set this only if you have problems with finding boost python (i.e. if your boost version is <1.73, in this case set to '38' or whatever python version you have)
+* **TANGO_ROOT** - Set this to the path where cppTango is installed IF not in a system path. This is handed as a hint to pkg-config.
+* **PYTHON_ROOT** - Use this if you have multiple python installations. Set to the root path where the particular version of python is installed.
+* **BOOST_PYTHON_SUFFIX** - By default is 3 and works for modern platforms. Set this only if you have problems with finding boost python (i.e. if your boost version is <1.73, in this case set to '38' or whatever python version you have) A warning about mismatching python and python.boost versions will be printed by cmake.
+
+Other environment variables can also be used to control aspects of the build:
+* **CMAKE_ARGS** - use this to set flags/options that are used by scikit-build-core when invoking cmake.
+* **CMAKE_GENERATOR** - for example chose between "Unix Makefiles" (default) and "Ninja".
 
 ### Use a [CMakeUserPresets.json](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html) file
 
@@ -235,15 +240,6 @@ pytango-9.4.0-cp311-cp311-macosx_12_0_arm64.whl pytango-9.4.0.tar.gz
 ### Configuration options
 The above build is the most basic form of build. There are many ways to tweak and configure the build.
 
-Environment variables can be used to point to non-standard/non-system installed versions of boost, python and tango:
-* TANGO_ROOT
-* BOOST_ROOT
-* PYTHON_ROOT
-
-Other environment variables can also be used to control aspects of the build:
-* CMAKE_ARGS - use this to set flags/options that are used by scikit-build-core when invoking cmake.
-* CMAKE_GENERATOR - for example chose between "Unix Makefiles" (default) and "Ninja".
-* BOOST_PYTHON_SUFFIX - Sets the suffix on the Boost Python component to search for (default is 3). Set this if your Boost version is < 1.73 OR if you have multiple installations of python.
 
 It is also possible to invoke a set of defined cmake presets from `CMakePresets.json` by using the `CMAKE_ARGS` environment variable. This may be convenient to store CI configurations for cmake in one place and leave the CI yaml definitions quite simple (i.e. TANGO_ROOT could be defined in `CMakePresets.json`):
 
