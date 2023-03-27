@@ -30,27 +30,29 @@ PyTango_ is compatible with python 3.6+.
 
 General dependencies:
 
--  libtango_ >= 9.4.1, and its dependencies: omniORB4 and libzmq
--  `Boost.Python`_ >= 1.33
+-  cppTango_ >= 9.4.1, and its dependencies: omniORB4 and libzmq
+-  `Boost.Python`_ >= 1.71
 
 Python dependencies:
 
 -  numpy_ >= 1.13.3
--  packaging_
--  psutil_
 
 Build dependencies:
 
-- setuptools_
+- pypa-build_
+- scikit-build-core_
 
-Optional dependencies:
+Optional dependencies (test):
 
 - gevent_
+- psutil_
+- pytest_
+- pytest-forked_
 
-.. note:: As a general rule, libtango_ and pytango_ should share the same major
+.. note:: As a general rule, cppTango_ and pytango_ should share the same major
       and minor version (for a version ``X.Y.Z``, ``X`` and ``Y`` should
       match).
-      On some systems you may need to install ``libtango``, ``omniORB4`` and ``libzmq`` related
+      On some systems you may need to install ``omniORB4`` and ``libzmq`` related
       development packages.
 
 
@@ -77,20 +79,20 @@ To test the installation, import ``tango`` and check ``tango.utils.info()``::
 
     >>> import tango
     >>> print(tango.utils.info())
-    PyTango 9.4.0 (9, 4, 0)
+    PyTango 9.4.2.dev0 (9, 4, 2, 'dev', 0)
     PyTango compiled with:
-        Python : 3.10.6
-        Numpy  : 1.23.4
+        Python : 3.11.2
+        Numpy  : PYTANGO_NUMPY_VERSION
         Tango  : 9.4.1
-        Boost  : 1.80.0
+        Boost  : 1.81.0
 
     PyTango runtime is:
-        Python : 3.10.6
-        Numpy  : 1.23.4
+        Python : 3.11.2
+        Numpy  : 1.24.2
         Tango  : 9.4.1
 
     PyTango running on:
-    uname_result(system='Linux', node='624986bbd0fe', release='5.10.104-linuxkit', version='#1 SMP PREEMPT Thu Mar 17 17:05:54 UTC 2022', machine='x86_64', processor='x86_64')
+    uname_result(system='Darwin', node='osloxf01', release='21.6.0', version='Darwin Kernel Version 21.6.0: Mon Dec 19 20:43:09 PST 2022; root:xnu-8020.240.18~2/RELEASE_ARM64_T6000', machine='arm64')
 
 For an interactive use, consider using ITango_, a tango IPython_ profile.
 
@@ -139,7 +141,10 @@ All contributions,  `PR and bug reports`_ are welcome, please see: `How to Contr
 .. _PyTango: http://gitlab.com/tango-controls/pytango
 .. _PyPI: http://pypi.python.org/pypi/pytango
 .. _Conda Forge: https://anaconda.org/conda-forge/pytango
+.. _scikit-build-core: https://github.com/scikit-build/scikit-build-core
+.. _pypa-build: https://github.com/pypa/build
 
+.. _cppTango: https://gitlab.com/tango-controls/cppTango
 .. _libtango: http://tango-controls.org/downloads
 .. _Boost.Python: https://www.boost.org/doc/libs/release/libs/python/doc/html/index.html
 .. _numpy: http://pypi.python.org/pypi/numpy
@@ -147,6 +152,9 @@ All contributions,  `PR and bug reports`_ are welcome, please see: `How to Contr
 .. _psutil: http://pypi.python.org/pypi/psutil
 .. _setuptools: http://pypi.python.org/pypi/setuptools
 .. _gevent: http://pypi.python.org/pypi/gevent
+.. _pytest: https://docs.pytest.org/en/latest/
+.. _pytest-forked: https://github.com/pytest-dev/pytest-forked
+.. _psutil: https://github.com/giampaolo/psutil
 
 .. _ITango: http://pypi.python.org/pypi/itango
 .. _IPython: http://ipython.org
