@@ -86,7 +86,7 @@ build-wheel:
   # This ought to be moved to the docker image build eventually
     - yum install -y cppcheck
     - ${PYTHON_ROOT}/bin/python --version
-    - ${PYTHON_ROOT}/bin/python -m pip install --no-cache-dir clang-tidy clang-format
+    - ${PYTHON_ROOT}/bin/python -m pip install --no-cache-dir clang-tidy clang-format auditwheel
     - ln -s ${PYTHON_ROOT}/bin/clang-tidy /usr/local/bin
     - ln -s ${PYTHON_ROOT}/bin/clang-format /usr/local/bin
     - clang-tidy --version
@@ -96,6 +96,11 @@ build-wheel:
     # build wheel
     - ${PYTHON_ROOT}/bin/python -m build --wheel
     - ls -alh dist/
+    # repair wheel
+    - auditwheel repair dist/${WHEEL_REGEX}
+    - rm -rf dist/${WHEEL_REGEX} # delete unrepaired wheel
+    # copy wheel to dist
+    - cp wheelhouse/${WHEEL_REGEX} ./dist # are we always sure of the name?
   artifacts:
     expire_in: 1 day
     paths:
