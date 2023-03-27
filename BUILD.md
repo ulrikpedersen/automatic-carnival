@@ -208,18 +208,18 @@ Assuming the library dependencies are already installed on your host (see [above
 ```shell
 user@computer pytango $ python3.11 -m venv buildvenv
 user@computer pytango $ source buildvenv/bin/activate
-(buildvenv) user@computer pytango $ pip install pip install build scikit-build-core
+(buildvenv) user@computer pytango $ pip install --upgrade pip build scikit-build-core
 ...
 (buildvenv) user@computer pytango $ pip list
 Package           Version
 ----------------- -------
 build             0.10.0
-install           1.3.5
 packaging         23.0
-pip               22.3.1
+pip               23.0.1
 pyproject_hooks   1.0.0
-scikit_build_core 0.1.5
+scikit_build_core 0.2.2
 setuptools        65.6.3
+typing_extensions 4.5.0
 
 # Setting the TANGO_ROOT variable is only required for a non-standard system install of cppTango
 (buildvenv) user@computer pytango $ TANGO_ROOT=/path/to/installed/tango.9.4 python3 -m build
@@ -235,6 +235,22 @@ Successfully built pytango-9.4.0.tar.gz and pytango-9.4.0-cp311-cp311-macosx_12_
 (buildvenv) user@computer pytango $ ls dist
 pytango-9.4.0-cp311-cp311-macosx_12_0_arm64.whl pytango-9.4.0.tar.gz
 
+```
+
+Then you can audit or delocate the wheel to pull the dependency libraries into the wheel. This differs on MacOS and Linux:
+
+On Linux:
+```shell
+(buildvenv) user@computer pytango $ pip install auditwheel # on Linux only
+(buildvenv) user@computer pytango $ LD_LIBRARY_PATH=/path/to/installed/tango.9.4/lib/ auditwheel repair dist/pytango*.whl  # LD_LIBRARY_PATH only required if Tango is installed in a non-standard location
+(buildvenv) user@computer pytango $ ls wheelhouse/
+```
+
+On MacOS:
+```shell
+(buildvenv) user@computer pytango $ pip install delocate # on MacOS only
+(buildvenv) user@computer pytango $ DYLD_LIBRARY_PATH=/path/to/installed/tango.9.4/lib/ delocate-wheel -w wheelhouse/ -v dist/pytango*.whl  # DYLD_LIBRARY_PATH only required if Tango is installed in a non-standard location
+(buildvenv) user@computer pytango $ ls wheelhouse/
 ```
 
 ### Configuration options
