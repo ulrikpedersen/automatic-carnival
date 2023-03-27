@@ -42,6 +42,75 @@ See the `.devcontainer/Dockerfile` for how to install the dependencies - or just
 
 Uhm. Todo. Help?
 
+New build system: how to build the wheel
+========================================
+Pytango can be built into a distribution package using the build system provided. The build sytstem is based
+on a few development tools, mainly:
+
+* cmake - for building the c++ code and pulling in dependency configurations
+* python build - the (new) standard build interface in python world
+* scikit-build-core - provides glue to seamlessly invoke cmake builds from a python build
+
+Assuming the library dependencies are already installed on your host (see [above](#pytango-library-dependencies)), you should create a python virtualenv for the build. This virtualenv can be very small because scikit-build-core actually creates its own virtualenv in the background (in /tmp) where the pytango build requirements are pulled in.
+
+The following is a quick summary of how to build and check the pytango wheel. Assuming workstation environment is appropriately configred with pre-installed dependencies.
+
+In brief, the steps are essentially:
+1. Clone the pytango repo
+2. Setup a virtual environment
+3. Build the wheel using build and scikit-build-core
+4. Generate the wheel with batteries (i.e. pull dependency libraries into a wheel)
+5. Install the wheel
+6. Test the wheel
+
+Steps 1-3:  configure your environment and build the basic wheel (using scikit-build-core and cmake under the hood)
+```shell
+git clone git@gitlab.com:tango-controls/pytango.git
+cd pytango
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip build clang-tidy clang-format numpy scikit-build-core
+# Setting the TANGO_ROOT variable is only required for a non-standard system install of cppTango
+TANGO_ROOT=/path/to/installed/tango.9.4 python3 -m build
+# Check what has been built:
+ls dist/
+# Further check what is in the wheel if you're really curious:
+unzip dist/*.whl
+```
+
+Step 4: pull the dependency libraries into a (new) wheel. This step is platform-dependent.
+On Linux:
+```shell
+# on Linux only
+pip install auditwheel 
+# LD_LIBRARY_PATH only required if Tango is installed in a non-standard location
+LD_LIBRARY_PATH=/path/to/installed/tango.9.4/lib/ auditwheel repair dist/pytango*.whl  
+ls wheelhouse/
+```
+
+On MacOS:
+```shell
+# on MacOS only
+pip install delocate 
+# DYLD_LIBRARY_PATH only required if Tango is installed in a non-standard location
+$ DYLD_LIBRARY_PATH=/path/to/installed/tango.9.4/lib/ delocate-wheel -w wheelhouse/ -v dist/pytango*.whl
+ls wheelhouse/
+```
+
+Step 5-6: Installing and checking the wheel package. 
+```shell
+# install the wheel with batteries
+python -m pip install --prefer-binary wheelhouse/pytango*.whl
+# Tests need to run somewhere not in the root of the pytango repo since the source code is located in a folder named `tango` and conflicts with the module name.
+mkdir tmp && cd tmp/
+python -c "import tango; print(tango.utils.info())"
+```
+
+Advanced Build Configuration
+============================
+
+The following information is intended for maintainers of pytango that may need to dive deeper into the depths of the build system.
+
 cmake configuration options
 ---------------------------
 
@@ -154,8 +223,8 @@ We create a python virtualenv in order to conveniently pull in some recent versi
 cd pytango/   # if you're not already here...
 user@computer pytango $ python3.11 -m venv venv
 user@computer pytango $ source venv/bin/activate
-(venv) user@computer pytango $ pip install clang-tidy clang-format numpy
-(venv) user@computer pytango $ pip list
+pip install clang-tidy clang-format numpy
+pip list
 Package      Version
 ------------ --------
 clang-format 15.0.7
@@ -165,18 +234,18 @@ numpy        1.24.1
 pip          22.3.1
 setuptools   65.6.3
 
-(venv) user@computer pytango $ pip install cmake   # ONLY IF CMAKE IS NOT ALREADY AVAILABLE
+pip install cmake   # ONLY IF CMAKE IS NOT ALREADY AVAILABLE
 ```
 
 If you **do** have the `CMakeUserPresets.json` file in the root of the project, then configure, build the `_pytango.so` library in "Debug" mode in the `cmakebuild/dev/` directory and (optionally) install it:
 ```shell
-(venv) user@computer pytango $ mkdir install  # optional: if you want to test installed lib locally
+mkdir install  # optional: if you want to test installed lib locally
 
-(venv) user@computer pytango $ cmake --preset=dev -DCMAKE_INSTALL_PREFIX=$(pwd)/install  # configuring - the install prefix is optional
-(venv) user@computer pytango $ cmake --build --preset=dev   # building
-(venv) user@computer pytango $ cmake --build --preset=dev --target install  # optionally install the library
+cmake --preset=dev -DCMAKE_INSTALL_PREFIX=$(pwd)/install  # configuring - the install prefix is optional
+cmake --build --preset=dev   # building
+cmake --build --preset=dev --target install  # optionally install the library
 
-(venv) user@computer pytango $ ls install/pytango/
+ls install/pytango/
 _pytango.9.4.0.so _pytango.9.so     _pytango.so
 
 ```
@@ -188,79 +257,20 @@ If you do **not** have the `CMakeUserPresets.json` in the root of the project (i
 
 Assuming that you do have the virtualenv defined as above (or all tools _somehow_ available), you can build a CI configuration which will build `_pytango.so` in "Release" mode in the `cmakebuild/` directory:
 ```shell
-(venv) user@computer pytango $ cmake --preset=ci-macOS -DTANGO_ROOT=/path/to/installed/tango.9.4
-(venv) user@computer pytango $ cmake --build --preset=dev
+cmake --preset=ci-macOS -DTANGO_ROOT=/path/to/installed/tango.9.4
+cmake --build --preset=dev
 
 ```
 
-Building the python package
----------------------------
 
-Pytango can be built into a distribution package using the build system provided. The build sytstem is based
-on a few development tools, mainly:
-
-* cmake - for building the c++ code and pulling in dependency configurations
-* python build - the (new) standard build interface in python world
-* scikit-build-core - provides glue to seamlessly invoke cmake builds from a python build
-
-Assuming the library dependencies are already installed on your host (see [above](#pytango-library-dependencies)), you should create a python virtualenv for the build. This virtualenv can be very small because scikit-build-core actually creates its own virtualenv in the background (in /tmp) where the pytango build requirements are pulled in.
-
-```shell
-user@computer pytango $ python3.11 -m venv buildvenv
-user@computer pytango $ source buildvenv/bin/activate
-(buildvenv) user@computer pytango $ pip install --upgrade pip build scikit-build-core
-...
-(buildvenv) user@computer pytango $ pip list
-Package           Version
------------------ -------
-build             0.10.0
-packaging         23.0
-pip               23.0.1
-pyproject_hooks   1.0.0
-scikit_build_core 0.2.2
-setuptools        65.6.3
-typing_extensions 4.5.0
-
-# Setting the TANGO_ROOT variable is only required for a non-standard system install of cppTango
-(buildvenv) user@computer pytango $ TANGO_ROOT=/path/to/installed/tango.9.4 python3 -m build
-...
-[100%] Built target pytango_tango
-*** Installing project into wheel...
--- Install configuration: "Release"
--- Installing: /var/folders/gp/7q57_wf53bs1_v04jvt52rm40000gn/T/tmparowuq1s/wheel/platlib/tango/_tango.9.4.0.so
--- Installing: /var/folders/gp/7q57_wf53bs1_v04jvt52rm40000gn/T/tmparowuq1s/wheel/platlib/tango/_tango.9.so
--- Installing: /var/folders/gp/7q57_wf53bs1_v04jvt52rm40000gn/T/tmparowuq1s/wheel/platlib/tango/_tango.so
-*** Making wheel...
-Successfully built pytango-9.4.0.tar.gz and pytango-9.4.0-cp311-cp311-macosx_12_0_arm64.whl
-(buildvenv) user@computer pytango $ ls dist
-pytango-9.4.0-cp311-cp311-macosx_12_0_arm64.whl pytango-9.4.0.tar.gz
-
-```
-
-Then you can audit or delocate the wheel to pull the dependency libraries into the wheel. This differs on MacOS and Linux:
-
-On Linux:
-```shell
-(buildvenv) user@computer pytango $ pip install auditwheel # on Linux only
-(buildvenv) user@computer pytango $ LD_LIBRARY_PATH=/path/to/installed/tango.9.4/lib/ auditwheel repair dist/pytango*.whl  # LD_LIBRARY_PATH only required if Tango is installed in a non-standard location
-(buildvenv) user@computer pytango $ ls wheelhouse/
-```
-
-On MacOS:
-```shell
-(buildvenv) user@computer pytango $ pip install delocate # on MacOS only
-(buildvenv) user@computer pytango $ DYLD_LIBRARY_PATH=/path/to/installed/tango.9.4/lib/ delocate-wheel -w wheelhouse/ -v dist/pytango*.whl  # DYLD_LIBRARY_PATH only required if Tango is installed in a non-standard location
-(buildvenv) user@computer pytango $ ls wheelhouse/
-```
 
 ### Configuration options
-The above build is the most basic form of build. There are many ways to tweak and configure the build.
-
+The above python wheel build is the most basic form of build. There are many ways to tweak and configure the build.
 
 It is also possible to invoke a set of defined cmake presets from `CMakePresets.json` by using the `CMAKE_ARGS` environment variable. This may be convenient to store CI configurations for cmake in one place and leave the CI yaml definitions quite simple (i.e. TANGO_ROOT could be defined in `CMakePresets.json`):
 
 ```shell
-(buildvenv) user@computer pytango $ CMAKE_ARGS="--preset=ci-macOS" python3 -m build
+CMAKE_ARGS="--preset=ci-macOS" python3 -m build
 ```
 
 NOTE that you cannot reference presets from your own `CMakeUserPresets.json` as it is not packaged with the PyTango source distribution and not available in the temporary virtualenv that scikit-build-core creates.
